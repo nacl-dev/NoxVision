@@ -586,6 +586,7 @@ fun VideoStreamScreen() {
     var selectedPalette by remember { mutableStateOf("whitehot") }
     var showSettingsDialog by remember { mutableStateOf(false) }
     var showLogDialog by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
     var showGalleryDialog by remember { mutableStateOf(false) }
     var galleryRefreshKey by remember { mutableIntStateOf(0) }
 
@@ -1688,7 +1689,17 @@ fun VideoStreamScreen() {
                 onShowLog = {
                     showSettingsDialog = false
                     showLogDialog = true
+                },
+                onShowAbout = {
+                    showSettingsDialog = false
+                    showAboutDialog = true
                 }
+            )
+        }
+
+        if (showAboutDialog) {
+            AboutDialogContent(
+                onDismiss = { showAboutDialog = false }
             )
         }
 
@@ -2390,7 +2401,8 @@ fun SettingsDialogContent(
     onContrastChange: (Int) -> Unit,
     onEnhancementChange: (Boolean) -> Unit,
     onObjectDetectionChange: (Boolean) -> Unit,  // NEU
-    onShowLog: () -> Unit
+    onShowLog: () -> Unit,
+    onShowAbout: () -> Unit
 ) {
 
     AlertDialog(
@@ -2622,6 +2634,21 @@ fun SettingsDialogContent(
                     Icon(Icons.Filled.Article, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("System Log anzeigen")
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // About-Button
+                Button(
+                    onClick = onShowAbout,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = NightColors.primaryDim
+                    )
+                ) {
+                    Icon(Icons.Filled.Info, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Über NoxVision")
                 }
             }
         },
@@ -3062,5 +3089,219 @@ private fun saveBitmapToGallery(context: Context, bitmap: Bitmap) {
         context.contentResolver.openOutputStream(it)?.use { outputStream ->
             bitmap.compress(Bitmap.CompressFormat.JPEG, 95, outputStream)
         }
+    }
+}
+
+@Composable
+fun AboutDialogContent(
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    Icons.Filled.Visibility,
+                    contentDescription = null,
+                    tint = NightColors.primary,
+                    modifier = Modifier.size(32.dp)
+                )
+                Text(
+                    text = "NoxVision",
+                    color = NightColors.onSurface,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Version Info
+                Surface(
+                    color = NightColors.surface,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Version 1.0",
+                            color = NightColors.primary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = "Open Source Android App für Guide Wärmebildkameras",
+                            color = NightColors.onSurface,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+
+                HorizontalDivider(color = NightColors.surface)
+
+                // Description
+                Text(
+                    text = "NoxVision ist eine leistungsstarke Alternative zur offiziellen Guide App, speziell entwickelt für das Guide TE211M Wärmebild-Monokular und kompatible TE-Serie Kameras.",
+                    color = NightColors.onSurface,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
+                )
+
+                HorizontalDivider(color = NightColors.surface)
+
+                // Features
+                Text(
+                    text = "Features",
+                    color = NightColors.primary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+                
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    AboutFeatureItem(Icons.Filled.Videocam, "Live RTSP Video Stream")
+                    AboutFeatureItem(Icons.Filled.Visibility, "YOLO KI-Objekterkennung")
+                    AboutFeatureItem(Icons.Filled.Palette, "Mehrere Farbpaletten")
+                    AboutFeatureItem(Icons.Filled.Camera, "Screenshot & Video-Aufnahme")
+                    AboutFeatureItem(Icons.Filled.PhotoLibrary, "Integrierte Galerie")
+                    AboutFeatureItem(Icons.Filled.Wifi, "Auto-WiFi Verbindung")
+                    AboutFeatureItem(Icons.Filled.DarkMode, "Nacht-optimiertes Design")
+                }
+
+                HorizontalDivider(color = NightColors.surface)
+
+                // Supported Devices
+                Text(
+                    text = "Unterstützte Geräte",
+                    color = NightColors.primary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+                
+                Text(
+                    text = "• Guide TE211M (primär getestet)\n• Andere Guide TE-Serie Kameras\n• Kameras mit RTSP auf 192.168.42.1:8554",
+                    color = NightColors.onSurface,
+                    fontSize = 13.sp,
+                    lineHeight = 20.sp
+                )
+
+                HorizontalDivider(color = NightColors.surface)
+
+                // License
+                Surface(
+                    color = NightColors.primaryDim.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Filled.Code,
+                            contentDescription = null,
+                            tint = NightColors.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Column {
+                            Text(
+                                text = "MIT License",
+                                color = NightColors.primary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+                            Text(
+                                text = "© 2026 NoxVision Contributors",
+                                color = NightColors.onSurface,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                }
+
+                // Tech Stack
+                Text(
+                    text = "Technologien",
+                    color = NightColors.primary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    TechBadge("Kotlin 2.0")
+                    TechBadge("Jetpack Compose")
+                    TechBadge("TensorFlow Lite")
+                }
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    TechBadge("LibVLC")
+                    TechBadge("Material 3")
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Schließen", color = NightColors.primary)
+            }
+        },
+        containerColor = NightColors.background,
+        textContentColor = NightColors.onSurface
+    )
+}
+
+@Composable
+fun AboutFeatureItem(icon: ImageVector, text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = NightColors.primary,
+            modifier = Modifier.size(18.dp)
+        )
+        Text(
+            text = text,
+            color = NightColors.onSurface,
+            fontSize = 13.sp
+        )
+    }
+}
+
+@Composable
+fun TechBadge(text: String) {
+    Surface(
+        color = NightColors.surface,
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Text(
+            text = text,
+            color = NightColors.onSurface,
+            fontSize = 11.sp,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+        )
     }
 }
