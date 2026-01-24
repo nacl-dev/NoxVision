@@ -157,11 +157,10 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## 📋 Roadmap
 
-- [ ] Settings screen for camera IP
+- [x] Settings screen for camera IP
 - [ ] Support for additional camera models
-- [ ] Export to video formats
+- [x] Export to video formats
 - [ ] Improved AI model
-- [ ] Multi-language support
 
 ## ❓ FAQ
 
