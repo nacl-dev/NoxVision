@@ -63,7 +63,7 @@ The app automatically connects to the camera via WiFi:
 
 ```bash
 # Clone repository
-git clone https://github.com/YOUR-USERNAME/NoxVision.git
+git clone https://github.com/marcgrox22-lgtm/NoxVision.git
 cd NoxVision
 
 # Set SDK path (if not auto-detected)
