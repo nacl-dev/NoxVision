@@ -594,8 +594,10 @@ fun VideoStreamScreen() {
     var detectedObjects by remember { mutableStateOf<List<DetectedObject>>(emptyList()) }
     val detector = remember { ThermalObjectDetector(context) }
 
-    val rtspUrl = "rtsp://192.168.42.1:8554/video"
-    val baseUrl = "http://192.168.42.1"
+    // Camera IP settings - persisted via SharedPreferences
+    var cameraIp by remember { mutableStateOf(CameraSettings.getCameraIp(context)) }
+    val rtspUrl = remember(cameraIp) { CameraSettings.getRtspUrl(cameraIp) }
+    val baseUrl = remember(cameraIp) { CameraSettings.getBaseUrl(cameraIp) }
 
     suspend fun setZoom(level: Int): Boolean {
         return withContext(Dispatchers.IO) {
@@ -1651,6 +1653,7 @@ fun VideoStreamScreen() {
                 contrast = contrast,
                 enhancementEnabled = enhancementEnabled,
                 objectDetectionEnabled = objectDetectionEnabled,
+                cameraIp = cameraIp,
                 onDismiss = { showSettingsDialog = false },
                 onAudioChange = { enabled ->
                     scope.launch {
@@ -1682,9 +1685,14 @@ fun VideoStreamScreen() {
                         if (success) enhancementEnabled = enabled
                     }
                 },
-                onObjectDetectionChange = { enabled ->  // NEU
+                onObjectDetectionChange = { enabled ->
                     objectDetectionEnabled = enabled
                     AppLogger.log("AI Erkennung ${if (enabled) "EIN" else "AUS"}", AppLogger.LogType.INFO)
+                },
+                onCameraIpChange = { newIp ->
+                    CameraSettings.setCameraIp(context, newIp)
+                    cameraIp = newIp
+                    AppLogger.log("Kamera IP geändert: $newIp", AppLogger.LogType.SUCCESS)
                 },
                 onShowLog = {
                     showSettingsDialog = false
@@ -2393,17 +2401,22 @@ fun SettingsDialogContent(
     brightness: Int,
     contrast: Int,
     enhancementEnabled: Boolean,
-    objectDetectionEnabled: Boolean,  // NEU
+    objectDetectionEnabled: Boolean,
+    cameraIp: String,
     onDismiss: () -> Unit,
     onAudioChange: (Boolean) -> Unit,
     onHotspotChange: (Boolean) -> Unit,
     onBrightnessChange: (Int) -> Unit,
     onContrastChange: (Int) -> Unit,
     onEnhancementChange: (Boolean) -> Unit,
-    onObjectDetectionChange: (Boolean) -> Unit,  // NEU
+    onObjectDetectionChange: (Boolean) -> Unit,
+    onCameraIpChange: (String) -> Unit,
     onShowLog: () -> Unit,
     onShowAbout: () -> Unit
 ) {
+    // Local state for IP editing
+    var editingIp by remember { mutableStateOf(cameraIp) }
+    var ipError by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -2420,6 +2433,83 @@ fun SettingsDialogContent(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                // Camera IP Settings
+                Column {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.Router,
+                            contentDescription = null,
+                            tint = NightColors.onSurface
+                        )
+                        Text(
+                            text = "Kamera IP-Adresse",
+                            color = NightColors.onSurface
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = editingIp,
+                        onValueChange = { newValue ->
+                            editingIp = newValue
+                            ipError = !CameraSettings.isValidIp(newValue)
+                        },
+                        label = { Text("IP-Adresse") },
+                        isError = ipError,
+                        supportingText = {
+                            if (ipError) {
+                                Text(
+                                    text = "Ungültige IP-Adresse",
+                                    color = NightColors.error
+                                )
+                            }
+                        },
+                        trailingIcon = {
+                            if (editingIp != cameraIp && !ipError) {
+                                IconButton(
+                                    onClick = { onCameraIpChange(editingIp) }
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Check,
+                                        contentDescription = "Speichern",
+                                        tint = NightColors.success
+                                    )
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = NightColors.primary,
+                            unfocusedBorderColor = NightColors.onBackground,
+                            focusedLabelColor = NightColors.primary,
+                            unfocusedLabelColor = NightColors.onBackground,
+                            cursorColor = NightColors.primary,
+                            focusedTextColor = NightColors.onSurface,
+                            unfocusedTextColor = NightColors.onSurface
+                        )
+                    )
+                    if (editingIp != CameraSettings.getDefaultIp()) {
+                        TextButton(
+                            onClick = {
+                                editingIp = CameraSettings.getDefaultIp()
+                                ipError = false
+                                onCameraIpChange(CameraSettings.getDefaultIp())
+                            }
+                        ) {
+                            Text(
+                                text = "Zurücksetzen auf Standard",
+                                color = NightColors.primary,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                }
+
+                HorizontalDivider(color = NightColors.surface)
+
                 // Audio
                 Row(
                     modifier = Modifier.fillMaxWidth(),
