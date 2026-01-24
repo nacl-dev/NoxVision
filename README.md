@@ -16,8 +16,6 @@ A powerful alternative to the official Guide app, specifically designed for the 
   <img src="docs/preview.gif" alt="NoxVision Demo" width="300">
 </p>
 
-> 🎬 [Watch full demo video](https://github.com/marcgrox22-lgtm/NoxVision/releases/download/v1.0.0/NoxVision.mp4)
-
 ---
 
 ## ✨ Features
