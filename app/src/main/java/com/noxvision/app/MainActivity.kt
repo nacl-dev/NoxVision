@@ -2837,7 +2837,7 @@ fun SettingsDialogContent(
                         containerColor = NightColors.primaryDim
                     )
                 ) {
-                    Icon(Icons.Filled.Article, contentDescription = null)
+                    Icon(Icons.Filled.Description, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("System Log anzeigen")
                 }
