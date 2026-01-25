@@ -2494,6 +2494,62 @@ fun PreviewDialog(
     }
 }
 
+/**
+ * Section header for settings categories
+ */
+@Composable
+fun SettingsSectionHeader(
+    icon: @Composable () -> Unit,
+    title: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(vertical = 4.dp)
+    ) {
+        icon()
+        Text(
+            text = title,
+            color = NightColors.primary,
+            fontWeight = FontWeight.Bold,
+            fontSize = 13.sp
+        )
+    }
+}
+
+/**
+ * Settings toggle row with icon, label and switch
+ */
+@Composable
+fun SettingsToggleRow(
+    icon: ImageVector,
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(icon, contentDescription = null, tint = NightColors.onSurface)
+            Text(text = label, color = NightColors.onSurface)
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = NightColors.primary,
+                checkedTrackColor = NightColors.primary.copy(alpha = 0.5f)
+            )
+        )
+    }
+}
+
 @Composable
 fun SettingsDialogContent(
     audioEnabled: Boolean,
@@ -2515,7 +2571,6 @@ fun SettingsDialogContent(
     onShowAbout: () -> Unit,
     onShowThermalSettings: () -> Unit
 ) {
-    // Local state for IP editing
     var editingIp by remember { mutableStateOf(cameraIp) }
     var ipError by remember { mutableStateOf(false) }
 
@@ -2532,205 +2587,83 @@ fun SettingsDialogContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Camera IP Settings
-                Column {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            Icons.Filled.Router,
-                            contentDescription = null,
-                            tint = NightColors.onSurface
-                        )
-                        Text(
-                            text = "Kamera IP-Adresse",
-                            color = NightColors.onSurface
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = editingIp,
-                        onValueChange = { newValue ->
-                            editingIp = newValue
-                            ipError = !CameraSettings.isValidIp(newValue)
-                        },
-                        label = { Text("IP-Adresse") },
-                        isError = ipError,
-                        supportingText = {
-                            if (ipError) {
-                                Text(
-                                    text = "Ungültige IP-Adresse",
-                                    color = NightColors.error
-                                )
-                            }
-                        },
-                        trailingIcon = {
-                            if (editingIp != cameraIp && !ipError) {
-                                IconButton(
-                                    onClick = { onCameraIpChange(editingIp) }
-                                ) {
-                                    Icon(
-                                        Icons.Filled.Check,
-                                        contentDescription = "Speichern",
-                                        tint = NightColors.success
-                                    )
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = NightColors.primary,
-                            unfocusedBorderColor = NightColors.onBackground,
-                            focusedLabelColor = NightColors.primary,
-                            unfocusedLabelColor = NightColors.onBackground,
-                            cursorColor = NightColors.primary,
-                            focusedTextColor = NightColors.onSurface,
-                            unfocusedTextColor = NightColors.onSurface
-                        )
-                    )
-                    if (editingIp != CameraSettings.getDefaultIp()) {
-                        TextButton(
-                            onClick = {
-                                editingIp = CameraSettings.getDefaultIp()
-                                ipError = false
-                                onCameraIpChange(CameraSettings.getDefaultIp())
-                            }
-                        ) {
-                            Text(
-                                text = "Zurücksetzen auf Standard",
-                                color = NightColors.primary,
-                                fontSize = 12.sp
-                            )
+                // ═══════════════════════════════════════════════════════════
+                // 🔌 VERBINDUNG
+                // ═══════════════════════════════════════════════════════════
+                SettingsSectionHeader(
+                    icon = { Icon(Icons.Filled.Router, contentDescription = null, tint = NightColors.primary, modifier = Modifier.size(18.dp)) },
+                    title = "VERBINDUNG"
+                )
+                
+                OutlinedTextField(
+                    value = editingIp,
+                    onValueChange = { newValue ->
+                        editingIp = newValue
+                        ipError = !CameraSettings.isValidIp(newValue)
+                    },
+                    label = { Text("Kamera IP-Adresse") },
+                    isError = ipError,
+                    supportingText = {
+                        if (ipError) {
+                            Text(text = "Ungültige IP-Adresse", color = NightColors.error)
                         }
-                    }
-                }
-
-                HorizontalDivider(color = NightColors.surface)
-
-                // Audio
-                Row(
+                    },
+                    trailingIcon = {
+                        if (editingIp != cameraIp && !ipError) {
+                            IconButton(onClick = { onCameraIpChange(editingIp) }) {
+                                Icon(Icons.Filled.Check, contentDescription = "Speichern", tint = NightColors.success)
+                            }
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            if (audioEnabled) Icons.AutoMirrored.Filled.VolumeUp else Icons.AutoMirrored.Filled.VolumeOff,
-                            contentDescription = null,
-                            tint = NightColors.onSurface
-                        )
-                        Text(
-                            text = "Audio",
-                            color = NightColors.onSurface
-                        )
-                    }
-                    Switch(
-                        checked = audioEnabled,
-                        onCheckedChange = onAudioChange,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = NightColors.primary,
-                            checkedTrackColor = NightColors.primary.copy(alpha = 0.5f)
-                        )
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = NightColors.primary,
+                        unfocusedBorderColor = NightColors.onBackground,
+                        focusedLabelColor = NightColors.primary,
+                        unfocusedLabelColor = NightColors.onBackground,
+                        cursorColor = NightColors.primary,
+                        focusedTextColor = NightColors.onSurface,
+                        unfocusedTextColor = NightColors.onSurface
                     )
+                )
+                if (editingIp != CameraSettings.getDefaultIp()) {
+                    TextButton(
+                        onClick = {
+                            editingIp = CameraSettings.getDefaultIp()
+                            ipError = false
+                            onCameraIpChange(CameraSettings.getDefaultIp())
+                        }
+                    ) {
+                        Text(text = "Zurücksetzen auf Standard", color = NightColors.primary, fontSize = 12.sp)
+                    }
                 }
 
-                HorizontalDivider(color = NightColors.surface)
+                HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 4.dp))
 
-                // Hotspot (hottest point)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            Icons.Filled.MyLocation,
-                            contentDescription = null,
-                            tint = NightColors.onSurface
-                        )
-                        Text(
-                            text = "Hotspot (hottest point)",
-                            color = NightColors.onSurface
-                        )
-                    }
-                    Switch(
-                        checked = hotspotEnabled,
-                        onCheckedChange = onHotspotChange,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = NightColors.primary,
-                            checkedTrackColor = NightColors.primary.copy(alpha = 0.5f)
-                        )
-                    )
-                }
+                // ═══════════════════════════════════════════════════════════
+                // 📷 KAMERA
+                // ═══════════════════════════════════════════════════════════
+                SettingsSectionHeader(
+                    icon = { Icon(Icons.Filled.CameraAlt, contentDescription = null, tint = NightColors.primary, modifier = Modifier.size(18.dp)) },
+                    title = "KAMERA"
+                )
 
-                HorizontalDivider(color = NightColors.surface)
+                SettingsToggleRow(
+                    icon = if (audioEnabled) Icons.AutoMirrored.Filled.VolumeUp else Icons.AutoMirrored.Filled.VolumeOff,
+                    label = "Audio",
+                    checked = audioEnabled,
+                    onCheckedChange = onAudioChange
+                )
 
-                // AI Object Detection - NEW
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(Icons.Filled.Visibility, contentDescription = null, tint = NightColors.onSurface)
-                        Text(text = "AI Object Detection", color = NightColors.onSurface)
-                    }
-                    Switch(
-                        checked = objectDetectionEnabled,
-                        onCheckedChange = onObjectDetectionChange,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = NightColors.primary,
-                            checkedTrackColor = NightColors.primary.copy(alpha = 0.5f)
-                        )
-                    )
-                }
-
-                HorizontalDivider(color = NightColors.surface)
-
-                // Bildverbesserung
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            Icons.Filled.AutoFixHigh,
-                            contentDescription = null,
-                            tint = NightColors.onSurface
-                        )
-                        Text(
-                            text = "Bildverbesserung",
-                            color = NightColors.onSurface
-                        )
-                    }
-                    Switch(
-                        checked = enhancementEnabled,
-                        onCheckedChange = onEnhancementChange,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = NightColors.primary,
-                            checkedTrackColor = NightColors.primary.copy(alpha = 0.5f)
-                        )
-                    )
-                }
-
-                HorizontalDivider(color = NightColors.surface)
+                SettingsToggleRow(
+                    icon = Icons.Filled.MyLocation,
+                    label = "Hotspot anzeigen",
+                    checked = hotspotEnabled,
+                    onCheckedChange = onHotspotChange
+                )
 
                 // Helligkeit
                 Column {
@@ -2738,15 +2671,8 @@ fun SettingsDialogContent(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(
-                            Icons.Filled.Brightness6,
-                            contentDescription = null,
-                            tint = NightColors.onSurface
-                        )
-                        Text(
-                            text = "Helligkeit",
-                            color = NightColors.onSurface
-                        )
+                        Icon(Icons.Filled.Brightness6, contentDescription = null, tint = NightColors.onSurface)
+                        Text(text = "Helligkeit", color = NightColors.onSurface)
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -2758,10 +2684,7 @@ fun SettingsDialogContent(
                                 selected = brightness == level,
                                 onClick = { onBrightnessChange(level) },
                                 label = {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        contentAlignment = Alignment.Center
-                                    ) {
+                                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                                         Text("$level")
                                     }
                                 },
@@ -2771,23 +2694,14 @@ fun SettingsDialogContent(
                     }
                 }
 
-                HorizontalDivider(color = NightColors.surface)
-
                 // Kontrast
                 Column {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(
-                            Icons.Filled.Contrast,
-                            contentDescription = null,
-                            tint = NightColors.onSurface
-                        )
-                        Text(
-                            text = "Kontrast",
-                            color = NightColors.onSurface
-                        )
+                        Icon(Icons.Filled.Contrast, contentDescription = null, tint = NightColors.onSurface)
+                        Text(text = "Kontrast", color = NightColors.onSurface)
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -2799,10 +2713,7 @@ fun SettingsDialogContent(
                                 selected = contrast == level,
                                 onClick = { onContrastChange(level) },
                                 label = {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        contentAlignment = Alignment.Center
-                                    ) {
+                                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                                         Text("$level")
                                     }
                                 },
@@ -2812,45 +2723,65 @@ fun SettingsDialogContent(
                     }
                 }
 
-                HorizontalDivider(color = NightColors.surface)
-
-                // Thermal Settings Button (NEW)
+                // Thermal Settings Button
                 Button(
                     onClick = onShowThermalSettings,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = NightColors.primary
-                    )
+                    colors = ButtonDefaults.buttonColors(containerColor = NightColors.primary)
                 ) {
                     Icon(Icons.Filled.Thermostat, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Thermische Einstellungen")
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 4.dp))
 
-                // Log-Button
+                // ═══════════════════════════════════════════════════════════
+                // 🤖 APP-FUNKTIONEN
+                // ═══════════════════════════════════════════════════════════
+                SettingsSectionHeader(
+                    icon = { Icon(Icons.Filled.AutoAwesome, contentDescription = null, tint = NightColors.primary, modifier = Modifier.size(18.dp)) },
+                    title = "APP-FUNKTIONEN"
+                )
+
+                SettingsToggleRow(
+                    icon = Icons.Filled.Visibility,
+                    label = "AI Objekterkennung",
+                    checked = objectDetectionEnabled,
+                    onCheckedChange = onObjectDetectionChange
+                )
+
+                SettingsToggleRow(
+                    icon = Icons.Filled.AutoFixHigh,
+                    label = "Bildverbesserung",
+                    checked = enhancementEnabled,
+                    onCheckedChange = onEnhancementChange
+                )
+
+                HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 4.dp))
+
+                // ═══════════════════════════════════════════════════════════
+                // ℹ️ SYSTEM
+                // ═══════════════════════════════════════════════════════════
+                SettingsSectionHeader(
+                    icon = { Icon(Icons.Filled.Info, contentDescription = null, tint = NightColors.primary, modifier = Modifier.size(18.dp)) },
+                    title = "SYSTEM"
+                )
+
                 Button(
                     onClick = onShowLog,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = NightColors.primaryDim
-                    )
+                    colors = ButtonDefaults.buttonColors(containerColor = NightColors.primaryDim)
                 ) {
                     Icon(Icons.Filled.Description, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("System Log anzeigen")
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // About-Button
                 Button(
                     onClick = onShowAbout,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = NightColors.primaryDim
-                    )
+                    colors = ButtonDefaults.buttonColors(containerColor = NightColors.primaryDim)
                 ) {
                     Icon(Icons.Filled.Info, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -2860,7 +2791,7 @@ fun SettingsDialogContent(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close", color = NightColors.primary)
+                Text("Schließen", color = NightColors.primary)
             }
         },
         containerColor = NightColors.surface,
