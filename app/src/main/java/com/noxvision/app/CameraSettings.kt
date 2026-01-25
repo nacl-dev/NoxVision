@@ -3,12 +3,34 @@ package com.noxvision.app
 import android.content.Context
 
 /**
- * Manages camera connection settings with SharedPreferences persistence.
+ * Manages camera connection and thermal measurement settings with SharedPreferences persistence.
  */
 object CameraSettings {
     private const val PREFS_NAME = "noxvision_settings"
+    
+    // Connection settings
     private const val KEY_CAMERA_IP = "camera_ip"
     private const val DEFAULT_IP = "192.168.42.1"
+    
+    // Thermal measurement settings
+    private const val KEY_EMISSIVITY = "emissivity"
+    private const val KEY_DISTANCE = "distance"
+    private const val KEY_HUMIDITY = "humidity"
+    private const val KEY_REFLECT_TEMP = "reflect_temp"
+    
+    // Device info cache
+    private const val KEY_DEVICE_NAME = "device_name"
+    private const val KEY_CAMERA_NAME = "camera_name"
+    private const val KEY_VIDEO_WIDTH = "video_width"
+    private const val KEY_VIDEO_HEIGHT = "video_height"
+    
+    // Default thermal values
+    private const val DEFAULT_EMISSIVITY = 0.95f
+    private const val DEFAULT_DISTANCE = 1.0f
+    private const val DEFAULT_HUMIDITY = 50.0f
+    private const val DEFAULT_REFLECT_TEMP = 23.0f
+    
+    // ==================== Connection Settings ====================
     
     /**
      * Get the saved camera IP address or return the default.
@@ -55,4 +77,137 @@ object CameraSettings {
      * Get the default IP address.
      */
     fun getDefaultIp(): String = DEFAULT_IP
+    
+    // ==================== Thermal Measurement Settings ====================
+    
+    /**
+     * Get saved emissivity value (0.01 - 1.0).
+     */
+    fun getEmissivity(context: Context): Float {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getFloat(KEY_EMISSIVITY, DEFAULT_EMISSIVITY)
+    }
+    
+    /**
+     * Save emissivity value.
+     */
+    fun setEmissivity(context: Context, value: Float) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putFloat(KEY_EMISSIVITY, value.coerceIn(0.01f, 1.0f)).apply()
+    }
+    
+    /**
+     * Get saved measurement distance in meters.
+     */
+    fun getDistance(context: Context): Float {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getFloat(KEY_DISTANCE, DEFAULT_DISTANCE)
+    }
+    
+    /**
+     * Save measurement distance.
+     */
+    fun setDistance(context: Context, meters: Float) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putFloat(KEY_DISTANCE, meters.coerceAtLeast(0f)).apply()
+    }
+    
+    /**
+     * Get saved humidity percentage (0-100).
+     */
+    fun getHumidity(context: Context): Float {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getFloat(KEY_HUMIDITY, DEFAULT_HUMIDITY)
+    }
+    
+    /**
+     * Save humidity percentage.
+     */
+    fun setHumidity(context: Context, percent: Float) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putFloat(KEY_HUMIDITY, percent.coerceIn(0f, 100f)).apply()
+    }
+    
+    /**
+     * Get saved reflected temperature in Celsius.
+     */
+    fun getReflectTemperature(context: Context): Float {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getFloat(KEY_REFLECT_TEMP, DEFAULT_REFLECT_TEMP)
+    }
+    
+    /**
+     * Save reflected temperature.
+     */
+    fun setReflectTemperature(context: Context, celsius: Float) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putFloat(KEY_REFLECT_TEMP, celsius).apply()
+    }
+    
+    /**
+     * Get default emissivity value.
+     */
+    fun getDefaultEmissivity(): Float = DEFAULT_EMISSIVITY
+    
+    /**
+     * Get default distance value.
+     */
+    fun getDefaultDistance(): Float = DEFAULT_DISTANCE
+    
+    /**
+     * Get default humidity value.
+     */
+    fun getDefaultHumidity(): Float = DEFAULT_HUMIDITY
+    
+    /**
+     * Get default reflected temperature.
+     */
+    fun getDefaultReflectTemperature(): Float = DEFAULT_REFLECT_TEMP
+    
+    // ==================== Device Info Cache ====================
+    
+    /**
+     * Save device info for offline access.
+     */
+    fun saveDeviceInfo(context: Context, deviceInfo: DeviceInfo) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit()
+            .putString(KEY_DEVICE_NAME, deviceInfo.deviceName)
+            .putString(KEY_CAMERA_NAME, deviceInfo.cameraName)
+            .putInt(KEY_VIDEO_WIDTH, deviceInfo.videoWidth)
+            .putInt(KEY_VIDEO_HEIGHT, deviceInfo.videoHeight)
+            .apply()
+    }
+    
+    /**
+     * Get cached device info (may be null if never connected).
+     */
+    fun getCachedDeviceInfo(context: Context): DeviceInfo? {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val deviceName = prefs.getString(KEY_DEVICE_NAME, null) ?: return null
+        
+        return DeviceInfo(
+            deviceName = deviceName,
+            cameraName = prefs.getString(KEY_CAMERA_NAME, "") ?: "",
+            videoWidth = prefs.getInt(KEY_VIDEO_WIDTH, 256),
+            videoHeight = prefs.getInt(KEY_VIDEO_HEIGHT, 192),
+            videoFps = 25,
+            measureGear = 0,
+            cameraLens = "",
+            measureRange = ""
+        )
+    }
+    
+    /**
+     * Clear cached device info.
+     */
+    fun clearDeviceInfo(context: Context) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit()
+            .remove(KEY_DEVICE_NAME)
+            .remove(KEY_CAMERA_NAME)
+            .remove(KEY_VIDEO_WIDTH)
+            .remove(KEY_VIDEO_HEIGHT)
+            .apply()
+    }
 }
