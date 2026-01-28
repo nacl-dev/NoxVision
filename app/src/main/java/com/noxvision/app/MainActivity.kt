@@ -1949,7 +1949,7 @@ fun GalleryDialog(
     var selectedCameraFile by remember { mutableStateOf<CameraFile?>(null) }
     var refreshTrigger by remember { mutableIntStateOf(0) }  // NEU
 
-    LaunchedEffect(source, phoneFolder ) {
+    LaunchedEffect(source, phoneFolder, refreshTrigger) {
         isLoading = true
         errorMessage = null
         try {
@@ -1969,18 +1969,29 @@ fun GalleryDialog(
     }
 
 
-    // Beim Öffnen des Dialogs neu laden
-    LaunchedEffect(Unit) {
-        refreshTrigger++
-    }
+    // Beim Öffnen des Dialogs neu laden - nicht nötig, da erster Run automatisch
+    // LaunchedEffect(Unit) { refreshTrigger++ }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(
-                text = "Gallery",
-                color = NightColors.onSurface
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Gallery",
+                    color = NightColors.onSurface
+                )
+                IconButton(onClick = { refreshTrigger++ }) {
+                    Icon(
+                        imageVector = Icons.Filled.Refresh,
+                        contentDescription = "Refresh",
+                        tint = NightColors.primary
+                    )
+                }
+            }
         },
         text = {
             Column(
@@ -2391,6 +2402,18 @@ fun PreviewDialog(
                                         override fun surfaceCreated(holder: android.view.SurfaceHolder) {
                                             previewPlayer.vlcVout.setVideoView(this@apply)
                                             previewPlayer.vlcVout.attachViews()
+
+                                            scope.launch {
+                                                try {
+                                                    val videoUrl = "$baseUrl/api/v1/files/download/${file.name}"
+                                                    val media = Media(libVLC, videoUrl.toUri())
+                                                    previewPlayer.media = media
+                                                    media.release()
+                                                    previewPlayer.play()
+                                                } catch (e: Exception) {
+                                                    AppLogger.log("Preview error: ${e.message}", AppLogger.LogType.ERROR)
+                                                }
+                                            }
                                         }
 
                                         override fun surfaceChanged(
@@ -2459,31 +2482,7 @@ fun PreviewDialog(
                                     previewPlayer.stop()
                                     isPlaying = false
                                 } else {
-                                    scope.launch {
-                                        try {
-                                            val videoUrl =
-                                                "$baseUrl/api/v1/files/download/${file.name}"
-                                            val media = Media(libVLC, videoUrl.toUri())
-                                            previewPlayer.media = media
-                                            media.release()
-                                            previewPlayer.play()
-                                            isPlaying = true
-                                            AppLogger.log(
-                                                "Preview: ${file.name}",
-                                                AppLogger.LogType.SUCCESS
-                                            )
-                                        } catch (e: Exception) {
-                                            AppLogger.log(
-                                                "Preview error: ${e.message}",
-                                                AppLogger.LogType.ERROR
-                                            )
-                                            Toast.makeText(
-                                                context,
-                                                "Playback error",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                    }
+                                    isPlaying = true
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),
