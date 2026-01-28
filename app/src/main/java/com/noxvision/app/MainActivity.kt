@@ -102,13 +102,13 @@ import android.graphics.Bitmap
 object NightColors {
     val background = Color(0xFF000000)
     val surface = Color(0xFF0F0F0F)
-    val primary = Color(0xFF2A6B6B)
-    val primaryDim = Color(0xFF1A4040)
-    val onBackground = Color(0xFF707070)
-    val onSurface = Color(0xFF909090)
-    val recording = Color(0xFF884444)
-    val success = Color(0xFF4A7C59)
-    val error = Color(0xFF884444)
+    val primary = Color(0xFF00E5FF) // Neon Cyan to match new icon
+    val primaryDim = Color(0xFF004D40) // Darker Cyan/Teal
+    val onBackground = Color(0xFFFFFFFF) // White for better readability
+    val onSurface = Color(0xFFE0E0E0) // Light Grey
+    val recording = Color(0xFFFF1744) // Bright Red
+    val success = Color(0xFF00E676) // Bright Green
+    val error = Color(0xFFFF5252) // Bright Red/Error
 }
 
 object AppLogger {
