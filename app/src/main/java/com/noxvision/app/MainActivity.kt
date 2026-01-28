@@ -58,6 +58,10 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalLifecycleOwner
+
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
@@ -622,6 +626,11 @@ fun VideoStreamScreen() {
     // Thermal settings dialog
     var showThermalSettingsDialog by remember { mutableStateOf(false) }
     var isShutterInProgress by remember { mutableStateOf(false) }
+
+    // Lifecycle state
+    var wasPlayingBeforeStop by remember { mutableStateOf(false) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+
 
 
     suspend fun setZoom(level: Int): Boolean {
@@ -1420,6 +1429,98 @@ fun VideoStreamScreen() {
                 }
             }
 
+            // Connection Logic Helpers
+            val disconnectCamera: () -> Unit = {
+                scope.launch {
+                    if (isRecording) {
+                        stopRecordingViaVlc()
+                    }
+                    mediaPlayer.stop()
+                    isPlaying = false
+                    statusText = ""
+                    withContext(Dispatchers.IO) {
+                        (context as? MainActivity)?.wifiAutoConnect?.disconnect()
+                    }
+                    AppLogger.log("Camera disconnected", AppLogger.LogType.INFO)
+                }
+            }
+
+            val connectCamera: () -> Unit = {
+                isConnecting = true
+                scope.launch {
+                    val connected = withContext(Dispatchers.IO) {
+                        (context as? MainActivity)?.wifiAutoConnect?.connectToCamera()
+                            ?: false
+                    }
+
+                    if (connected || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                        statusText = "Connecting..."
+                        try {
+                            val media = Media(libVLC, rtspUrl.toUri())
+                            media.addOption(":network-caching=300")
+                            media.addOption(":rtsp-tcp")
+                            mediaPlayer.media = media
+                            media.release()
+                            mediaPlayer.play()
+                            isPlaying = true
+
+                            // Try to detect device info via REST API
+                            scope.launch {
+                                try {
+                                    val info = apiClient.getDeviceInfo()
+                                    if (info != null) {
+                                        deviceInfo = info
+                                        cameraCapabilities = info.getCapabilities()
+                                        CameraSettings.saveDeviceInfo(context, info)
+                                        AppLogger.log("Kamera erkannt: ${info.deviceName}", AppLogger.LogType.SUCCESS)
+                                    }
+                                } catch (e: Exception) {
+                                    AppLogger.log("Device-Info nicht verfügbar", AppLogger.LogType.INFO)
+                                }
+                            }
+                        } catch (e: Exception) {
+                            statusText = "Stream Error"
+                            isConnecting = false
+                            AppLogger.log(
+                                "Stream Error: ${e.message}",
+                                AppLogger.LogType.ERROR
+                            )
+                        }
+                    } else {
+                        statusText = "WiFi Error"
+                        isConnecting = false
+                        Toast.makeText(
+                            context,
+                            "WiFi Verbindung fehlgeschlagen",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+            }
+
+            // Lifecycle Observer
+            DisposableEffect(lifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_STOP) {
+                        if (isPlaying) {
+                            wasPlayingBeforeStop = true
+                            // Only stop the player, but maybe keep WiFi? 
+                            // User report says WiFi/Context is lost, so full disconnect might be safer to ensure clean state on return.
+                            disconnectCamera()
+                        }
+                    } else if (event == Lifecycle.Event.ON_START) {
+                        if (wasPlayingBeforeStop) {
+                            wasPlayingBeforeStop = false
+                            connectCamera()
+                        }
+                    }
+                }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Column(
@@ -1560,68 +1661,9 @@ fun VideoStreamScreen() {
                         icon = if (isPlaying) Icons.Filled.Stop else Icons.Filled.PlayArrow,
                         onClick = {
                             if (isPlaying) {
-                                scope.launch {
-                                    if (isRecording) {
-                                        stopRecordingViaVlc()
-                                    }
-                                    mediaPlayer.stop()
-                                    isPlaying = false
-                                    statusText = ""
-                                    withContext(Dispatchers.IO) {
-                                        (context as? MainActivity)?.wifiAutoConnect?.disconnect()
-                                    }
-                                }
+                                disconnectCamera()
                             } else {
-                                isConnecting = true
-                                scope.launch {
-                                    val connected = withContext(Dispatchers.IO) {
-                                        (context as? MainActivity)?.wifiAutoConnect?.connectToCamera()
-                                            ?: false
-                                    }
-
-                                    if (connected || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                                        statusText = "Connecting..."
-                                        try {
-                                            val media = Media(libVLC, rtspUrl.toUri())
-                                            media.addOption(":network-caching=300")
-                                            media.addOption(":rtsp-tcp")
-                                            mediaPlayer.media = media
-                                            media.release()
-                                            mediaPlayer.play()
-                                            isPlaying = true
-                                            
-                                            // Try to detect device info via REST API
-                                            scope.launch {
-                                                try {
-                                                    val info = apiClient.getDeviceInfo()
-                                                    if (info != null) {
-                                                        deviceInfo = info
-                                                        cameraCapabilities = info.getCapabilities()
-                                                        CameraSettings.saveDeviceInfo(context, info)
-                                                        AppLogger.log("Kamera erkannt: ${info.deviceName}", AppLogger.LogType.SUCCESS)
-                                                    }
-                                                } catch (e: Exception) {
-                                                    AppLogger.log("Device-Info nicht verfügbar", AppLogger.LogType.INFO)
-                                                }
-                                            }
-                                        } catch (e: Exception) {
-                                            statusText = "Stream Error"
-                                            isConnecting = false
-                                            AppLogger.log(
-                                                "Stream Error: ${e.message}",
-                                                AppLogger.LogType.ERROR
-                                            )
-                                        }
-                                    } else {
-                                        statusText = "WiFi Error"
-                                        isConnecting = false
-                                        Toast.makeText(
-                                            context,
-                                            "WiFi Verbindung fehlgeschlagen",
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                    }
-                                }
+                                connectCamera()
                             }
                         },
                         enabled = !isConnecting,
