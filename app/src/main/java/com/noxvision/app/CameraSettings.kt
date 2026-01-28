@@ -24,11 +24,23 @@ object CameraSettings {
     private const val KEY_VIDEO_WIDTH = "video_width"
     private const val KEY_VIDEO_HEIGHT = "video_height"
     
+    // WiFi and Connection settings
+    private const val KEY_WIFI_SSID = "wifi_ssid"
+    private const val KEY_WIFI_PASSWORD = "wifi_password"
+    private const val KEY_HTTP_PORT = "http_port"
+    private const val KEY_AUTOCONNECT_ENABLED = "autoconnect_enabled"
+    
     // Default thermal values
     private const val DEFAULT_EMISSIVITY = 0.95f
     private const val DEFAULT_DISTANCE = 1.0f
     private const val DEFAULT_HUMIDITY = 50.0f
     private const val DEFAULT_REFLECT_TEMP = 23.0f
+    
+    // Default WiFi/Port values
+    private const val DEFAULT_WIFI_SSID = "TE Mini-089F"
+    private const val DEFAULT_WIFI_PASSWORD = "12345678"
+    private const val DEFAULT_HTTP_PORT = 80
+    private const val DEFAULT_AUTOCONNECT_ENABLED = true
     
     // ==================== Connection Settings ====================
     
@@ -56,11 +68,86 @@ object CameraSettings {
     }
     
     /**
-     * Build the HTTP base URL from the given IP address.
+     * Build the HTTP base URL from the given IP address and port.
      */
-    fun getBaseUrl(ip: String): String {
-        return "http://$ip"
+    fun getBaseUrl(context: Context, ip: String): String {
+        val port = getHttpPort(context)
+        return if (port == 80) "http://$ip" else "http://$ip:$port"
     }
+    
+    /**
+     * Get the saved WiFi SSID.
+     */
+    fun getWifiSsid(context: Context): String {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_WIFI_SSID, DEFAULT_WIFI_SSID) ?: DEFAULT_WIFI_SSID
+    }
+    
+    /**
+     * Set the WiFi SSID.
+     */
+    fun setWifiSsid(context: Context, ssid: String) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_WIFI_SSID, ssid).apply()
+    }
+    
+    /**
+     * Get the saved WiFi Password.
+     */
+    fun getWifiPassword(context: Context): String {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_WIFI_PASSWORD, DEFAULT_WIFI_PASSWORD) ?: DEFAULT_WIFI_PASSWORD
+    }
+    
+    /**
+     * Set the WiFi Password.
+     */
+    fun setWifiPassword(context: Context, password: String) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_WIFI_PASSWORD, password).apply()
+    }
+    
+    /**
+     * Get the saved HTTP Port.
+     */
+    fun getHttpPort(context: Context): Int {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getInt(KEY_HTTP_PORT, DEFAULT_HTTP_PORT)
+    }
+    
+    /**
+     * Set the HTTP Port.
+     */
+    fun setHttpPort(context: Context, port: Int) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putInt(KEY_HTTP_PORT, port).apply()
+    }
+    
+    /**
+     * Check if WiFi Auto-Connect is enabled.
+     */
+    fun isAutoConnectEnabled(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(KEY_AUTOCONNECT_ENABLED, DEFAULT_AUTOCONNECT_ENABLED)
+    }
+    
+    /**
+     * Set WiFi Auto-Connect enabled state.
+     */
+    fun setAutoConnectEnabled(context: Context, enabled: Boolean) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putBoolean(KEY_AUTOCONNECT_ENABLED, enabled).apply()
+    }
+    
+    /**
+     * Get the default SSID.
+     */
+    fun getDefaultSsid(): String = DEFAULT_WIFI_SSID
+    
+    /**
+     * Get the default port.
+     */
+    fun getDefaultPort(): Int = DEFAULT_HTTP_PORT
     
     /**
      * Validate IP address format using simple regex.

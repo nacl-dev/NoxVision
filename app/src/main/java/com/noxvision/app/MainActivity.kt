@@ -153,13 +153,14 @@ data class PhoneMediaFile(
     val isVideo: Boolean
 )
 
-class WiFiAutoConnect(private val context: Context) {
+class WiFiAutoConnect(
+    private val context: Context,
+    private val cameraSSID: String,
+    private val cameraPassword: String
+) {
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
-
-    private val cameraSSID = "TE Mini-089F"
-    private val cameraPassword = "12345678"
 
     suspend fun connectToCamera(): Boolean = withContext(Dispatchers.IO) {
         try {
@@ -533,10 +534,16 @@ class MainActivity : ComponentActivity() {
 
     internal var wifiAutoConnect: WiFiAutoConnect? = null
 
+    private fun updateWifiAutoConnect() {
+        val ssid = CameraSettings.getWifiSsid(this)
+        val password = CameraSettings.getWifiPassword(this)
+        wifiAutoConnect = WiFiAutoConnect(this, ssid, password)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        wifiAutoConnect = WiFiAutoConnect(this)
+        updateWifiAutoConnect()
 
         setContent {
             MaterialTheme(
@@ -597,7 +604,7 @@ fun VideoStreamScreen() {
     // Camera IP settings - persisted via SharedPreferences
     var cameraIp by remember { mutableStateOf(CameraSettings.getCameraIp(context)) }
     val rtspUrl = remember(cameraIp) { CameraSettings.getRtspUrl(cameraIp) }
-    val baseUrl = remember(cameraIp) { CameraSettings.getBaseUrl(cameraIp) }
+    val baseUrl = remember(cameraIp) { CameraSettings.getBaseUrl(context, cameraIp) }
 
     // Camera API Client for REST API access
     val apiClient = remember(baseUrl) { CameraApiClient(baseUrl) }
@@ -1738,6 +1745,20 @@ fun VideoStreamScreen() {
                 onShowThermalSettings = {
                     showSettingsDialog = false
                     showThermalSettingsDialog = true
+                },
+                onWifiSsidChange = { newSsid ->
+                    CameraSettings.setWifiSsid(context, newSsid)
+                    (context as? MainActivity)?.updateWifiAutoConnect()
+                },
+                onWifiPasswordChange = { newPassword ->
+                    CameraSettings.setWifiPassword(context, newPassword)
+                    (context as? MainActivity)?.updateWifiAutoConnect()
+                },
+                onHttpPortChange = { newPort ->
+                    CameraSettings.setHttpPort(context, newPort)
+                },
+                onAutoConnectChange = { enabled ->
+                    CameraSettings.setAutoConnectEnabled(context, enabled)
                 }
             )
         }
@@ -2569,10 +2590,19 @@ fun SettingsDialogContent(
     onCameraIpChange: (String) -> Unit,
     onShowLog: () -> Unit,
     onShowAbout: () -> Unit,
-    onShowThermalSettings: () -> Unit
+    onShowThermalSettings: () -> Unit,
+    onWifiSsidChange: (String) -> Unit,
+    onWifiPasswordChange: (String) -> Unit,
+    onHttpPortChange: (Int) -> Unit,
+    onAutoConnectChange: (Boolean) -> Unit
 ) {
     var editingIp by remember { mutableStateOf(cameraIp) }
     var ipError by remember { mutableStateOf(false) }
+
+    var editingSsid by remember { mutableStateOf(CameraSettings.getWifiSsid(LocalContext.current)) }
+    var editingPassword by remember { mutableStateOf(CameraSettings.getWifiPassword(LocalContext.current)) }
+    var editingPort by remember { mutableStateOf(CameraSettings.getHttpPort(LocalContext.current).toString()) }
+    var autoConnectEnabled by remember { mutableStateOf(CameraSettings.isAutoConnectEnabled(LocalContext.current)) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -2637,9 +2667,75 @@ fun SettingsDialogContent(
                             onCameraIpChange(CameraSettings.getDefaultIp())
                         }
                     ) {
-                        Text(text = "Zurücksetzen auf Standard", color = NightColors.primary, fontSize = 12.sp)
+                        Text(text = "Zurücksetzen auf Standard-IP", color = NightColors.primary, fontSize = 12.sp)
                     }
                 }
+
+                // WiFi Settings
+                SettingsToggleRow(
+                    icon = Icons.Filled.Wifi,
+                    label = "WiFi Auto-Connect",
+                    checked = autoConnectEnabled,
+                    onCheckedChange = { 
+                        autoConnectEnabled = it
+                        onAutoConnectChange(it)
+                    }
+                )
+
+                if (autoConnectEnabled) {
+                    OutlinedTextField(
+                        value = editingSsid,
+                        onValueChange = { 
+                            editingSsid = it
+                            onWifiSsidChange(it)
+                        },
+                        label = { Text("WiFi SSID") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = NightColors.primary,
+                            unfocusedBorderColor = NightColors.onBackground,
+                            focusedTextColor = NightColors.onSurface,
+                            unfocusedTextColor = NightColors.onSurface
+                        )
+                    )
+
+                    OutlinedTextField(
+                        value = editingPassword,
+                        onValueChange = { 
+                            editingPassword = it
+                            onWifiPasswordChange(it)
+                        },
+                        label = { Text("WiFi Passwort") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = NightColors.primary,
+                            unfocusedBorderColor = NightColors.onBackground,
+                            focusedTextColor = NightColors.onSurface,
+                            unfocusedTextColor = NightColors.onSurface
+                        )
+                    )
+                }
+
+                OutlinedTextField(
+                    value = editingPort,
+                    onValueChange = { 
+                        if (it.all { char -> char.isDigit() }) {
+                            editingPort = it
+                            it.toIntOrNull()?.let { port -> onHttpPortChange(port) }
+                        }
+                    },
+                    label = { Text("HTTP API Port (Standard: 80)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = NightColors.primary,
+                        unfocusedBorderColor = NightColors.onBackground,
+                        focusedTextColor = NightColors.onSurface,
+                        unfocusedTextColor = NightColors.onSurface
+                    )
+                )
 
                 HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 4.dp))
 

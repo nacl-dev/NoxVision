@@ -146,6 +146,16 @@ fun DeviceInfo.getCapabilities(): CameraCapabilities {
             supportsRestApi = true
         )
         
+        // TB-Series: High-end monoculars/thermal binoculars
+        deviceName.startsWith("TB", ignoreCase = true) -> CameraCapabilities(
+            hasFocus = true,
+            hasGps = true,
+            hasRadiometry = true,
+            hasAudio = true,
+            maxPaletteId = 15,
+            supportsRestApi = true
+        )
+        
         // Unknown device - use conservative defaults
         else -> CameraCapabilities(
             hasFocus = false,
@@ -170,6 +180,7 @@ fun DeviceInfo.getSeriesName(): String {
         deviceName.contains("D384", ignoreCase = true) -> "Guide D384 Series"
         deviceName.contains("TE", ignoreCase = true) -> "Guide TE Series"
         deviceName.contains("PS", ignoreCase = true) -> "Guide PS Series"
+        deviceName.startsWith("TB", ignoreCase = true) -> "Guide TB Series"
         deviceName.contains("B", ignoreCase = true) -> "Guide B Series"
         else -> "Guide Camera"
     }
