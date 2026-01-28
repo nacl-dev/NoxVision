@@ -11,6 +11,8 @@ object CameraSettings {
     // Connection settings
     private const val KEY_CAMERA_IP = "camera_ip"
     private const val DEFAULT_IP = "192.168.42.1"
+    private const val KEY_FIRST_RUN = "first_run"
+    private const val KEY_LAST_VERSION_CODE = "last_version_code"
     
     // Thermal measurement settings
     private const val KEY_EMISSIVITY = "emissivity"
@@ -296,5 +298,37 @@ object CameraSettings {
             .remove(KEY_VIDEO_WIDTH)
             .remove(KEY_VIDEO_HEIGHT)
             .apply()
+    }
+
+    /**
+     * Check if this is the first run of the app.
+     */
+    fun isFirstRun(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(KEY_FIRST_RUN, true)
+    }
+
+    /**
+     * Mark the first run guide as completed.
+     */
+    fun setFirstRunCompleted(context: Context) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putBoolean(KEY_FIRST_RUN, false).apply()
+    }
+
+    /**
+     * Get the last version code that was run.
+     */
+    fun getLastVersionCode(context: Context): Int {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getInt(KEY_LAST_VERSION_CODE, -1)
+    }
+
+    /**
+     * Save the current version code.
+     */
+    fun setLastVersionCode(context: Context, versionCode: Int) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putInt(KEY_LAST_VERSION_CODE, versionCode).apply()
     }
 }

@@ -25,6 +25,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -600,6 +601,33 @@ fun VideoStreamScreen() {
     var showAboutDialog by remember { mutableStateOf(false) }
     var showGalleryDialog by remember { mutableStateOf(false) }
     var galleryRefreshKey by remember { mutableIntStateOf(0) }
+    
+    // First Run / Whats New
+    var showWelcomeDialog by remember { mutableStateOf(false) }
+    var showWhatsNewDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        val currentVersionCode = try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode.toInt()
+            } else {
+                @Suppress("DEPRECATION")
+                context.packageManager.getPackageInfo(context.packageName, 0).versionCode
+            }
+        } catch (e: Exception) { 1 }
+
+        if (CameraSettings.isFirstRun(context)) {
+            showWelcomeDialog = true
+        } else {
+            val lastVersion = CameraSettings.getLastVersionCode(context)
+            if (lastVersion != -1 && lastVersion < currentVersionCode) {
+                showWhatsNewDialog = true
+            } else {
+                // Keep version code updated even if no dialog is shown
+                CameraSettings.setLastVersionCode(context, currentVersionCode)
+            }
+        }
+    }
 
     var objectDetectionEnabled by remember { mutableStateOf(false) }
     var detectedObjects by remember { mutableStateOf<List<DetectedObject>>(emptyList()) }
@@ -1801,6 +1829,10 @@ fun VideoStreamScreen() {
                 },
                 onAutoConnectChange = { enabled ->
                     CameraSettings.setAutoConnectEnabled(context, enabled)
+                },
+                onShowWhatsNew = {
+                    showSettingsDialog = false
+                    showWhatsNewDialog = true
                 }
             )
         }
@@ -1809,6 +1841,39 @@ fun VideoStreamScreen() {
             AboutDialogContent(
                 onDismiss = { showAboutDialog = false }
             )
+        }
+
+        if (showWelcomeDialog) {
+            WelcomeDialog(onDismiss = {
+                val currentVersionCode = try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode.toInt()
+                    } else {
+                         @Suppress("DEPRECATION")
+                        context.packageManager.getPackageInfo(context.packageName, 0).versionCode
+                    }
+                } catch (e: Exception) { 1 }
+
+                CameraSettings.setFirstRunCompleted(context)
+                CameraSettings.setLastVersionCode(context, currentVersionCode)
+                showWelcomeDialog = false
+            })
+        }
+
+        if (showWhatsNewDialog) {
+            WhatsNewDialog(onDismiss = {
+                val currentVersionCode = try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode.toInt()
+                    } else {
+                        @Suppress("DEPRECATION")
+                        context.packageManager.getPackageInfo(context.packageName, 0).versionCode
+                    }
+                } catch (e: Exception) { 1 }
+
+                CameraSettings.setLastVersionCode(context, currentVersionCode)
+                showWhatsNewDialog = false
+            })
         }
 
         if (showLogDialog) {
@@ -2635,7 +2700,8 @@ fun SettingsDialogContent(
     onWifiSsidChange: (String) -> Unit,
     onWifiPasswordChange: (String) -> Unit,
     onHttpPortChange: (Int) -> Unit,
-    onAutoConnectChange: (Boolean) -> Unit
+    onAutoConnectChange: (Boolean) -> Unit,
+    onShowWhatsNew: () -> Unit
 ) {
     var editingIp by remember { mutableStateOf(cameraIp) }
     var ipError by remember { mutableStateOf(false) }
@@ -2924,6 +2990,16 @@ fun SettingsDialogContent(
                     Icon(Icons.Filled.Info, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Über NoxVision")
+                }
+
+                Button(
+                    onClick = onShowWhatsNew,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = NightColors.primaryDim)
+                ) {
+                    Icon(Icons.Filled.NewReleases, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Was ist neu?")
                 }
             }
         },
@@ -3894,14 +3970,262 @@ fun AboutFeatureItem(icon: ImageVector, text: String) {
 @Composable
 fun TechBadge(text: String) {
     Surface(
-        color = NightColors.surface,
-        shape = RoundedCornerShape(16.dp)
+        color = NightColors.primaryDim.copy(alpha = 0.3f),
+        shape = RoundedCornerShape(4.dp),
+        border = BorderStroke(1.dp, NightColors.primary.copy(alpha = 0.5f))
     ) {
         Text(
             text = text,
-            color = NightColors.onSurface,
-            fontSize = 11.sp,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+            style = MaterialTheme.typography.labelSmall,
+            color = NightColors.primary
         )
+    }
+}
+
+@Composable
+fun WelcomeDialog(onDismiss: () -> Unit) {
+    var step by remember { mutableIntStateOf(0) }
+    
+    Dialog(
+        onDismissRequest = {}, // Force user to go through guide
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .fillMaxHeight(0.85f),
+            colors = CardDefaults.cardColors(containerColor = NightColors.surface),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Header
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = when(step) {
+                            0 -> Icons.Filled.WbSunny
+                            1 -> Icons.Filled.Wifi
+                            2 -> Icons.Filled.Settings
+                            else -> Icons.Filled.CheckCircle
+                        },
+                        contentDescription = null,
+                        tint = NightColors.primary,
+                        modifier = Modifier.size(64.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = when(step) {
+                            0 -> "Willkommen bei NoxVision"
+                            1 -> "Verbindung einrichten"
+                            2 -> "Wichtige Funktionen"
+                            else -> "Bereit!"
+                        },
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = NightColors.onSurface,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                // Content
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(vertical = 24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    when(step) {
+                        0 -> {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "Ihr Begleiter für Wärmibildaufnahmen.\n\nDiese App bietet erweiterte Funktionen für Ihre Guide Kamera.",
+                                    color = NightColors.onBackground,
+                                    fontSize = 16.sp,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                            }
+                        }
+                        1 -> {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "Damit die App funktioniert, müssen Sie die korrekte SSID und das Passwort Ihrer Kamera in den Einstellungen hinterlegen.",
+                                    color = NightColors.onBackground,
+                                    fontSize = 16.sp,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = NightColors.background)
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text("Standard-Werte:", color = NightColors.onSurface, fontWeight = FontWeight.Bold)
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text("SSID: Siehe Kamera-Aufkleber", color = NightColors.onBackground, fontSize = 14.sp)
+                                        Text("Passwort: Oft 12345678", color = NightColors.onBackground, fontSize = 14.sp)
+                                    }
+                                }
+                            }
+                        }
+                        2 -> {
+                            Column(
+                                horizontalAlignment = Alignment.Start,
+                                modifier = Modifier.verticalScroll(rememberScrollState())
+                            ) {
+                                WelcomeFeatureItem(Icons.Filled.Camera, "Galerie", "Bilder & Videos direkt in der App verwalten")
+                                WelcomeFeatureItem(Icons.Filled.Thermostat, "Messungen", "Temperaturpunkte und Emissionsgrad anpassen")
+                                WelcomeFeatureItem(Icons.Filled.Wifi, "Auto-Connect", "Automatische Verbindung beim Start")
+                                WelcomeFeatureItem(Icons.Filled.Videocam, "Aufnahme", "Videos mit Ton aufzeichnen")
+                            }
+                        }
+                        3 -> {
+                            Text(
+                                text = "Sie können diese Einstellungen später jederzeit über das Zahnrad-Symbol ändern.\n\nViel Spaß mit NoxVision!",
+                                color = NightColors.onBackground,
+                                fontSize = 16.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    }
+                }
+
+                // Footer / Navigation
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Back button / Indicator
+                    if (step > 0) {
+                        TextButton(onClick = { step-- }) {
+                            Text("Zurück", color = NightColors.onSurface)
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.width(64.dp))
+                    }
+
+                    // Dots indicator
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        repeat(4) { i ->
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(androidx.compose.foundation.shape.CircleShape)
+                                    .background(
+                                        if (i == step) NightColors.primary 
+                                        else NightColors.onSurface.copy(alpha = 0.3f)
+                                    )
+                            )
+                        }
+                    }
+
+                    // Next / Finish button
+                    Button(
+                        onClick = {
+                            if (step < 3) step++ else onDismiss()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = NightColors.primary)
+                    ) {
+                        Text(if (step < 3) "Weiter" else "Starten")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun WelcomeFeatureItem(icon: ImageVector, title: String, desc: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = NightColors.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column {
+            Text(text = title, fontWeight = FontWeight.Bold, color = NightColors.onSurface)
+            Text(text = desc, style = MaterialTheme.typography.bodySmall, color = NightColors.onBackground)
+        }
+    }
+}
+@Composable
+fun WhatsNewDialog(onDismiss: () -> Unit) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .fillMaxHeight(0.7f),
+            colors = CardDefaults.cardColors(containerColor = NightColors.surface),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Header
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = Icons.Filled.NewReleases,
+                        contentDescription = null,
+                        tint = NightColors.primary,
+                        modifier = Modifier.size(56.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Das ist neu!",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = NightColors.onSurface,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                // Content
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(vertical = 24.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    WhatsNewRepository.features.forEach { feature ->
+                        WhatsNewItem(feature.title, feature.description)
+                    }
+                }
+
+                // Finish button
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(containerColor = NightColors.primary),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Verstanden")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun WhatsNewItem(title: String, desc: String) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(text = "• $title", fontWeight = FontWeight.Bold, color = NightColors.onSurface, fontSize = 16.sp)
+        Text(text = desc, color = NightColors.onBackground, fontSize = 14.sp, modifier = Modifier.padding(start = 12.dp, top=4.dp))
     }
 }
