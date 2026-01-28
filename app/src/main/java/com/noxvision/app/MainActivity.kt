@@ -98,18 +98,14 @@ import kotlinx.coroutines.isActive
 
 import android.content.Context
 import android.graphics.Bitmap
+import com.noxvision.app.billing.BillingManager
+import com.noxvision.app.billing.FeatureBountyRepository
+import com.noxvision.app.billing.FeatureBountyScreen
+import com.noxvision.app.ui.NightColors
+import com.noxvision.app.ui.SettingsScreen
+import com.noxvision.app.ui.ThermalSettingsScreen
 
-object NightColors {
-    val background = Color(0xFF000000)
-    val surface = Color(0xFF0F0F0F)
-    val primary = Color(0xFF43A047) // Subtle Hunting Green (Green 600)
-    val primaryDim = Color(0xFF1B5E20) // Dark Forest Green (Green 900)
-    val onBackground = Color(0xFFFFFFFF)
-    val onSurface = Color(0xFFE0E0E0)
-    val recording = Color(0xFFFF1744)
-    val success = Color(0xFF43A047) // Match primary for success
-    val error = Color(0xFFFF5252)
-}
+
 
 object AppLogger {
     data class LogEntry(
@@ -605,6 +601,19 @@ fun VideoStreamScreen() {
     // First Run / Whats New
     var showWelcomeDialog by remember { mutableStateOf(false) }
     var showWhatsNewDialog by remember { mutableStateOf(false) }
+    
+    // Feature Bounties
+    var showFeatureBountiesDialog by remember { mutableStateOf(false) }
+    val featureRepository = remember { FeatureBountyRepository(context) }
+    
+    // Create BillingManager with callback to repo
+    val billingManager = remember { 
+        BillingManager(context) { productId ->
+             // Simple mapping: credits_120 -> 120
+             val amount = productId.replace("credits_", "").toIntOrNull() ?: 0
+             if (amount > 0) featureRepository.addCredits(amount)
+        }
+    }
 
     LaunchedEffect(Unit) {
         val currentVersionCode = try {
@@ -1756,85 +1765,107 @@ fun VideoStreamScreen() {
         }
 
         if (showSettingsDialog) {
-            SettingsDialogContent(
-                audioEnabled = audioEnabled,
-                hotspotEnabled = hotspotEnabled,
-                brightness = brightness,
-                contrast = contrast,
-                enhancementEnabled = enhancementEnabled,
-                objectDetectionEnabled = objectDetectionEnabled,
-                cameraIp = cameraIp,
-                onDismiss = { showSettingsDialog = false },
-                onAudioChange = { enabled ->
-                    scope.launch {
-                        val success = setAudio(if (enabled) "on" else "off")
-                        if (success) audioEnabled = enabled
+            Dialog(
+                onDismissRequest = { showSettingsDialog = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                SettingsScreen(
+                    audioEnabled = audioEnabled,
+                    hotspotEnabled = hotspotEnabled,
+                    brightness = brightness,
+                    contrast = contrast,
+                    enhancementEnabled = enhancementEnabled,
+                    objectDetectionEnabled = objectDetectionEnabled,
+                    cameraIp = cameraIp,
+                    onClose = { showSettingsDialog = false },
+                    onAudioChange = { enabled ->
+                        scope.launch {
+                            val success = setAudio(if (enabled) "on" else "off")
+                            if (success) audioEnabled = enabled
+                        }
+                    },
+                    onHotspotChange = { enabled ->
+                        scope.launch {
+                            val success = setHotspot(enabled)
+                            if (success) hotspotEnabled = enabled
+                        }
+                    },
+                    onBrightnessChange = { level ->
+                        scope.launch {
+                            val success = setBrightness(level)
+                            if (success) brightness = level
+                        }
+                    },
+                    onContrastChange = { level ->
+                        scope.launch {
+                            val success = setContrast(level)
+                            if (success) contrast = level
+                        }
+                    },
+                    onEnhancementChange = { enabled ->
+                        scope.launch {
+                            val success = setEnhancement(enabled)
+                            if (success) enhancementEnabled = enabled
+                        }
+                    },
+                    onObjectDetectionChange = { enabled ->
+                        objectDetectionEnabled = enabled
+                        AppLogger.log("AI Erkennung ${if (enabled) "EIN" else "AUS"}", AppLogger.LogType.INFO)
+                    },
+                    onCameraIpChange = { newIp ->
+                        CameraSettings.setCameraIp(context, newIp)
+                        cameraIp = newIp
+                        AppLogger.log("Kamera IP geändert: $newIp", AppLogger.LogType.SUCCESS)
+                    },
+                    onShowLog = {
+                        showSettingsDialog = false
+                        showLogDialog = true
+                    },
+                    onShowAbout = {
+                        showSettingsDialog = false
+                        showAboutDialog = true
+                    },
+                    onShowThermalSettings = {
+                        showSettingsDialog = false
+                        showThermalSettingsDialog = true
+                    },
+                    onWifiSsidChange = { newSsid ->
+                        CameraSettings.setWifiSsid(context, newSsid)
+                        (context as? MainActivity)?.updateWifiAutoConnect()
+                    },
+                    onWifiPasswordChange = { newPassword ->
+                        CameraSettings.setWifiPassword(context, newPassword)
+                        (context as? MainActivity)?.updateWifiAutoConnect()
+                    },
+                    onHttpPortChange = { newPort ->
+                        CameraSettings.setHttpPort(context, newPort)
+                    },
+                    onAutoConnectChange = { enabled ->
+                        CameraSettings.setAutoConnectEnabled(context, enabled)
+                    },
+                    onShowWhatsNew = {
+                        showSettingsDialog = false
+                        showWhatsNewDialog = true
+                    },
+                    onShowFeatureBounties = {
+                        showSettingsDialog = false
+                        showFeatureBountiesDialog = true
                     }
-                },
-                onHotspotChange = { enabled ->
-                    scope.launch {
-                        val success = setHotspot(enabled)
-                        if (success) hotspotEnabled = enabled
-                    }
-                },
-                onBrightnessChange = { level ->
-                    scope.launch {
-                        val success = setBrightness(level)
-                        if (success) brightness = level
-                    }
-                },
-                onContrastChange = { level ->
-                    scope.launch {
-                        val success = setContrast(level)
-                        if (success) contrast = level
-                    }
-                },
-                onEnhancementChange = { enabled ->
-                    scope.launch {
-                        val success = setEnhancement(enabled)
-                        if (success) enhancementEnabled = enabled
-                    }
-                },
-                onObjectDetectionChange = { enabled ->
-                    objectDetectionEnabled = enabled
-                    AppLogger.log("AI Erkennung ${if (enabled) "EIN" else "AUS"}", AppLogger.LogType.INFO)
-                },
-                onCameraIpChange = { newIp ->
-                    CameraSettings.setCameraIp(context, newIp)
-                    cameraIp = newIp
-                    AppLogger.log("Kamera IP geändert: $newIp", AppLogger.LogType.SUCCESS)
-                },
-                onShowLog = {
-                    showSettingsDialog = false
-                    showLogDialog = true
-                },
-                onShowAbout = {
-                    showSettingsDialog = false
-                    showAboutDialog = true
-                },
-                onShowThermalSettings = {
-                    showSettingsDialog = false
-                    showThermalSettingsDialog = true
-                },
-                onWifiSsidChange = { newSsid ->
-                    CameraSettings.setWifiSsid(context, newSsid)
-                    (context as? MainActivity)?.updateWifiAutoConnect()
-                },
-                onWifiPasswordChange = { newPassword ->
-                    CameraSettings.setWifiPassword(context, newPassword)
-                    (context as? MainActivity)?.updateWifiAutoConnect()
-                },
-                onHttpPortChange = { newPort ->
-                    CameraSettings.setHttpPort(context, newPort)
-                },
-                onAutoConnectChange = { enabled ->
-                    CameraSettings.setAutoConnectEnabled(context, enabled)
-                },
-                onShowWhatsNew = {
-                    showSettingsDialog = false
-                    showWhatsNewDialog = true
-                }
-            )
+                )
+            }
+        }
+
+        if (showFeatureBountiesDialog) {
+            Dialog(
+                onDismissRequest = { showFeatureBountiesDialog = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false) // Full screen
+            ) {
+                FeatureBountyScreen(
+                    billingManager = billingManager,
+                    repository = featureRepository,
+                    onClose = { showFeatureBountiesDialog = false }
+                )
+            }
         }
 
         if (showAboutDialog) {
@@ -1892,66 +1923,71 @@ fun VideoStreamScreen() {
         }
         
         if (showThermalSettingsDialog) {
-            ThermalSettingsDialogContent(
-                deviceInfo = deviceInfo,
-                capabilities = cameraCapabilities,
-                emissivity = emissivity,
-                measureDistance = measureDistance,
-                humidity = humidity,
-                reflectTemperature = reflectTemperature,
-                isShutterInProgress = isShutterInProgress,
-                onDismiss = { showThermalSettingsDialog = false },
-                onEmissivityChange = { value ->
-                    emissivity = value
-                    CameraSettings.setEmissivity(context, value)
-                    AppLogger.log("Emissivität: ${"%.2f".format(value)}", AppLogger.LogType.INFO)
-                },
-                onDistanceChange = { value ->
-                    measureDistance = value
-                    CameraSettings.setDistance(context, value)
-                    AppLogger.log("Entfernung: ${"%.1f".format(value)} m", AppLogger.LogType.INFO)
-                },
-                onHumidityChange = { value ->
-                    humidity = value
-                    CameraSettings.setHumidity(context, value)
-                    AppLogger.log("Luftfeuchtigkeit: ${"%.0f".format(value)} %", AppLogger.LogType.INFO)
-                },
-                onReflectTempChange = { value ->
-                    reflectTemperature = value
-                    CameraSettings.setReflectTemperature(context, value)
-                    AppLogger.log("Reflexionstemperatur: ${"%.1f".format(value)} °C", AppLogger.LogType.INFO)
-                },
-                onShutterClick = {
-                    scope.launch {
-                        isShutterInProgress = true
-                        AppLogger.log("Starte Shutter/NUC Kalibrierung...", AppLogger.LogType.INFO)
-                        val success = apiClient.triggerShutter()
-                        if (success) {
-                            AppLogger.log("✓ Shutter/NUC erfolgreich", AppLogger.LogType.SUCCESS)
-                        } else {
-                            AppLogger.log("Shutter/NUC Fehler", AppLogger.LogType.ERROR)
+            Dialog(
+                onDismissRequest = { showThermalSettingsDialog = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                ThermalSettingsScreen(
+                    deviceInfo = deviceInfo,
+                    capabilities = cameraCapabilities,
+                    emissivity = emissivity,
+                    measureDistance = measureDistance,
+                    humidity = humidity,
+                    reflectTemperature = reflectTemperature,
+                    isShutterInProgress = isShutterInProgress,
+                    onClose = { showThermalSettingsDialog = false },
+                    onEmissivityChange = { value ->
+                        emissivity = value
+                        CameraSettings.setEmissivity(context, value)
+                        AppLogger.log("Emissivität: ${"%.2f".format(value)}", AppLogger.LogType.INFO)
+                    },
+                    onDistanceChange = { value ->
+                        measureDistance = value
+                        CameraSettings.setDistance(context, value)
+                        AppLogger.log("Entfernung: ${"%.1f".format(value)} m", AppLogger.LogType.INFO)
+                    },
+                    onHumidityChange = { value ->
+                        humidity = value
+                        CameraSettings.setHumidity(context, value)
+                        AppLogger.log("Luftfeuchtigkeit: ${"%.0f".format(value)} %", AppLogger.LogType.INFO)
+                    },
+                    onReflectTempChange = { value ->
+                        reflectTemperature = value
+                        CameraSettings.setReflectTemperature(context, value)
+                        AppLogger.log("Reflexionstemperatur: ${"%.1f".format(value)} °C", AppLogger.LogType.INFO)
+                    },
+                    onShutterClick = {
+                        scope.launch {
+                            isShutterInProgress = true
+                            AppLogger.log("Starte Shutter/NUC Kalibrierung...", AppLogger.LogType.INFO)
+                            val success = apiClient.triggerShutter()
+                            if (success) {
+                                AppLogger.log("✓ Shutter/NUC erfolgreich", AppLogger.LogType.SUCCESS)
+                            } else {
+                                AppLogger.log("Shutter/NUC Fehler", AppLogger.LogType.ERROR)
+                            }
+                            isShutterInProgress = false
                         }
-                        isShutterInProgress = false
-                    }
-                },
-                onApplySettings = {
-                    scope.launch {
-                        AppLogger.log("Sende Einstellungen an Kamera...", AppLogger.LogType.INFO)
-                        var successCount = 0
-                        
-                        if (apiClient.setEmission(emissivity)) successCount++
-                        if (apiClient.setDistance(measureDistance)) successCount++
-                        if (apiClient.setHumidity(humidity)) successCount++
-                        if (apiClient.setReflectTemperature(reflectTemperature)) successCount++
-                        
-                        if (successCount > 0) {
-                            AppLogger.log("✓ $successCount/4 Einstellungen übertragen", AppLogger.LogType.SUCCESS)
-                        } else {
-                            AppLogger.log("Einstellungen konnten nicht übertragen werden", AppLogger.LogType.ERROR)
+                    },
+                    onApplySettings = {
+                        scope.launch {
+                            AppLogger.log("Sende Einstellungen an Kamera...", AppLogger.LogType.INFO)
+                            var successCount = 0
+
+                            if (apiClient.setEmission(emissivity)) successCount++
+                            if (apiClient.setDistance(measureDistance)) successCount++
+                            if (apiClient.setHumidity(humidity)) successCount++
+                            if (apiClient.setReflectTemperature(reflectTemperature)) successCount++
+
+                            if (successCount > 0) {
+                                AppLogger.log("✓ $successCount/4 Einstellungen übertragen", AppLogger.LogType.SUCCESS)
+                            } else {
+                                AppLogger.log("Einstellungen konnten nicht übertragen werden", AppLogger.LogType.ERROR)
+                            }
                         }
                     }
-                }
-            )
+                )
+            }
         }
     }
 }
@@ -2622,735 +2658,11 @@ fun PreviewDialog(
     }
 }
 
-/**
- * Section header for settings categories
- */
-@Composable
-fun SettingsSectionHeader(
-    icon: @Composable () -> Unit,
-    title: String
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(vertical = 4.dp)
-    ) {
-        icon()
-        Text(
-            text = title,
-            color = NightColors.primary,
-            fontWeight = FontWeight.Bold,
-            fontSize = 13.sp
-        )
-    }
-}
 
-/**
- * Settings toggle row with icon, label and switch
- */
-@Composable
-fun SettingsToggleRow(
-    icon: ImageVector,
-    label: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(icon, contentDescription = null, tint = NightColors.onSurface)
-            Text(text = label, color = NightColors.onSurface)
-        }
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = NightColors.primary,
-                checkedTrackColor = NightColors.primary.copy(alpha = 0.5f)
-            )
-        )
-    }
-}
 
-@Composable
-fun SettingsDialogContent(
-    audioEnabled: Boolean,
-    hotspotEnabled: Boolean,
-    brightness: Int,
-    contrast: Int,
-    enhancementEnabled: Boolean,
-    objectDetectionEnabled: Boolean,
-    cameraIp: String,
-    onDismiss: () -> Unit,
-    onAudioChange: (Boolean) -> Unit,
-    onHotspotChange: (Boolean) -> Unit,
-    onBrightnessChange: (Int) -> Unit,
-    onContrastChange: (Int) -> Unit,
-    onEnhancementChange: (Boolean) -> Unit,
-    onObjectDetectionChange: (Boolean) -> Unit,
-    onCameraIpChange: (String) -> Unit,
-    onShowLog: () -> Unit,
-    onShowAbout: () -> Unit,
-    onShowThermalSettings: () -> Unit,
-    onWifiSsidChange: (String) -> Unit,
-    onWifiPasswordChange: (String) -> Unit,
-    onHttpPortChange: (Int) -> Unit,
-    onAutoConnectChange: (Boolean) -> Unit,
-    onShowWhatsNew: () -> Unit
-) {
-    var editingIp by remember { mutableStateOf(cameraIp) }
-    var ipError by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
-    var editingSsid by remember { mutableStateOf(CameraSettings.getWifiSsid(context)) }
-    var editingPassword by remember { mutableStateOf(CameraSettings.getWifiPassword(context)) }
-    var editingPort by remember { mutableStateOf(CameraSettings.getHttpPort(context).toString()) }
-    var autoConnectEnabled by remember { mutableStateOf(CameraSettings.isAutoConnectEnabled(context)) }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "Einstellungen",
-                color = NightColors.onSurface
-            )
-        },
-        text = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // ═══════════════════════════════════════════════════════════
-                // 🔌 VERBINDUNG
-                // ═══════════════════════════════════════════════════════════
-                SettingsSectionHeader(
-                    icon = { Icon(Icons.Filled.Router, contentDescription = null, tint = NightColors.primary, modifier = Modifier.size(18.dp)) },
-                    title = "VERBINDUNG"
-                )
-                
-                OutlinedTextField(
-                    value = editingIp,
-                    onValueChange = { newValue ->
-                        editingIp = newValue
-                        ipError = !CameraSettings.isValidIp(newValue)
-                    },
-                    label = { Text("Kamera IP-Adresse") },
-                    isError = ipError,
-                    supportingText = {
-                        if (ipError) {
-                            Text(text = "Ungültige IP-Adresse", color = NightColors.error)
-                        }
-                    },
-                    trailingIcon = {
-                        if (editingIp != cameraIp && !ipError) {
-                            IconButton(onClick = { onCameraIpChange(editingIp) }) {
-                                Icon(Icons.Filled.Check, contentDescription = "Speichern", tint = NightColors.success)
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = NightColors.primary,
-                        unfocusedBorderColor = NightColors.onBackground,
-                        focusedLabelColor = NightColors.primary,
-                        unfocusedLabelColor = NightColors.onBackground,
-                        cursorColor = NightColors.primary,
-                        focusedTextColor = NightColors.onSurface,
-                        unfocusedTextColor = NightColors.onSurface
-                    )
-                )
-                if (editingIp != CameraSettings.getDefaultIp()) {
-                    TextButton(
-                        onClick = {
-                            editingIp = CameraSettings.getDefaultIp()
-                            ipError = false
-                            onCameraIpChange(CameraSettings.getDefaultIp())
-                        }
-                    ) {
-                        Text(text = "Zurücksetzen auf Standard-IP", color = NightColors.primary, fontSize = 12.sp)
-                    }
-                }
 
-                // WiFi Settings
-                SettingsToggleRow(
-                    icon = Icons.Filled.Wifi,
-                    label = "WiFi Auto-Connect",
-                    checked = autoConnectEnabled,
-                    onCheckedChange = { 
-                        autoConnectEnabled = it
-                        onAutoConnectChange(it)
-                    }
-                )
-
-                if (autoConnectEnabled) {
-                    OutlinedTextField(
-                        value = editingSsid,
-                        onValueChange = { 
-                            editingSsid = it
-                            onWifiSsidChange(it)
-                        },
-                        label = { Text("WiFi SSID") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = NightColors.primary,
-                            unfocusedBorderColor = NightColors.onBackground,
-                            focusedTextColor = NightColors.onSurface,
-                            unfocusedTextColor = NightColors.onSurface
-                        )
-                    )
-
-                    OutlinedTextField(
-                        value = editingPassword,
-                        onValueChange = { 
-                            editingPassword = it
-                            onWifiPasswordChange(it)
-                        },
-                        label = { Text("WiFi Passwort") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = NightColors.primary,
-                            unfocusedBorderColor = NightColors.onBackground,
-                            focusedTextColor = NightColors.onSurface,
-                            unfocusedTextColor = NightColors.onSurface
-                        )
-                    )
-                }
-
-                OutlinedTextField(
-                    value = editingPort,
-                    onValueChange = { 
-                        if (it.all { char -> char.isDigit() }) {
-                            editingPort = it
-                            it.toIntOrNull()?.let { port -> onHttpPortChange(port) }
-                        }
-                    },
-                    label = { Text("HTTP API Port (Standard: 80)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = NightColors.primary,
-                        unfocusedBorderColor = NightColors.onBackground,
-                        focusedTextColor = NightColors.onSurface,
-                        unfocusedTextColor = NightColors.onSurface
-                    )
-                )
-
-                HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 4.dp))
-
-                // ═══════════════════════════════════════════════════════════
-                // 📷 KAMERA
-                // ═══════════════════════════════════════════════════════════
-                SettingsSectionHeader(
-                    icon = { Icon(Icons.Filled.CameraAlt, contentDescription = null, tint = NightColors.primary, modifier = Modifier.size(18.dp)) },
-                    title = "KAMERA"
-                )
-
-                SettingsToggleRow(
-                    icon = if (audioEnabled) Icons.AutoMirrored.Filled.VolumeUp else Icons.AutoMirrored.Filled.VolumeOff,
-                    label = "Audio",
-                    checked = audioEnabled,
-                    onCheckedChange = onAudioChange
-                )
-
-                SettingsToggleRow(
-                    icon = Icons.Filled.MyLocation,
-                    label = "Hotspot anzeigen",
-                    checked = hotspotEnabled,
-                    onCheckedChange = onHotspotChange
-                )
-
-                // Helligkeit
-                Column {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(Icons.Filled.Brightness6, contentDescription = null, tint = NightColors.onSurface)
-                        Text(text = "Helligkeit", color = NightColors.onSurface)
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        (1..5).forEach { level ->
-                            FilterChip(
-                                selected = brightness == level,
-                                onClick = { onBrightnessChange(level) },
-                                label = {
-                                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                        Text("$level")
-                                    }
-                                },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                }
-
-                // Kontrast
-                Column {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(Icons.Filled.Contrast, contentDescription = null, tint = NightColors.onSurface)
-                        Text(text = "Kontrast", color = NightColors.onSurface)
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        (1..5).forEach { level ->
-                            FilterChip(
-                                selected = contrast == level,
-                                onClick = { onContrastChange(level) },
-                                label = {
-                                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                        Text("$level")
-                                    }
-                                },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                }
-
-                // Thermal Settings Button
-                Button(
-                    onClick = onShowThermalSettings,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = NightColors.primary)
-                ) {
-                    Icon(Icons.Filled.Thermostat, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Thermische Einstellungen")
-                }
-
-                HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 4.dp))
-
-                // ═══════════════════════════════════════════════════════════
-                // 🤖 APP-FUNKTIONEN
-                // ═══════════════════════════════════════════════════════════
-                SettingsSectionHeader(
-                    icon = { Icon(Icons.Filled.AutoAwesome, contentDescription = null, tint = NightColors.primary, modifier = Modifier.size(18.dp)) },
-                    title = "APP-FUNKTIONEN"
-                )
-
-                SettingsToggleRow(
-                    icon = Icons.Filled.Visibility,
-                    label = "AI Objekterkennung",
-                    checked = objectDetectionEnabled,
-                    onCheckedChange = onObjectDetectionChange
-                )
-
-                SettingsToggleRow(
-                    icon = Icons.Filled.AutoFixHigh,
-                    label = "Bildverbesserung",
-                    checked = enhancementEnabled,
-                    onCheckedChange = onEnhancementChange
-                )
-
-                HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 4.dp))
-
-                // ═══════════════════════════════════════════════════════════
-                // ℹ️ SYSTEM
-                // ═══════════════════════════════════════════════════════════
-                SettingsSectionHeader(
-                    icon = { Icon(Icons.Filled.Info, contentDescription = null, tint = NightColors.primary, modifier = Modifier.size(18.dp)) },
-                    title = "SYSTEM"
-                )
-
-                // System Buttons - Modern Outlined Style
-                OutlinedButton(
-                    onClick = onShowLog,
-                    modifier = Modifier.fillMaxWidth(),
-                    border = BorderStroke(1.dp, NightColors.primary),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = NightColors.primary,
-                        containerColor = Color.Transparent
-                    )
-                ) {
-                    Icon(Icons.Filled.Description, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("System Log anzeigen")
-                }
-
-                OutlinedButton(
-                    onClick = onShowAbout,
-                    modifier = Modifier.fillMaxWidth(),
-                    border = BorderStroke(1.dp, NightColors.primary),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = NightColors.primary,
-                        containerColor = Color.Transparent
-                    )
-                ) {
-                    Icon(Icons.Filled.Info, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Über NoxVision")
-                }
-
-                OutlinedButton(
-                    onClick = onShowWhatsNew,
-                    modifier = Modifier.fillMaxWidth(),
-                    border = BorderStroke(1.dp, NightColors.primary),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = NightColors.primary,
-                        containerColor = Color.Transparent
-                    )
-                ) {
-                    Icon(Icons.Filled.NewReleases, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Was ist neu?")
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Schließen", color = NightColors.primary)
-            }
-        },
-        containerColor = NightColors.surface,
-        textContentColor = NightColors.onSurface
-    )
-}
-
-@Composable
-fun ThermalSettingsDialogContent(
-    deviceInfo: DeviceInfo?,
-    capabilities: CameraCapabilities?,
-    emissivity: Float,
-    measureDistance: Float,
-    humidity: Float,
-    reflectTemperature: Float,
-    isShutterInProgress: Boolean,
-    onDismiss: () -> Unit,
-    onEmissivityChange: (Float) -> Unit,
-    onDistanceChange: (Float) -> Unit,
-    onHumidityChange: (Float) -> Unit,
-    onReflectTempChange: (Float) -> Unit,
-    onShutterClick: () -> Unit,
-    onApplySettings: () -> Unit
-) {
-    var localEmissivity by remember(emissivity) { mutableFloatStateOf(emissivity) }
-    var localDistance by remember(measureDistance) { mutableFloatStateOf(measureDistance) }
-    var localHumidity by remember(humidity) { mutableFloatStateOf(humidity) }
-    var localReflectTemp by remember(reflectTemperature) { mutableFloatStateOf(reflectTemperature) }
-    
-    // Emissivity preset dropdown
-    var showEmissivityPresets by remember { mutableStateOf(false) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Column {
-                Text(
-                    text = "Thermische Einstellungen",
-                    color = NightColors.onSurface
-                )
-                if (deviceInfo != null) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "${deviceInfo.deviceName} • ${deviceInfo.videoWidth}x${deviceInfo.videoHeight}",
-                        fontSize = 12.sp,
-                        color = NightColors.onBackground
-                    )
-                }
-            }
-        },
-        text = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Device Info Section (if available)
-                if (deviceInfo != null && capabilities != null) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = NightColors.background)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = "Kamera-Features",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp,
-                                color = NightColors.onSurface
-                            )
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                if (capabilities.hasRadiometry) {
-                                    Text("🌡️ Radiometrie", fontSize = 11.sp, color = NightColors.success)
-                                }
-                                if (capabilities.hasFocus) {
-                                    Text("🔍 Fokus", fontSize = 11.sp, color = NightColors.success)
-                                }
-                                if (capabilities.hasGps) {
-                                    Text("📍 GPS", fontSize = 11.sp, color = NightColors.success)
-                                }
-                            }
-                        }
-                    }
-                    HorizontalDivider(color = NightColors.surface)
-                }
-
-                // Shutter / NUC Button
-                Button(
-                    onClick = onShutterClick,
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !isShutterInProgress,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = NightColors.primary
-                    )
-                ) {
-                    if (isShutterInProgress) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Kalibriere...")
-                    } else {
-                        Icon(Icons.Filled.Refresh, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Shutter / NUC Kalibrierung")
-                    }
-                }
-
-                HorizontalDivider(color = NightColors.surface)
-
-                // Emissivity
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                Icons.Filled.Thermostat,
-                                contentDescription = null,
-                                tint = NightColors.onSurface
-                            )
-                            Text(
-                                text = "Emissivität",
-                                color = NightColors.onSurface
-                            )
-                        }
-                        Text(
-                            text = "%.2f".format(localEmissivity),
-                            color = NightColors.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    
-                    Slider(
-                        value = localEmissivity,
-                        onValueChange = { localEmissivity = it },
-                        onValueChangeFinished = { onEmissivityChange(localEmissivity) },
-                        valueRange = 0.01f..1.0f,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = SliderDefaults.colors(
-                            thumbColor = NightColors.primary,
-                            activeTrackColor = NightColors.primary
-                        )
-                    )
-                    
-                    // Presets
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        EmissivityPresets.presets.entries.take(3).forEach { (name, value) ->
-                            FilterChip(
-                                selected = kotlin.math.abs(localEmissivity - value) < 0.01f,
-                                onClick = {
-                                    localEmissivity = value
-                                    onEmissivityChange(value)
-                                },
-                                label = { Text(name, fontSize = 10.sp) },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                }
-
-                HorizontalDivider(color = NightColors.surface)
-
-                // Distance
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                Icons.Filled.Straighten,
-                                contentDescription = null,
-                                tint = NightColors.onSurface
-                            )
-                            Text(
-                                text = "Entfernung",
-                                color = NightColors.onSurface
-                            )
-                        }
-                        Text(
-                            text = "%.1f m".format(localDistance),
-                            color = NightColors.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    
-                    Slider(
-                        value = localDistance,
-                        onValueChange = { localDistance = it },
-                        onValueChangeFinished = { onDistanceChange(localDistance) },
-                        valueRange = 0.1f..100f,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = SliderDefaults.colors(
-                            thumbColor = NightColors.primary,
-                            activeTrackColor = NightColors.primary
-                        )
-                    )
-                }
-
-                HorizontalDivider(color = NightColors.surface)
-
-                // Humidity
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                Icons.Filled.WaterDrop,
-                                contentDescription = null,
-                                tint = NightColors.onSurface
-                            )
-                            Text(
-                                text = "Luftfeuchtigkeit",
-                                color = NightColors.onSurface
-                            )
-                        }
-                        Text(
-                            text = "%.0f %%".format(localHumidity),
-                            color = NightColors.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    
-                    Slider(
-                        value = localHumidity,
-                        onValueChange = { localHumidity = it },
-                        onValueChangeFinished = { onHumidityChange(localHumidity) },
-                        valueRange = 0f..100f,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = SliderDefaults.colors(
-                            thumbColor = NightColors.primary,
-                            activeTrackColor = NightColors.primary
-                        )
-                    )
-                }
-
-                HorizontalDivider(color = NightColors.surface)
-
-                // Reflected Temperature
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                Icons.Filled.DeviceThermostat,
-                                contentDescription = null,
-                                tint = NightColors.onSurface
-                            )
-                            Text(
-                                text = "Reflexionstemperatur",
-                                color = NightColors.onSurface
-                            )
-                        }
-                        Text(
-                            text = "%.1f °C".format(localReflectTemp),
-                            color = NightColors.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    
-                    Slider(
-                        value = localReflectTemp,
-                        onValueChange = { localReflectTemp = it },
-                        onValueChangeFinished = { onReflectTempChange(localReflectTemp) },
-                        valueRange = -40f..100f,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = SliderDefaults.colors(
-                            thumbColor = NightColors.primary,
-                            activeTrackColor = NightColors.primary
-                        )
-                    )
-                }
-
-                HorizontalDivider(color = NightColors.surface)
-
-                // Apply to Camera Button
-                Button(
-                    onClick = onApplySettings,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = NightColors.success
-                    )
-                ) {
-                    Icon(Icons.Filled.Check, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Einstellungen an Kamera senden")
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Schließen", color = NightColors.primary)
-            }
-        },
-        containerColor = NightColors.surface,
-        textContentColor = NightColors.onSurface
-    )
-}
 
 
 @Composable
