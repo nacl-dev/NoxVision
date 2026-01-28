@@ -1,5 +1,6 @@
 package com.noxvision.app
 
+import com.noxvision.app.util.AppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
