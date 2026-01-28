@@ -102,13 +102,13 @@ import android.graphics.Bitmap
 object NightColors {
     val background = Color(0xFF000000)
     val surface = Color(0xFF0F0F0F)
-    val primary = Color(0xFF00E5FF) // Neon Cyan to match new icon
-    val primaryDim = Color(0xFF004D40) // Darker Cyan/Teal
-    val onBackground = Color(0xFFFFFFFF) // White for better readability
-    val onSurface = Color(0xFFE0E0E0) // Light Grey
-    val recording = Color(0xFFFF1744) // Bright Red
-    val success = Color(0xFF00E676) // Bright Green
-    val error = Color(0xFFFF5252) // Bright Red/Error
+    val primary = Color(0xFF43A047) // Subtle Hunting Green (Green 600)
+    val primaryDim = Color(0xFF1B5E20) // Dark Forest Green (Green 900)
+    val onBackground = Color(0xFFFFFFFF)
+    val onSurface = Color(0xFFE0E0E0)
+    val recording = Color(0xFFFF1744)
+    val success = Color(0xFF43A047) // Match primary for success
+    val error = Color(0xFFFF5252)
 }
 
 object AppLogger {
@@ -1596,8 +1596,8 @@ fun VideoStreamScreen() {
                     valueRange = 10f..40f,
                     steps = 29,
                     colors = SliderDefaults.colors(
-                        thumbColor = NightColors.primary,
-                        activeTrackColor = NightColors.primary,
+                        thumbColor = NightColors.primaryDim,
+                        activeTrackColor = NightColors.primaryDim,
                         inactiveTrackColor = NightColors.surface
                     ),
                     modifier = Modifier.fillMaxWidth()
@@ -1955,6 +1955,7 @@ fun VideoStreamScreen() {
         }
     }
 }
+
 @Composable
 fun PaletteButton(
     imageRes: Int,
@@ -1967,13 +1968,13 @@ fun PaletteButton(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
-            .background(
-                if (isSelected) NightColors.primary.copy(alpha = 0.3f)
-                else NightColors.surface
-            )
+            .background(NightColors.surface) // Always black/surface background
             .border(
-                width = if (isSelected) 2.dp else 1.dp,
-                color = if (isSelected) NightColors.primary else NightColors.onSurface.copy(alpha = 0.3f),
+                width = if (isSelected) 1.dp else 1.dp, // Always bordered? User said "umrandet like Settings"
+                // Settings buttons are outlined. Unselected palette items usually don't have borders or have faint ones.
+                // "Genau wie die Settings buttons umranded" -> Settings buttons have primary border.
+                // "Schwarzer hintergrund bei auswahl".
+                color = if (isSelected) NightColors.primary else Color.Transparent, 
                 shape = RoundedCornerShape(8.dp)
             )
             .padding(6.dp),
@@ -2972,30 +2973,43 @@ fun SettingsDialogContent(
                     title = "SYSTEM"
                 )
 
-                Button(
+                // System Buttons - Modern Outlined Style
+                OutlinedButton(
                     onClick = onShowLog,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = NightColors.primaryDim)
+                    border = BorderStroke(1.dp, NightColors.primary),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = NightColors.primary,
+                        containerColor = Color.Transparent
+                    )
                 ) {
                     Icon(Icons.Filled.Description, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("System Log anzeigen")
                 }
 
-                Button(
+                OutlinedButton(
                     onClick = onShowAbout,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = NightColors.primaryDim)
+                    border = BorderStroke(1.dp, NightColors.primary),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = NightColors.primary,
+                        containerColor = Color.Transparent
+                    )
                 ) {
                     Icon(Icons.Filled.Info, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Über NoxVision")
                 }
 
-                Button(
+                OutlinedButton(
                     onClick = onShowWhatsNew,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = NightColors.primaryDim)
+                    border = BorderStroke(1.dp, NightColors.primary),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = NightColors.primary,
+                        containerColor = Color.Transparent
+                    )
                 ) {
                     Icon(Icons.Filled.NewReleases, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
