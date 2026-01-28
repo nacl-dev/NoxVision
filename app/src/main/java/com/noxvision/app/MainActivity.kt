@@ -534,7 +534,7 @@ class MainActivity : ComponentActivity() {
 
     internal var wifiAutoConnect: WiFiAutoConnect? = null
 
-    private fun updateWifiAutoConnect() {
+    internal fun updateWifiAutoConnect() {
         val ssid = CameraSettings.getWifiSsid(this)
         val password = CameraSettings.getWifiPassword(this)
         wifiAutoConnect = WiFiAutoConnect(this, ssid, password)
@@ -2599,10 +2599,11 @@ fun SettingsDialogContent(
     var editingIp by remember { mutableStateOf(cameraIp) }
     var ipError by remember { mutableStateOf(false) }
 
-    var editingSsid by remember { mutableStateOf(CameraSettings.getWifiSsid(LocalContext.current)) }
-    var editingPassword by remember { mutableStateOf(CameraSettings.getWifiPassword(LocalContext.current)) }
-    var editingPort by remember { mutableStateOf(CameraSettings.getHttpPort(LocalContext.current).toString()) }
-    var autoConnectEnabled by remember { mutableStateOf(CameraSettings.isAutoConnectEnabled(LocalContext.current)) }
+    val context = LocalContext.current
+    var editingSsid by remember { mutableStateOf(CameraSettings.getWifiSsid(context)) }
+    var editingPassword by remember { mutableStateOf(CameraSettings.getWifiPassword(context)) }
+    var editingPort by remember { mutableStateOf(CameraSettings.getHttpPort(context).toString()) }
+    var autoConnectEnabled by remember { mutableStateOf(CameraSettings.isAutoConnectEnabled(context)) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
