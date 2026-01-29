@@ -1,8 +1,16 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+}
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
 }
 
 android {
@@ -35,6 +43,9 @@ android {
 
         // Set APK name
         base.archivesName.set("NoxVision-v${versionName}")
+
+        val apiKey = localProperties.getProperty("OPENWEATHER_API_KEY") ?: ""
+        buildConfigField("String", "OPENWEATHER_API_KEY", "\"$apiKey\"")
     }
 
     buildTypes {
@@ -58,6 +69,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
