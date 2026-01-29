@@ -6,12 +6,13 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
+import com.noxvision.app.BuildConfig
 
 class WeatherApiClient(private val apiKey: String = DEFAULT_API_KEY) {
 
     companion object {
-        // OpenWeatherMap Free Tier API Key
-        private const val DEFAULT_API_KEY = "ea8b5f78b94e8709fe6beba4c92d0410"
+        // OpenWeatherMap Free Tier API Key loaded from local.properties via BuildConfig
+        private val DEFAULT_API_KEY = BuildConfig.OPENWEATHER_API_KEY
         private const val BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
     }
 
