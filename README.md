@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Android](https://img.shields.io/badge/Android-24%2B-green.svg)](https://developer.android.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0-blue.svg)](https://kotlinlang.org)
-[![Version](https://img.shields.io/badge/Version-1.2-blue.svg)](../../releases)
+[![Version](https://img.shields.io/badge/Version-1.3-blue.svg)](../../releases)
 
 **Open Source Android App for Guide Thermal Cameras with AI Object Detection**
 
@@ -39,6 +39,15 @@ A powerful alternative to the official Guide app, supporting multiple Guide Sens
 - 🔄 **Shutter/NUC Calibration** button
 - 📱 **Automatic Camera Detection** - identifies model and enables features
 - 🔌 **REST API Integration** for professional thermal settings
+
+### 🆕 New in v1.3
+- 📊 **System Log Viewer** - Real-time diagnostics with color-coded entries
+- ⚙️ **Advanced Camera Settings** - Brightness, Contrast, Image Enhancement
+- 🎵 **Audio Control** - Enable/disable camera microphone
+- 📄 **Multi-Page Settings** - Organized settings with navigation
+- 💎 **Feature Bounties** - Support development via in-app purchases
+- 🎉 **What's New Dialog** - Version update announcements
+- 👋 **Welcome Screen** - First-run introduction for new users
 
 ## 📱 Supported Devices
 
@@ -99,7 +108,7 @@ echo "sdk.dir=/path/to/Android/Sdk" > local.properties
 ./gradlew assembleDebug
 
 # APK location:
-# app/build/outputs/apk/debug/NoxVision-v1.2-debug.apk
+# app/build/outputs/apk/debug/NoxVision-v1.3-debug.apk
 ```
 
 ## 🎯 Usage
@@ -113,16 +122,23 @@ echo "sdk.dir=/path/to/Android/Sdk" > local.properties
    - 🎨 Change palette
    - 📁 Open gallery
 
-### 🌡️ Thermal Settings (NEW in v1.2)
+### 🌡️ Thermal Settings
 
 1. Open **Settings** ⚙️
-2. Tap **"Thermische Einstellungen"**
+2. Navigate to **"Thermische Einstellungen"**
 3. Adjust:
    - **Emissivity** - Match the material you're measuring
    - **Distance** - Set the distance to your target
    - **Humidity** - Current ambient humidity
    - **Reflected Temperature** - Ambient temperature
 4. Tap **"An Kamera senden"** to apply
+
+### 📊 System Log (v1.3)
+
+Monitor app activity and troubleshoot issues:
+1. Open **Settings** ⚙️
+2. Tap **"System Log"**
+3. View real-time logs with color-coded entries (Info, Success, Error)
 
 ## 🧠 Object Detection
 
@@ -141,17 +157,44 @@ The model is specifically trained for thermal images and detects people and vehi
 ```
 app/src/main/
 ├── java/com/noxvision/app/
-│   ├── MainActivity.kt       # Main app logic
-│   ├── CameraApiClient.kt    # REST API client (NEW)
-│   ├── CameraSettings.kt     # Settings persistence
-│   ├── DeviceInfo.kt         # Camera detection (NEW)
-│   └── ui/theme/             # Compose Theme
+│   ├── MainActivity.kt           # Main app entry point
+│   ├── CameraApiClient.kt        # REST API client
+│   ├── CameraSettings.kt         # Settings persistence
+│   ├── DeviceInfo.kt             # Camera model detection
+│   ├── WhatsNewData.kt           # Version changelog
+│   ├── ui/
+│   │   ├── VideoStreamScreen.kt      # Main livestream UI
+│   │   ├── SettingsScreen.kt         # Multi-page settings
+│   │   ├── ThermalSettingsScreen.kt  # Thermal measurement UI
+│   │   ├── SettingsComponents.kt     # Reusable components
+│   │   ├── theme/                    # Compose Theme (Material 3)
+│   │   ├── components/               # Custom UI components
+│   │   └── dialogs/                  # Dialog screens
+│   │       ├── LogDialog.kt          # System log viewer
+│   │       ├── AboutDialog.kt        # App information
+│   │       ├── WelcomeDialog.kt      # First-run welcome
+│   │       ├── WhatsNewDialog.kt     # Version updates
+│   │       ├── GalleryDialog.kt      # Media browser
+│   │       └── PreviewDialog.kt      # Media preview
+│   ├── billing/                  # In-app purchases
+│   │   ├── BillingManager.kt
+│   │   ├── FeatureBountyRepository.kt
+│   │   └── FeatureBountyScreen.kt
+│   ├── detection/
+│   │   └── ThermalObjectDetector.kt  # TFLite YOLO detector
+│   ├── network/
+│   │   └── WiFiAutoConnect.kt        # Auto WiFi connection
+│   ├── util/
+│   │   ├── AppLogger.kt              # Logging utility
+│   │   └── MediaUtils.kt             # Media capture/download
+│   └── data/
+│       └── MediaModels.kt            # Data classes
 ├── assets/
-│   ├── detect.tflite         # AI model
-│   └── labelmap.txt          # Classes
+│   ├── detect.tflite             # AI model (YOLOv8)
+│   └── labelmap.txt              # Class labels
 └── res/
-    ├── drawable/             # Palette images
-    └── values/               # Strings, Colors
+    ├── drawable/                 # Palette images
+    └── values/                   # Strings, Colors
 ```
 
 ### Tech Stack
@@ -181,13 +224,32 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## 📋 Roadmap
 
+### Completed
 - [x] Settings screen for camera IP
 - [x] Support for additional camera models ✅ **v1.2**
 - [x] Thermal measurement settings ✅ **v1.2**
 - [x] Export to video formats
-- [ ] Improved AI model
-- [ ] Temperature measurement display
-- [ ] Custom color palettes
+- [x] System logging & diagnostics ✅ **v1.3**
+- [x] Advanced camera settings (brightness, contrast) ✅ **v1.3**
+- [x] Multi-page settings navigation ✅ **v1.3**
+- [x] In-app purchase system ✅ **v1.3**
+
+### In Progress
+- [ ] Temperature measurement display on live view
+- [ ] Improved AI model with higher accuracy
+
+### Planned
+- [ ] **Optimized Wildlife AI Model** - Training for deer, boar, fox, rabbit detection
+- [ ] **Distance Estimation** - Approximate distance to detected animals
+- [ ] **Hunt Mode** - Minimal UI, reduced brightness, one-hand operation
+- [ ] **Silent Alerts** - Vibration feedback instead of sounds
+- [ ] **Quick Record** - Hardware button mapping for instant recording
+- [ ] **Battery Optimization** - Extended runtime for long sits
+- [ ] **Offline Maps** - Mark hunting grounds and wildlife trails
+- [ ] **Moon Phase Display** - Hunting conditions at a glance
+- [ ] **Shot Documentation** - Log shots with timestamp and location
+- [ ] **Tracking Mode** - Support for blood trailing after a shot
+- [ ] **Custom Palettes** - User-defined color schemes for better contrast
 
 ## ❓ FAQ
 

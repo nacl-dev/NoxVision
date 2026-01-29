@@ -1,0 +1,294 @@
+<resources>
+    <!-- Spanish translations (placeholder - needs professional translation) -->
+    <string name="app_name">NoxVision</string>
+
+    <!-- Common -->
+    <string name="back">Atrás</string>
+    <string name="close">Cerrar</string>
+    <string name="save">Guardar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="delete">Eliminar</string>
+    <string name="ok">OK</string>
+    <string name="refresh">Actualizar</string>
+    <string name="loading">Cargando…</string>
+    <string name="error">Error</string>
+    <string name="no_files">Sin archivos</string>
+    <string name="understood">Entendido</string>
+    <string name="next">Siguiente</string>
+    <string name="start">Iniciar</string>
+    <string name="clear">Borrar</string>
+
+    <!-- Settings Screen -->
+    <string name="settings">Ajustes</string>
+    <string name="connection">Conexión</string>
+    <string name="connection_subtitle">WiFi, Dirección IP, Puerto</string>
+    <string name="camera">Cámara</string>
+    <string name="camera_subtitle">Audio, Brillo, Contraste</string>
+    <string name="thermal_settings">Ajustes térmicos</string>
+    <string name="thermal_settings_subtitle">Emisividad, Distancia, Obturador</string>
+    <string name="app_features">Funciones de la app</string>
+    <string name="app_features_subtitle">Detección IA, Mejora de imagen</string>
+    <string name="system_info">SISTEMA &amp; INFO</string>
+    <string name="system_log">Registro del sistema</string>
+    <string name="whats_new">Novedades</string>
+    <string name="about_noxvision">Acerca de NoxVision</string>
+    <string name="language">Idioma</string>
+    <string name="language_subtitle">Cambiar idioma de la app</string>
+
+    <!-- Connection Settings -->
+    <string name="camera_address">DIRECCIÓN DE CÁMARA</string>
+    <string name="ip_address">Dirección IP</string>
+    <string name="invalid_ip">Dirección IP no válida</string>
+    <string name="reset_to_default">Restablecer (%1$s)</string>
+    <string name="http_api_port">Puerto HTTP API</string>
+    <string name="default_port">Por defecto: 80</string>
+    <string name="wifi_auto_connect">CONEXIÓN WIFI AUTOMÁTICA</string>
+    <string name="auto_connect">Conexión automática</string>
+    <string name="wifi_ssid">SSID WiFi (Nombre de red)</string>
+    <string name="wifi_ssid_hint">Ver la etiqueta de la cámara</string>
+    <string name="wifi_password">Contraseña WiFi</string>
+    <string name="wifi_password_hint">A menudo: 12345678</string>
+
+    <!-- Camera Settings -->
+    <string name="audio_display">AUDIO &amp; PANTALLA</string>
+    <string name="enable_audio">Activar audio</string>
+    <string name="show_hotspot">Mostrar punto caliente</string>
+    <string name="image_settings">AJUSTES DE IMAGEN</string>
+    <string name="brightness">Brillo</string>
+    <string name="contrast">Contraste</string>
+    <string name="advanced">AVANZADO</string>
+
+    <!-- App Features -->
+    <string name="hunting">CAZA</string>
+    <string name="hunting_assistant">Asistente de caza</string>
+    <string name="hunting_assistant_subtitle">Documentación, Clima, Mapas, Rastreo</string>
+    <string name="ai_features">FUNCIONES IA</string>
+    <string name="ai_object_detection">Detección de objetos IA</string>
+    <string name="ai_detection_desc">Detecta personas, vehículos y animales en imágenes térmicas.</string>
+    <string name="image_enhancement">MEJORA DE IMAGEN</string>
+    <string name="enable_image_enhancement">Activar mejora de imagen</string>
+    <string name="image_enhancement_desc">Mejora el contraste y la nitidez en tiempo real.</string>
+
+    <!-- Thermal Settings -->
+    <string name="camera_features">Funciones de cámara</string>
+    <string name="radiometry">Radiometría</string>
+    <string name="focus">Enfoque</string>
+    <string name="gps">GPS</string>
+    <string name="shutter_nuc">Calibración Obturador/NUC</string>
+    <string name="calibrating">Calibrando…</string>
+    <string name="emissivity">Emisividad: %1$.2f</string>
+    <string name="presets">Preajustes</string>
+    <string name="skin">Piel</string>
+    <string name="wood">Madera</string>
+    <string name="steel">Acero</string>
+    <string name="aluminum">Aluminio</string>
+    <string name="distance">Distancia: %1$.1f m</string>
+    <string name="humidity">Humedad: %1$.0f %%</string>
+    <string name="reflect_temperature">Temperatura reflejada: %1$.1f °C</string>
+    <string name="apply_settings">Aplicar ajustes</string>
+
+    <!-- Video Stream Screen -->
+    <string name="connecting">Conectando…</string>
+    <string name="connecting_to_camera">Conectando a la cámara…</string>
+    <string name="buffering">Almacenando %1$d%%</string>
+    <string name="live">EN VIVO</string>
+    <string name="offline">Sin conexión</string>
+    <string name="rec">GRAB %1$s</string>
+    <string name="zoom">Zoom</string>
+    <string name="palette">Paleta</string>
+    <string name="connect">Conectar</string>
+    <string name="disconnect">Desconectar</string>
+    <string name="gallery">Galería</string>
+    <string name="record">Grabar</string>
+    <string name="stop_rec">Parar</string>
+    <string name="photo">Foto</string>
+    <string name="permissions_required">Permisos requeridos</string>
+    <string name="wifi_connection_failed">Error de conexión WiFi</string>
+    <string name="photo_saved">Foto guardada</string>
+    <string name="video_saved">Video guardado (%1$d KB)</string>
+    <string name="video_too_small">Video muy pequeño/vacío</string>
+
+    <!-- Gallery -->
+    <string name="phone">Teléfono</string>
+    <string name="thermal">Térmica</string>
+    <string name="no_viewer_found">No se encontró visor</string>
+    <string name="error_loading">Error al cargar</string>
+
+    <!-- Log Dialog -->
+    <string name="no_log_entries">Sin entradas</string>
+
+    <!-- About Dialog -->
+    <string name="version">Versión %1$s</string>
+    <string name="about_description">Aplicación Android de código abierto para cámaras térmicas Guide</string>
+    <string name="about_long_description">NoxVision es una alternativa potente a la aplicación oficial Guide, desarrollada para el monocular térmico Guide TE211M.</string>
+    <string name="features">Características</string>
+    <string name="feature_stream">Transmisión de video RTSP en vivo</string>
+    <string name="feature_ai">Detección de objetos YOLO IA</string>
+    <string name="feature_palettes">Múltiples paletas de colores</string>
+    <string name="feature_capture">Captura de pantalla &amp; Video</string>
+    <string name="feature_gallery">Galería integrada</string>
+    <string name="feature_wifi">Conexión WiFi automática</string>
+    <string name="feature_night">Diseño optimizado para la noche</string>
+    <string name="supported_devices">Dispositivos compatibles</string>
+    <string name="supported_devices_list">• Guide TE211M (probado)\n• Otras cámaras Guide serie TE\n• Cámaras con RTSP en 192.168.42.1:8554</string>
+    <string name="technologies">Tecnologías</string>
+
+    <!-- Welcome Dialog -->
+    <string name="welcome_title">Bienvenido a NoxVision</string>
+    <string name="setup_connection">Configurar conexión</string>
+    <string name="important_features">Funciones importantes</string>
+    <string name="ready">¡Listo!</string>
+    <string name="welcome_intro">Tu compañero para imágenes térmicas.\n\nEsta aplicación ofrece funciones avanzadas para tu cámara Guide.</string>
+    <string name="welcome_wifi">Para que la aplicación funcione, ingresa el SSID y la contraseña correctos de tu cámara en los ajustes.</string>
+    <string name="default_values">Valores por defecto:</string>
+    <string name="ssid_hint">SSID: Ver cámara</string>
+    <string name="password_hint">Contraseña: A menudo 12345678</string>
+    <string name="feature_gallery_desc">Gestionar fotos y videos en la app</string>
+    <string name="feature_measurements">Mediciones</string>
+    <string name="feature_measurements_desc">Ajustar puntos de temperatura y emisividad</string>
+    <string name="feature_auto_connect">Auto-conexión</string>
+    <string name="feature_auto_connect_desc">Conexión automática al iniciar</string>
+    <string name="feature_recording">Grabación</string>
+    <string name="feature_recording_desc">Grabar videos con audio</string>
+    <string name="welcome_outro">Puedes cambiar estos ajustes en cualquier momento a través del icono de engranaje.\n\n¡Disfruta de NoxVision!</string>
+
+    <!-- Whats New Dialog -->
+    <string name="whats_new_title">¡Novedades!</string>
+
+    <!-- Hunting Hub -->
+    <string name="entries">%1$d Entradas</string>
+    <string name="hunting_diary">Diario de caza</string>
+    <string name="main_features">FUNCIONES PRINCIPALES</string>
+    <string name="kill_documentation">Documentación de captura</string>
+    <string name="kill_documentation_subtitle">Diario de caza, GPS, Fotos, Exportar</string>
+    <string name="tracking">Rastreo</string>
+    <string name="tracking_subtitle">Puntos de referencia, Brújula, Dirección de huida</string>
+    <string name="information">INFORMACIÓN</string>
+    <string name="weather">Clima</string>
+    <string name="weather_subtitle">Condiciones actuales, Viento, Pronóstico</string>
+    <string name="hunting_seasons">Temporadas de caza</string>
+    <string name="hunting_seasons_subtitle">Temporadas de caza alemanas por estado</string>
+    <string name="map">Mapa</string>
+    <string name="map_subtitle">Puestos de caza, Puntos de referencia, Mapas sin conexión</string>
+
+    <!-- Weather Screen -->
+    <string name="no_weather_data">Sin datos del clima</string>
+    <string name="fetch_weather">Obtener clima</string>
+    <string name="feels_like">Sensación de %1$s</string>
+    <string name="wind">VIENTO</string>
+    <string name="from_direction">desde %1$s</string>
+    <string name="gusts">Ráfagas: %1$s</string>
+    <string name="details">DETALLES</string>
+    <string name="air_humidity">Humedad</string>
+    <string name="air_pressure">Presión</string>
+    <string name="cloud_cover">Nubosidad</string>
+    <string name="visibility">Visibilidad</string>
+    <string name="sunrise">Amanecer</string>
+    <string name="sunset">Atardecer</string>
+    <string name="moon_phase">FASE LUNAR</string>
+    <string name="illumination">Iluminación: %1$d%%</string>
+    <string name="last_updated">Última actualización: %1$s</string>
+    <string name="data_outdated">Datos desactualizados - por favor actualiza</string>
+    <string name="position_error">No se pudo determinar la posición</string>
+
+    <!-- Abschuss Form -->
+    <string name="new_kill">Nueva captura</string>
+    <string name="edit_kill">Editar captura</string>
+    <string name="wildlife">FAUNA</string>
+    <string name="wildlife_type">Especie</string>
+    <string name="gender_age">Sexo/Edad</string>
+    <string name="not_specified">No especificado</string>
+    <string name="estimated_weight">Peso estimado (kg)</string>
+    <string name="position">POSICIÓN</string>
+    <string name="capture_gps">Capturar GPS</string>
+    <string name="bundesland">Estado</string>
+    <string name="photo_section">FOTO</string>
+    <string name="add_photo">Añadir foto</string>
+    <string name="remove_photo">Eliminar foto</string>
+    <string name="notes">NOTAS</string>
+    <string name="additional_notes">Notas adicionales</string>
+
+    <!-- Abschuss List -->
+    <string name="no_entries">Sin entradas aún</string>
+    <string name="tap_to_add">Toca + para documentar</string>
+    <string name="export">Exportar</string>
+    <string name="export_csv">Exportar como CSV</string>
+    <string name="export_pdf">Exportar como PDF</string>
+    <string name="csv_saved">CSV guardado: %1$s</string>
+    <string name="pdf_saved">PDF guardado: %1$s</string>
+    <string name="new_entry">Nueva entrada</string>
+    <string name="delete_entry">¿Eliminar entrada?</string>
+    <string name="delete_entry_confirm">Esta entrada se eliminará permanentemente.</string>
+
+    <!-- Calendar Screen -->
+    <string name="hunting_seasons_active">%1$d temporadas de caza activas</string>
+    <string name="starting_soon">%1$d comienzan en los próximos 30 días</string>
+    <string name="show_active_only">Mostrar solo temporadas activas</string>
+    <string name="starting_soon_section">PRÓXIMAMENTE</string>
+    <string name="active_hunting_seasons">TEMPORADAS ACTIVAS</string>
+    <string name="all_hunting_seasons">TODAS LAS TEMPORADAS</string>
+    <string name="all_genders">Todos</string>
+    <string name="in_days">en %1$d días</string>
+    <string name="starts_on">Comienza el %1$d de %2$s</string>
+    <string name="hunting_seasons_note">Nota: Los horarios mostrados son temporadas federales. Pueden aplicarse variaciones locales.</string>
+
+    <!-- Map Screen -->
+    <string name="my_location">Mi ubicación</string>
+    <string name="hunting_stands">Puestos de caza: %1$d</string>
+    <string name="waypoints_count">Puntos de referencia: %1$d</string>
+    <string name="cache_size">Caché: %1$s</string>
+    <string name="long_press_hint">Mantén pulsado para añadir puesto</string>
+    <string name="add_hunting_stand">Añadir puesto de caza</string>
+    <string name="stand_name">Nombre</string>
+    <string name="stand_type">Tipo</string>
+    <string name="stand_position">Posición: %1$s</string>
+    <string name="zoom_in">Acercar</string>
+    <string name="zoom_out">Alejar</string>
+
+    <!-- Stand Types -->
+    <string name="stand_hochsitz">Puesto elevado</string>
+    <string name="stand_kanzel">Púlpito</string>
+    <string name="stand_druckjagd">Puesto de batida</string>
+    <string name="stand_ansitz">Puesto a ras de suelo</string>
+    <string name="stand_custom">Personalizado</string>
+
+    <!-- Waypoint Types -->
+    <string name="waypoint_anschuss">Punto de impacto</string>
+    <string name="waypoint_last_seen">Último avistamiento</string>
+    <string name="waypoint_blood_trail">Rastro de sangre</string>
+    <string name="waypoint_recovery">Lugar de recuperación</string>
+    <string name="waypoint_custom">Personalizado</string>
+
+    <!-- Nachsuche Screen -->
+    <string name="current_position">Posición actual</string>
+    <string name="accuracy">Precisión: %1$dm</string>
+    <string name="compass_unavailable">Brújula no disponible</string>
+    <string name="waypoints">PUNTOS DE REFERENCIA</string>
+    <string name="no_waypoints">Sin puntos de referencia</string>
+    <string name="tap_to_add_waypoint">Toca + para marcar un punto</string>
+    <string name="add_waypoint">Añadir punto de referencia</string>
+    <string name="select_type">Seleccionar tipo:</string>
+    <string name="target">Objetivo: %1$s</string>
+
+    <!-- Language Dialog -->
+    <string name="select_language">Seleccionar idioma</string>
+    <string name="system_language">Idioma del sistema</string>
+    <string name="language_german">Alemán</string>
+    <string name="language_english">Inglés</string>
+    <string name="language_french">Francés</string>
+    <string name="language_spanish">Español</string>
+
+    <!-- Month names -->
+    <string name="month_january">Enero</string>
+    <string name="month_february">Febrero</string>
+    <string name="month_march">Marzo</string>
+    <string name="month_april">Abril</string>
+    <string name="month_may">Mayo</string>
+    <string name="month_june">Junio</string>
+    <string name="month_july">Julio</string>
+    <string name="month_august">Agosto</string>
+    <string name="month_september">Septiembre</string>
+    <string name="month_october">Octubre</string>
+    <string name="month_november">Noviembre</string>
+    <string name="month_december">Diciembre</string>
+</resources>

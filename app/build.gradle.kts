@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -77,6 +78,9 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+    // AppCompat for per-app language preferences
+    implementation("androidx.appcompat:appcompat:1.7.0")
+
     // LibVLC und andere
     implementation("androidx.compose.material:material-icons-extended:1.7.6")
     implementation("org.videolan.android:libvlc-all:3.3.5")
@@ -86,4 +90,18 @@ dependencies {
     implementation("org.tensorflow:tensorflow-lite:2.14.0")
     implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
     implementation(libs.billing.ktx)
+
+    // Room Database
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+
+    // OSMDroid (Offline Maps)
+    implementation(libs.osmdroid)
+
+    // PDF Export
+    implementation(libs.pdfbox.android)
+
+    // Location Services
+    implementation(libs.play.services.location)
 }

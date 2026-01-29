@@ -27,9 +27,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.noxvision.app.R
 import com.noxvision.app.ui.NightColors
 import com.noxvision.app.ui.components.AboutFeatureItem
 import com.noxvision.app.ui.components.TechBadge
@@ -77,13 +79,13 @@ fun AboutDialogContent(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Version 1.0",
+                            text = stringResource(R.string.version, "1.0"),
                             color = NightColors.primary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
                         )
                         Text(
-                            text = "Open Source Android App fur Guide Warmebildkameras",
+                            text = stringResource(R.string.about_description),
                             color = NightColors.onSurface,
                             fontSize = 14.sp
                         )
@@ -94,7 +96,7 @@ fun AboutDialogContent(
 
                 // Description
                 Text(
-                    text = "NoxVision ist eine leistungsstarke Alternative zur offiziellen Guide App, speziell entwickelt fur das Guide TE211M Warmebild-Monokular und kompatible TE-Serie Kameras.",
+                    text = stringResource(R.string.about_long_description),
                     color = NightColors.onSurface,
                     fontSize = 14.sp,
                     lineHeight = 20.sp
@@ -104,7 +106,7 @@ fun AboutDialogContent(
 
                 // Features
                 Text(
-                    text = "Features",
+                    text = stringResource(R.string.features),
                     color = NightColors.primary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
@@ -113,27 +115,27 @@ fun AboutDialogContent(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    AboutFeatureItem(Icons.Filled.Videocam, "Live RTSP Video Stream")
-                    AboutFeatureItem(Icons.Filled.Visibility, "YOLO KI-Objekterkennung")
-                    AboutFeatureItem(Icons.Filled.Palette, "Mehrere Farbpaletten")
-                    AboutFeatureItem(Icons.Filled.Camera, "Screenshot & Video-Aufnahme")
-                    AboutFeatureItem(Icons.Filled.PhotoLibrary, "Integrierte Galerie")
-                    AboutFeatureItem(Icons.Filled.Wifi, "Auto-WiFi Verbindung")
-                    AboutFeatureItem(Icons.Filled.DarkMode, "Nacht-optimiertes Design")
+                    AboutFeatureItem(Icons.Filled.Videocam, stringResource(R.string.feature_stream))
+                    AboutFeatureItem(Icons.Filled.Visibility, stringResource(R.string.feature_ai))
+                    AboutFeatureItem(Icons.Filled.Palette, stringResource(R.string.feature_palettes))
+                    AboutFeatureItem(Icons.Filled.Camera, stringResource(R.string.feature_capture))
+                    AboutFeatureItem(Icons.Filled.PhotoLibrary, stringResource(R.string.feature_gallery))
+                    AboutFeatureItem(Icons.Filled.Wifi, stringResource(R.string.feature_wifi))
+                    AboutFeatureItem(Icons.Filled.DarkMode, stringResource(R.string.feature_night))
                 }
 
                 HorizontalDivider(color = NightColors.surface)
 
                 // Supported Devices
                 Text(
-                    text = "Unterstutzte Gerate",
+                    text = stringResource(R.string.supported_devices),
                     color = NightColors.primary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
 
                 Text(
-                    text = "• Guide TE211M (primar getestet)\n• Andere Guide TE-Serie Kameras\n• Kameras mit RTSP auf 192.168.42.1:8554",
+                    text = stringResource(R.string.supported_devices_list),
                     color = NightColors.onSurface,
                     fontSize = 13.sp,
                     lineHeight = 20.sp
@@ -176,7 +178,7 @@ fun AboutDialogContent(
 
                 // Tech Stack
                 Text(
-                    text = "Technologien",
+                    text = stringResource(R.string.technologies),
                     color = NightColors.primary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
@@ -202,7 +204,7 @@ fun AboutDialogContent(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Schliessen", color = NightColors.primary)
+                Text(stringResource(R.string.close), color = NightColors.primary)
             }
         },
         containerColor = NightColors.background,

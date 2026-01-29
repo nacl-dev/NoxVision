@@ -19,6 +19,8 @@
     <!-- Storage Permissions (< Android 10) -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
 
     <!-- Android 13+ Media Permissions -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
@@ -32,7 +34,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NoxVision"
         android:usesCleartextTraffic="true"
+        android:localeConfig="@xml/locale_config"
         tools:targetApi="31">
+
+        <!-- AppCompat per-app language support for pre-Android 13 -->
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
 
         <activity
             android:name=".MainActivity"
