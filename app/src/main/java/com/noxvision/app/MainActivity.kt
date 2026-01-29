@@ -1,8 +1,8 @@
 package com.noxvision.app
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -12,7 +12,7 @@ import com.noxvision.app.network.WiFiAutoConnect
 import com.noxvision.app.ui.NightColors
 import com.noxvision.app.ui.VideoStreamScreen
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     internal var wifiAutoConnect: WiFiAutoConnect? = null
 

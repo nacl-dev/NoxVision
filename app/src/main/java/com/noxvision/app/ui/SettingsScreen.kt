@@ -17,14 +17,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.noxvision.app.CameraSettings
+import com.noxvision.app.R
 import com.noxvision.app.ui.NightColors
 import com.noxvision.app.ui.dialogs.AboutDialogContent
+import com.noxvision.app.ui.dialogs.LanguageDialog
 import com.noxvision.app.ui.dialogs.LogDialogContent
 import com.noxvision.app.ui.dialogs.WhatsNewDialog
+import com.noxvision.app.ui.hunting.HuntingHubScreen
+import com.noxvision.app.util.LocaleHelper
 
 /**
  * Settings navigation state
@@ -70,6 +75,8 @@ fun SettingsScreen(
     var showLogDialog by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
     var showWhatsNewDialog by remember { mutableStateOf(false) }
+    var showHuntingHub by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
 
@@ -79,10 +86,10 @@ fun SettingsScreen(
                 title = {
                     Text(
                         text = when (currentPage) {
-                            SettingsPage.MAIN -> "Einstellungen"
-                            SettingsPage.CONNECTION -> "Verbindung"
-                            SettingsPage.CAMERA -> "Kamera"
-                            SettingsPage.APP_FEATURES -> "App-Funktionen"
+                            SettingsPage.MAIN -> stringResource(R.string.settings)
+                            SettingsPage.CONNECTION -> stringResource(R.string.connection)
+                            SettingsPage.CAMERA -> stringResource(R.string.camera)
+                            SettingsPage.APP_FEATURES -> stringResource(R.string.app_features)
                         },
                         color = NightColors.onSurface
                     )
@@ -97,7 +104,7 @@ fun SettingsScreen(
                     }) {
                         Icon(
                             Icons.Filled.ArrowBack,
-                            contentDescription = "Zuruck",
+                            contentDescription = stringResource(R.string.back),
                             tint = NightColors.onSurface
                         )
                     }
@@ -119,7 +126,8 @@ fun SettingsScreen(
                 onShowLog = { showLogDialog = true },
                 onShowAbout = { showAboutDialog = true },
                 onShowWhatsNew = { showWhatsNewDialog = true },
-                onShowFeatureBounties = onShowFeatureBounties
+                onShowFeatureBounties = onShowFeatureBounties,
+                onShowLanguage = { showLanguageDialog = true }
             )
             SettingsPage.CONNECTION -> ConnectionSettingsPage(
                 paddingValues = paddingValues,
@@ -147,7 +155,8 @@ fun SettingsScreen(
                 objectDetectionEnabled = objectDetectionEnabled,
                 enhancementEnabled = enhancementEnabled,
                 onObjectDetectionChange = onObjectDetectionChange,
-                onEnhancementChange = onEnhancementChange
+                onEnhancementChange = onEnhancementChange,
+                onShowHuntingHub = { showHuntingHub = true }
             )
         }
     }
@@ -164,6 +173,19 @@ fun SettingsScreen(
     if (showWhatsNewDialog) {
         WhatsNewDialog(onDismiss = { showWhatsNewDialog = false })
     }
+
+    if (showHuntingHub) {
+        HuntingHubScreen(onClose = { showHuntingHub = false })
+    }
+
+    if (showLanguageDialog) {
+        LanguageDialog(
+            onDismiss = { showLanguageDialog = false },
+            onLanguageSelected = { languageCode ->
+                LocaleHelper.setLocale(languageCode)
+            }
+        )
+    }
 }
 
 @Composable
@@ -176,7 +198,8 @@ private fun MainSettingsPage(
     onShowLog: () -> Unit,
     onShowAbout: () -> Unit,
     onShowWhatsNew: () -> Unit,
-    onShowFeatureBounties: () -> Unit
+    onShowFeatureBounties: () -> Unit,
+    onShowLanguage: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -194,30 +217,37 @@ private fun MainSettingsPage(
 
         SettingsCategoryCard(
             icon = Icons.Filled.Wifi,
-            title = "Verbindung",
-            subtitle = "WiFi, IP-Adresse, Port",
+            title = stringResource(R.string.connection),
+            subtitle = stringResource(R.string.connection_subtitle),
             onClick = onNavigateToConnection
         )
 
         SettingsCategoryCard(
             icon = Icons.Filled.CameraAlt,
-            title = "Kamera",
-            subtitle = "Audio, Helligkeit, Kontrast",
+            title = stringResource(R.string.camera),
+            subtitle = stringResource(R.string.camera_subtitle),
             onClick = onNavigateToCamera
         )
 
         SettingsCategoryCard(
             icon = Icons.Filled.Thermostat,
-            title = "Thermische Einstellungen",
-            subtitle = "Emissivitat, Entfernung, Shutter",
+            title = stringResource(R.string.thermal_settings),
+            subtitle = stringResource(R.string.thermal_settings_subtitle),
             onClick = onShowThermalSettings
         )
 
         SettingsCategoryCard(
             icon = Icons.Filled.AutoAwesome,
-            title = "App-Funktionen",
-            subtitle = "AI-Erkennung, Bildverbesserung",
+            title = stringResource(R.string.app_features),
+            subtitle = stringResource(R.string.app_features_subtitle),
             onClick = onNavigateToAppFeatures
+        )
+
+        SettingsCategoryCard(
+            icon = Icons.Filled.Language,
+            title = stringResource(R.string.language),
+            subtitle = LocaleHelper.getSelectedLanguageDisplayName(),
+            onClick = onShowLanguage
         )
 
         HorizontalDivider(
@@ -238,24 +268,24 @@ private fun MainSettingsPage(
                     modifier = Modifier.size(18.dp)
                 )
             },
-            title = "SYSTEM & INFO"
+            title = stringResource(R.string.system_info)
         )
 
         SettingsActionItem(
             icon = Icons.Filled.Description,
-            title = "System Log",
+            title = stringResource(R.string.system_log),
             onClick = onShowLog
         )
 
         SettingsActionItem(
             icon = Icons.Filled.NewReleases,
-            title = "Was ist neu?",
+            title = stringResource(R.string.whats_new),
             onClick = onShowWhatsNew
         )
 
         SettingsActionItem(
             icon = Icons.Filled.Info,
-            title = "Uber NoxVision",
+            title = stringResource(R.string.about_noxvision),
             onClick = onShowAbout
         )
 
@@ -392,7 +422,7 @@ private fun ConnectionSettingsPage(
                     modifier = Modifier.size(18.dp)
                 )
             },
-            title = "KAMERA-ADRESSE"
+            title = stringResource(R.string.camera_address)
         )
 
         OutlinedTextField(
@@ -401,17 +431,17 @@ private fun ConnectionSettingsPage(
                 editingIp = newValue
                 ipError = !CameraSettings.isValidIp(newValue)
             },
-            label = { Text("IP-Adresse") },
+            label = { Text(stringResource(R.string.ip_address)) },
             isError = ipError,
             supportingText = {
                 if (ipError) {
-                    Text(text = "Ungultige IP-Adresse", color = NightColors.error)
+                    Text(text = stringResource(R.string.invalid_ip), color = NightColors.error)
                 }
             },
             trailingIcon = {
                 if (editingIp != cameraIp && !ipError) {
                     IconButton(onClick = { onCameraIpChange(editingIp) }) {
-                        Icon(Icons.Filled.Check, contentDescription = "Speichern", tint = NightColors.success)
+                        Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.save), tint = NightColors.success)
                     }
                 }
             },
@@ -428,7 +458,7 @@ private fun ConnectionSettingsPage(
                     onCameraIpChange(CameraSettings.getDefaultIp())
                 }
             ) {
-                Text(text = "Auf Standard zurucksetzen (${CameraSettings.getDefaultIp()})", color = NightColors.primary, fontSize = 12.sp)
+                Text(text = stringResource(R.string.reset_to_default, CameraSettings.getDefaultIp()), color = NightColors.primary, fontSize = 12.sp)
             }
         }
 
@@ -440,8 +470,8 @@ private fun ConnectionSettingsPage(
                     it.toIntOrNull()?.let { port -> onHttpPortChange(port) }
                 }
             },
-            label = { Text("HTTP API Port") },
-            supportingText = { Text("Standard: 80") },
+            label = { Text(stringResource(R.string.http_api_port)) },
+            supportingText = { Text(stringResource(R.string.default_port)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             colors = nightTextFieldColors()
@@ -459,12 +489,12 @@ private fun ConnectionSettingsPage(
                     modifier = Modifier.size(18.dp)
                 )
             },
-            title = "WIFI AUTO-CONNECT"
+            title = stringResource(R.string.wifi_auto_connect)
         )
 
         SettingsToggleRow(
             icon = Icons.Filled.Wifi,
-            label = "Automatisch verbinden",
+            label = stringResource(R.string.auto_connect),
             checked = autoConnectEnabled,
             onCheckedChange = {
                 autoConnectEnabled = it
@@ -479,8 +509,8 @@ private fun ConnectionSettingsPage(
                     editingSsid = it
                     onWifiSsidChange(it)
                 },
-                label = { Text("WiFi SSID (Netzwerkname)") },
-                supportingText = { Text("Steht auf dem Aufkleber der Kamera") },
+                label = { Text(stringResource(R.string.wifi_ssid)) },
+                supportingText = { Text(stringResource(R.string.wifi_ssid_hint)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 colors = nightTextFieldColors()
@@ -492,8 +522,8 @@ private fun ConnectionSettingsPage(
                     editingPassword = it
                     onWifiPasswordChange(it)
                 },
-                label = { Text("WiFi Passwort") },
-                supportingText = { Text("Oft: 12345678") },
+                label = { Text(stringResource(R.string.wifi_password)) },
+                supportingText = { Text(stringResource(R.string.wifi_password_hint)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 colors = nightTextFieldColors()
@@ -541,19 +571,19 @@ private fun CameraSettingsPage(
                     modifier = Modifier.size(18.dp)
                 )
             },
-            title = "AUDIO & ANZEIGE"
+            title = stringResource(R.string.audio_display)
         )
 
         SettingsToggleRow(
             icon = if (audioEnabled) Icons.AutoMirrored.Filled.VolumeUp else Icons.AutoMirrored.Filled.VolumeOff,
-            label = "Audio aktivieren",
+            label = stringResource(R.string.enable_audio),
             checked = audioEnabled,
             onCheckedChange = onAudioChange
         )
 
         SettingsToggleRow(
             icon = Icons.Filled.MyLocation,
-            label = "Hotspot anzeigen (heissester Punkt)",
+            label = stringResource(R.string.show_hotspot),
             checked = hotspotEnabled,
             onCheckedChange = onHotspotChange
         )
@@ -570,7 +600,7 @@ private fun CameraSettingsPage(
                     modifier = Modifier.size(18.dp)
                 )
             },
-            title = "BILDEINSTELLUNGEN"
+            title = stringResource(R.string.image_settings)
         )
 
         // Helligkeit
@@ -580,7 +610,7 @@ private fun CameraSettingsPage(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(Icons.Filled.Brightness6, contentDescription = null, tint = NightColors.onSurface)
-                Text(text = "Helligkeit", color = NightColors.onSurface)
+                Text(text = stringResource(R.string.brightness), color = NightColors.onSurface)
             }
             Spacer(modifier = Modifier.height(8.dp))
             Row(
@@ -609,7 +639,7 @@ private fun CameraSettingsPage(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(Icons.Filled.Contrast, contentDescription = null, tint = NightColors.onSurface)
-                Text(text = "Kontrast", color = NightColors.onSurface)
+                Text(text = stringResource(R.string.contrast), color = NightColors.onSurface)
             }
             Spacer(modifier = Modifier.height(8.dp))
             Row(
@@ -643,7 +673,7 @@ private fun CameraSettingsPage(
                     modifier = Modifier.size(18.dp)
                 )
             },
-            title = "ERWEITERT"
+            title = stringResource(R.string.advanced)
         )
 
         Button(
@@ -654,7 +684,7 @@ private fun CameraSettingsPage(
         ) {
             Icon(Icons.Filled.Thermostat, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Thermische Einstellungen")
+            Text(stringResource(R.string.thermal_settings))
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -671,7 +701,8 @@ private fun AppFeaturesPage(
     objectDetectionEnabled: Boolean,
     enhancementEnabled: Boolean,
     onObjectDetectionChange: (Boolean) -> Unit,
-    onEnhancementChange: (Boolean) -> Unit
+    onEnhancementChange: (Boolean) -> Unit,
+    onShowHuntingHub: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -683,6 +714,28 @@ private fun AppFeaturesPage(
     ) {
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Hunting Assistant
+        SettingsSectionHeader(
+            icon = {
+                Icon(
+                    Icons.Filled.Forest,
+                    contentDescription = null,
+                    tint = NightColors.primary,
+                    modifier = Modifier.size(18.dp)
+                )
+            },
+            title = stringResource(R.string.hunting)
+        )
+
+        SettingsCategoryCard(
+            icon = Icons.Filled.Forest,
+            title = stringResource(R.string.hunting_assistant),
+            subtitle = stringResource(R.string.hunting_assistant_subtitle),
+            onClick = onShowHuntingHub
+        )
+
+        HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 8.dp))
+
         // AI Features
         SettingsSectionHeader(
             icon = {
@@ -693,7 +746,7 @@ private fun AppFeaturesPage(
                     modifier = Modifier.size(18.dp)
                 )
             },
-            title = "KI-FUNKTIONEN"
+            title = stringResource(R.string.ai_features)
         )
 
         Card(
@@ -703,7 +756,7 @@ private fun AppFeaturesPage(
             Column(modifier = Modifier.padding(16.dp)) {
                 SettingsToggleRow(
                     icon = Icons.Filled.Visibility,
-                    label = "AI Objekterkennung",
+                    label = stringResource(R.string.ai_object_detection),
                     checked = objectDetectionEnabled,
                     onCheckedChange = onObjectDetectionChange
                 )
@@ -711,7 +764,7 @@ private fun AppFeaturesPage(
                 if (objectDetectionEnabled) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Erkennt Personen, Fahrzeuge und Tiere im Warmebild mit Entfernungsschatzung.",
+                        text = stringResource(R.string.ai_detection_desc),
                         color = NightColors.onBackground,
                         fontSize = 12.sp
                     )
@@ -731,7 +784,7 @@ private fun AppFeaturesPage(
                     modifier = Modifier.size(18.dp)
                 )
             },
-            title = "BILDVERBESSERUNG"
+            title = stringResource(R.string.image_enhancement)
         )
 
         Card(
@@ -741,7 +794,7 @@ private fun AppFeaturesPage(
             Column(modifier = Modifier.padding(16.dp)) {
                 SettingsToggleRow(
                     icon = Icons.Filled.AutoFixHigh,
-                    label = "Bildverbesserung aktivieren",
+                    label = stringResource(R.string.enable_image_enhancement),
                     checked = enhancementEnabled,
                     onCheckedChange = onEnhancementChange
                 )
@@ -749,7 +802,7 @@ private fun AppFeaturesPage(
                 if (enhancementEnabled) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Verbessert Kontrast und Scharfe des Warmebilds in Echtzeit.",
+                        text = stringResource(R.string.image_enhancement_desc),
                         color = NightColors.onBackground,
                         fontSize = 12.sp
                     )

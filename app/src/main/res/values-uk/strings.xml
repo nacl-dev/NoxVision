@@ -1,0 +1,293 @@
+<resources>
+    <string name="app_name">NoxVision</string>
+
+    <!-- Common -->
+    <string name="back">Назад</string>
+    <string name="close">Закрити</string>
+    <string name="save">Зберегти</string>
+    <string name="cancel">Скасувати</string>
+    <string name="delete">Видалити</string>
+    <string name="ok">OK</string>
+    <string name="refresh">Оновити</string>
+    <string name="loading">Завантаження…</string>
+    <string name="error">Помилка</string>
+    <string name="no_files">Немає файлів</string>
+    <string name="understood">Зрозуміло</string>
+    <string name="next">Далі</string>
+    <string name="start">Почати</string>
+    <string name="clear">Очистити</string>
+
+    <!-- Settings Screen -->
+    <string name="settings">Налаштування</string>
+    <string name="connection">З’єднання</string>
+    <string name="connection_subtitle">WiFi, IP-адреса, порт</string>
+    <string name="camera">Камера</string>
+    <string name="camera_subtitle">Аудіо, яскравість, контраст</string>
+    <string name="thermal_settings">Теплові налаштування</string>
+    <string name="thermal_settings_subtitle">Емісивність, відстань, shutter</string>
+    <string name="app_features">Функції застосунку</string>
+    <string name="app_features_subtitle">Розпізнавання ШІ, покращення зображення</string>
+    <string name="system_info">СИСТЕМА &amp; ІНФО</string>
+    <string name="system_log">Лог системи</string>
+    <string name="whats_new">Що нового?</string>
+    <string name="about_noxvision">Про NoxVision</string>
+    <string name="language">Мова</string>
+    <string name="language_subtitle">Змінити мову застосунку</string>
+
+    <!-- Connection Settings -->
+    <string name="camera_address">АДРЕСА КАМЕРИ</string>
+    <string name="ip_address">IP-адреса</string>
+    <string name="invalid_ip">Неправильна IP-адреса</string>
+    <string name="reset_to_default">Скинути до стандартних (%1$s)</string>
+    <string name="http_api_port">Порт HTTP API</string>
+    <string name="default_port">Стандарт: 80</string>
+    <string name="wifi_auto_connect">АВТО-ПІДКЛЮЧЕННЯ WIFI</string>
+    <string name="auto_connect">Підключатися автоматично</string>
+    <string name="wifi_ssid">WiFi SSID (назва мережі)</string>
+    <string name="wifi_ssid_hint">Вказано на наклейці камери</string>
+    <string name="wifi_password">Пароль WiFi</string>
+    <string name="wifi_password_hint">Часто: 12345678</string>
+
+    <!-- Camera Settings -->
+    <string name="audio_display">АУДІО &amp; ВІДОБРАЖЕННЯ</string>
+    <string name="enable_audio">Увімкнути аудіо</string>
+    <string name="show_hotspot">Показувати hotspot (найгарячішу точку)</string>
+    <string name="image_settings">НАЛАШТУВАННЯ ЗОБРАЖЕННЯ</string>
+    <string name="brightness">Яскравість</string>
+    <string name="contrast">Контраст</string>
+    <string name="advanced">РОЗШИРЕНІ</string>
+
+    <!-- App Features -->
+    <string name="hunting">ПОЛЮВАННЯ</string>
+    <string name="hunting_assistant">Мисливський помічник</string>
+    <string name="hunting_assistant_subtitle">Документація, погода, карти, добір</string>
+    <string name="ai_features">ФУНКЦІЇ ШІ</string>
+    <string name="ai_object_detection">Розпізнавання об’єктів ШІ</string>
+    <string name="ai_detection_desc">Розпізнає людей, транспорт і тварин у тепловізійному зображенні з оцінкою відстані.</string>
+    <string name="image_enhancement">ПОКРАЩЕННЯ ЗОБРАЖЕННЯ</string>
+    <string name="enable_image_enhancement">Увімкнути покращення зображення</string>
+    <string name="image_enhancement_desc">Покращує контраст і різкість тепловізійного зображення в реальному часі.</string>
+
+    <!-- Thermal Settings -->
+    <string name="camera_features">Функції камери</string>
+    <string name="radiometry">Радіометрія</string>
+    <string name="focus">Фокус</string>
+    <string name="gps">GPS</string>
+    <string name="shutter_nuc">Калібрування Shutter / NUC</string>
+    <string name="calibrating">Калібрування…</string>
+    <string name="emissivity">Емісивність: %1$.2f</string>
+    <string name="presets">Пресети</string>
+    <string name="skin">Шкіра</string>
+    <string name="wood">Дерево</string>
+    <string name="steel">Сталь</string>
+    <string name="aluminum">Алюміній</string>
+    <string name="distance">Відстань: %1$.1f м</string>
+    <string name="humidity">Вологість: %1$.0f %%</string>
+    <string name="reflect_temperature">Температура відбиття: %1$.1f °C</string>
+    <string name="apply_settings">Застосувати налаштування</string>
+
+    <!-- Video Stream Screen -->
+    <string name="connecting">Підключення…</string>
+    <string name="connecting_to_camera">Підключення до камери…</string>
+    <string name="buffering">Буферизація %1$d%%</string>
+    <string name="live">НАЖИВО</string>
+    <string name="offline">Офлайн</string>
+    <string name="rec">REC %1$s</string>
+    <string name="zoom">Зум</string>
+    <string name="palette">Палітра</string>
+    <string name="connect">Підключити</string>
+    <string name="disconnect">Відключити</string>
+    <string name="gallery">Галерея</string>
+    <string name="record">Запис</string>
+    <string name="stop_rec">Стоп</string>
+    <string name="photo">Фото</string>
+    <string name="permissions_required">Потрібні дозволи</string>
+    <string name="wifi_connection_failed">Не вдалося підключитися до WiFi</string>
+    <string name="photo_saved">Фото збережено</string>
+    <string name="video_saved">Відео збережено (%1$d KB)</string>
+    <string name="video_too_small">Відео занадто мале/порожнє</string>
+
+    <!-- Gallery -->
+    <string name="phone">Телефон</string>
+    <string name="thermal">Тепловізор</string>
+    <string name="no_viewer_found">Не знайдено переглядача</string>
+    <string name="error_loading">Помилка завантаження</string>
+
+    <!-- Log Dialog -->
+    <string name="no_log_entries">Немає записів</string>
+
+    <!-- About Dialog -->
+    <string name="version">Версія %1$s</string>
+    <string name="about_description">Open Source Android застосунок для тепловізійних камер Guide</string>
+    <string name="about_long_description">NoxVision — потужна альтернатива офіційному застосунку Guide, спеціально розроблена для тепловізійного монокуляра Guide TE211M та сумісних камер серії TE.</string>
+    <string name="features">Функції</string>
+    <string name="feature_stream">RTSP відеострім наживо</string>
+    <string name="feature_ai">Розпізнавання об’єктів YOLO ШІ</string>
+    <string name="feature_palettes">Кілька кольорових палітр</string>
+    <string name="feature_capture">Скріншот &amp; запис відео</string>
+    <string name="feature_gallery">Вбудована галерея</string>
+    <string name="feature_wifi">Авто‑підключення WiFi</string>
+    <string name="feature_night">Дизайн, оптимізований для ночі</string>
+    <string name="supported_devices">Підтримувані пристрої</string>
+    <string name="supported_devices_list">• Guide TE211M (основне тестування)\n• Інші камери серії TE Guide\n• Камери з RTSP на 192.168.42.1:8554</string>
+    <string name="technologies">Технології</string>
+
+    <!-- Welcome Dialog -->
+    <string name="welcome_title">Ласкаво просимо до NoxVision</string>
+    <string name="setup_connection">Налаштувати з’єднання</string>
+    <string name="important_features">Важливі функції</string>
+    <string name="ready">Готово!</string>
+    <string name="welcome_intro">Ваш супутник для тепловізійної зйомки.\n\nЦей застосунок пропонує розширені функції для вашої камери Guide.</string>
+    <string name="welcome_wifi">Щоб застосунок працював, потрібно вказати правильний SSID і пароль вашої камери в налаштуваннях.</string>
+    <string name="default_values">Стандартні значення:</string>
+    <string name="ssid_hint">SSID: див. камеру</string>
+    <string name="password_hint">Пароль: часто 12345678</string>
+    <string name="feature_gallery_desc">Керуйте фото &amp; відео прямо в застосунку</string>
+    <string name="feature_measurements">Вимірювання</string>
+    <string name="feature_measurements_desc">Налаштування точок температури та коефіцієнта емісії</string>
+    <string name="feature_auto_connect">Авто‑підключення</string>
+    <string name="feature_auto_connect_desc">Автоматичне підключення під час запуску</string>
+    <string name="feature_recording">Запис</string>
+    <string name="feature_recording_desc">Запис відео зі звуком</string>
+    <string name="welcome_outro">Ви можете змінити ці налаштування пізніше будь‑коли через значок шестерні.\n\nПриємного користування NoxVision!</string>
+
+    <!-- Whats New Dialog -->
+    <string name="whats_new_title">Що нового!</string>
+
+    <!-- Hunting Hub -->
+    <string name="entries">%1$d записів</string>
+    <string name="hunting_diary">Мисливський щоденник</string>
+    <string name="main_features">ГОЛОВНІ ФУНКЦІЇ</string>
+    <string name="kill_documentation">Документація добування</string>
+    <string name="kill_documentation_subtitle">Вести щоденник, GPS, фото, експорт</string>
+    <string name="tracking">Добір</string>
+    <string name="tracking_subtitle">Точки, компас, напрямок втечі</string>
+    <string name="information">ІНФОРМАЦІЯ</string>
+    <string name="weather">Погода</string>
+    <string name="weather_subtitle">Поточні умови, вітер, прогноз</string>
+    <string name="hunting_seasons">Сезони полювання</string>
+    <string name="hunting_seasons_subtitle">Німецькі сезони полювання за федеральною землею</string>
+    <string name="map">Карта</string>
+    <string name="map_subtitle">Вишки, точки, офлайн‑карти</string>
+
+    <!-- Weather Screen -->
+    <string name="no_weather_data">Немає даних погоди</string>
+    <string name="fetch_weather">Отримати погоду</string>
+    <string name="feels_like">Відчувається як %1$s</string>
+    <string name="wind">ВІТЕР</string>
+    <string name="from_direction">з %1$s</string>
+    <string name="gusts">Пориви: %1$s</string>
+    <string name="details">ДЕТАЛІ</string>
+    <string name="air_humidity">Вологість повітря</string>
+    <string name="air_pressure">Атмосферний тиск</string>
+    <string name="cloud_cover">Хмарність</string>
+    <string name="visibility">Видимість</string>
+    <string name="sunrise">Схід сонця</string>
+    <string name="sunset">Захід сонця</string>
+    <string name="moon_phase">ФАЗА МІСЯЦЯ</string>
+    <string name="illumination">Освітлення: %1$d%%</string>
+    <string name="last_updated">Останнє оновлення: %1$s</string>
+    <string name="data_outdated">Дані застаріли — будь ласка, оновіть</string>
+    <string name="position_error">Не вдалося визначити місцезнаходження</string>
+
+    <!-- Abschuss Form -->
+    <string name="new_kill">Нове добування</string>
+    <string name="edit_kill">Редагувати добування</string>
+    <string name="wildlife">ДИЧИНА</string>
+    <string name="wildlife_type">Вид дичини</string>
+    <string name="gender_age">Стать/вік</string>
+    <string name="not_specified">Не вказано</string>
+    <string name="estimated_weight">Орієнтовна вага (кг)</string>
+    <string name="position">ПОЗИЦІЯ</string>
+    <string name="capture_gps">Зняти GPS</string>
+    <string name="bundesland">Федеральна земля</string>
+    <string name="photo_section">ФОТО</string>
+    <string name="add_photo">Додати фото</string>
+    <string name="remove_photo">Видалити фото</string>
+    <string name="notes">НОТАТКИ</string>
+    <string name="additional_notes">Додаткові нотатки</string>
+
+    <!-- Abschuss List -->
+    <string name="no_entries">Поки що немає записів</string>
+    <string name="tap_to_add">Натисніть +, щоб задокументувати добування</string>
+    <string name="export">Експорт</string>
+    <string name="export_csv">Експортувати як CSV</string>
+    <string name="export_pdf">Експортувати як PDF</string>
+    <string name="csv_saved">CSV збережено: %1$s</string>
+    <string name="pdf_saved">PDF збережено: %1$s</string>
+    <string name="new_entry">Новий запис</string>
+    <string name="delete_entry">Видалити запис?</string>
+    <string name="delete_entry_confirm">Цей запис буде безповоротно видалено.</string>
+
+    <!-- Calendar Screen -->
+    <string name="hunting_seasons_active">%1$d активних сезонів полювання</string>
+    <string name="starting_soon">%1$d починаються протягом наступних 30 днів</string>
+    <string name="show_active_only">Показувати лише активні сезони</string>
+    <string name="starting_soon_section">СКОРО ПОЧНУТЬСЯ</string>
+    <string name="active_hunting_seasons">АКТИВНІ СЕЗОНИ ПОЛЮВАННЯ</string>
+    <string name="all_hunting_seasons">УСІ СЕЗОНИ ПОЛЮВАННЯ</string>
+    <string name="all_genders">Усі</string>
+    <string name="in_days">через %1$d днів</string>
+    <string name="starts_on">Починається %1$d. %2$s</string>
+    <string name="hunting_seasons_note">Примітка: Показані строки відповідають федеральним строкам полювання. Можливі відмінності залежно від федеральної землі.</string>
+
+    <!-- Map Screen -->
+    <string name="my_location">Моє місцезнаходження</string>
+    <string name="hunting_stands">Вишки: %1$d</string>
+    <string name="waypoints_count">Точки: %1$d</string>
+    <string name="cache_size">Кеш: %1$s</string>
+    <string name="long_press_hint">Натисніть і утримуйте, щоб додати вишку</string>
+    <string name="add_hunting_stand">Додати вишку</string>
+    <string name="stand_name">Назва</string>
+    <string name="stand_type">Тип</string>
+    <string name="stand_position">Позиція: %1$s</string>
+    <string name="zoom_in">Збільшити</string>
+    <string name="zoom_out">Зменшити</string>
+
+    <!-- Stand Types -->
+    <string name="stand_hochsitz">Вишка</string>
+    <string name="stand_kanzel">Канцель</string>
+    <string name="stand_druckjagd">Номер на загінному полюванні</string>
+    <string name="stand_ansitz">Засідка</string>
+    <string name="stand_custom">Користувацький</string>
+
+    <!-- Waypoint Types -->
+    <string name="waypoint_anschuss">Місце влучання</string>
+    <string name="waypoint_last_seen">Останнє спостереження</string>
+    <string name="waypoint_blood_trail">Кров’яний слід</string>
+    <string name="waypoint_recovery">Місце знаходження</string>
+    <string name="waypoint_custom">Користувацький</string>
+
+    <!-- Nachsuche Screen -->
+    <string name="current_position">Поточна позиція</string>
+    <string name="accuracy">Точність: %1$dm</string>
+    <string name="compass_unavailable">Компас недоступний</string>
+    <string name="waypoints">ТОЧКИ</string>
+    <string name="no_waypoints">Немає точок</string>
+    <string name="tap_to_add_waypoint">Натисніть +, щоб позначити місце влучання або точку</string>
+    <string name="add_waypoint">Додати точку</string>
+    <string name="select_type">Виберіть тип:</string>
+    <string name="target">Ціль: %1$s</string>
+
+    <!-- Language Dialog -->
+    <string name="select_language">Виберіть мову</string>
+    <string name="system_language">Мова системи</string>
+    <string name="language_german">Німецька</string>
+    <string name="language_english">Англійська</string>
+    <string name="language_french">Французька</string>
+    <string name="language_spanish">Іспанська</string>
+
+    <!-- Month names -->
+    <string name="month_january">Січень</string>
+    <string name="month_february">Лютий</string>
+    <string name="month_march">Березень</string>
+    <string name="month_april">Квітень</string>
+    <string name="month_may">Травень</string>
+    <string name="month_june">Червень</string>
+    <string name="month_july">Липень</string>
+    <string name="month_august">Серпень</string>
+    <string name="month_september">Вересень</string>
+    <string name="month_october">Жовтень</string>
+    <string name="month_november">Листопад</string>
+    <string name="month_december">Грудень</string>
+</resources>

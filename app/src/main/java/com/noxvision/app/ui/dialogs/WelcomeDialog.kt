@@ -41,11 +41,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.noxvision.app.R
 import com.noxvision.app.ui.NightColors
 import com.noxvision.app.ui.components.WelcomeFeatureItem
 
@@ -87,10 +89,10 @@ fun WelcomeDialog(onDismiss: () -> Unit) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = when (step) {
-                            0 -> "Willkommen bei NoxVision"
-                            1 -> "Verbindung einrichten"
-                            2 -> "Wichtige Funktionen"
-                            else -> "Bereit!"
+                            0 -> stringResource(R.string.welcome_title)
+                            1 -> stringResource(R.string.setup_connection)
+                            2 -> stringResource(R.string.important_features)
+                            else -> stringResource(R.string.ready)
                         },
                         style = MaterialTheme.typography.headlineMedium,
                         color = NightColors.onSurface,
@@ -109,7 +111,7 @@ fun WelcomeDialog(onDismiss: () -> Unit) {
                         0 -> {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
-                                    text = "Ihr Begleiter fur Warmibildaufnahmen.\n\nDiese App bietet erweiterte Funktionen fur Ihre Guide Kamera.",
+                                    text = stringResource(R.string.welcome_intro),
                                     color = NightColors.onBackground,
                                     fontSize = MaterialTheme.typography.bodyLarge.fontSize,
                                     textAlign = TextAlign.Center
@@ -120,7 +122,7 @@ fun WelcomeDialog(onDismiss: () -> Unit) {
                         1 -> {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
-                                    text = "Damit die App funktioniert, mussen Sie die korrekte SSID und das Passwort Ihrer Kamera in den Einstellungen hinterlegen.",
+                                    text = stringResource(R.string.welcome_wifi),
                                     color = NightColors.onBackground,
                                     fontSize = MaterialTheme.typography.bodyLarge.fontSize,
                                     textAlign = TextAlign.Center
@@ -131,18 +133,18 @@ fun WelcomeDialog(onDismiss: () -> Unit) {
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
                                         Text(
-                                            "Standard-Werte:",
+                                            stringResource(R.string.default_values),
                                             color = NightColors.onSurface,
                                             fontWeight = FontWeight.Bold
                                         )
                                         Spacer(modifier = Modifier.height(8.dp))
                                         Text(
-                                            "SSID: Siehe Kamera-Aufkleber",
+                                            stringResource(R.string.ssid_hint),
                                             color = NightColors.onBackground,
                                             fontSize = MaterialTheme.typography.bodyMedium.fontSize
                                         )
                                         Text(
-                                            "Passwort: Oft 12345678",
+                                            stringResource(R.string.password_hint),
                                             color = NightColors.onBackground,
                                             fontSize = MaterialTheme.typography.bodyMedium.fontSize
                                         )
@@ -158,30 +160,30 @@ fun WelcomeDialog(onDismiss: () -> Unit) {
                             ) {
                                 WelcomeFeatureItem(
                                     Icons.Filled.Camera,
-                                    "Galerie",
-                                    "Bilder & Videos direkt in der App verwalten"
+                                    stringResource(R.string.gallery),
+                                    stringResource(R.string.feature_gallery_desc)
                                 )
                                 WelcomeFeatureItem(
                                     Icons.Filled.Thermostat,
-                                    "Messungen",
-                                    "Temperaturpunkte und Emissionsgrad anpassen"
+                                    stringResource(R.string.feature_measurements),
+                                    stringResource(R.string.feature_measurements_desc)
                                 )
                                 WelcomeFeatureItem(
                                     Icons.Filled.Wifi,
-                                    "Auto-Connect",
-                                    "Automatische Verbindung beim Start"
+                                    stringResource(R.string.feature_auto_connect),
+                                    stringResource(R.string.feature_auto_connect_desc)
                                 )
                                 WelcomeFeatureItem(
                                     Icons.Filled.Videocam,
-                                    "Aufnahme",
-                                    "Videos mit Ton aufzeichnen"
+                                    stringResource(R.string.feature_recording),
+                                    stringResource(R.string.feature_recording_desc)
                                 )
                             }
                         }
 
                         3 -> {
                             Text(
-                                text = "Sie konnen diese Einstellungen spater jederzeit uber das Zahnrad-Symbol andern.\n\nViel Spass mit NoxVision!",
+                                text = stringResource(R.string.welcome_outro),
                                 color = NightColors.onBackground,
                                 fontSize = MaterialTheme.typography.bodyLarge.fontSize,
                                 textAlign = TextAlign.Center
@@ -199,7 +201,7 @@ fun WelcomeDialog(onDismiss: () -> Unit) {
                     // Back button / Indicator
                     if (step > 0) {
                         TextButton(onClick = { step-- }) {
-                            Text("Zuruck", color = NightColors.onSurface)
+                            Text(stringResource(R.string.back), color = NightColors.onSurface)
                         }
                     } else {
                         Spacer(modifier = Modifier.width(64.dp))
@@ -227,7 +229,7 @@ fun WelcomeDialog(onDismiss: () -> Unit) {
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = NightColors.primary)
                     ) {
-                        Text(if (step < 3) "Weiter" else "Starten")
+                        Text(if (step < 3) stringResource(R.string.next) else stringResource(R.string.start))
                     }
                 }
             }

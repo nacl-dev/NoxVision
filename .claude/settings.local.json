@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(./gradlew compileDebugKotlin:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "WebSearch",
+      "WebFetch(domain:mvnrepository.com)",
+      "Bash(grep:*)",
+      "mcp__plugin_context7_context7__query-docs"
     ]
   }
 }

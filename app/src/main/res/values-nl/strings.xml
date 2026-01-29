@@ -1,0 +1,293 @@
+<resources>
+    <string name="app_name">NoxVision</string>
+
+    <!-- Common -->
+    <string name="back">Terug</string>
+    <string name="close">Sluiten</string>
+    <string name="save">Opslaan</string>
+    <string name="cancel">Annuleren</string>
+    <string name="delete">Verwijderen</string>
+    <string name="ok">OK</string>
+    <string name="refresh">Vernieuwen</string>
+    <string name="loading">Laden…</string>
+    <string name="error">Fout</string>
+    <string name="no_files">Geen bestanden</string>
+    <string name="understood">Begrepen</string>
+    <string name="next">Volgende</string>
+    <string name="start">Starten</string>
+    <string name="clear">Wissen</string>
+
+    <!-- Settings Screen -->
+    <string name="settings">Instellingen</string>
+    <string name="connection">Verbinding</string>
+    <string name="connection_subtitle">WiFi, IP-adres, poort</string>
+    <string name="camera">Camera</string>
+    <string name="camera_subtitle">Audio, helderheid, contrast</string>
+    <string name="thermal_settings">Thermische instellingen</string>
+    <string name="thermal_settings_subtitle">Emissiviteit, afstand, shutter</string>
+    <string name="app_features">App-functies</string>
+    <string name="app_features_subtitle">AI-detectie, beeldverbetering</string>
+    <string name="system_info">SYSTEEM &amp; INFO</string>
+    <string name="system_log">Systeemlog</string>
+    <string name="whats_new">Wat is er nieuw?</string>
+    <string name="about_noxvision">Over NoxVision</string>
+    <string name="language">Taal</string>
+    <string name="language_subtitle">App-taal wijzigen</string>
+
+    <!-- Connection Settings -->
+    <string name="camera_address">CAMERA-ADRES</string>
+    <string name="ip_address">IP-adres</string>
+    <string name="invalid_ip">Ongeldig IP-adres</string>
+    <string name="reset_to_default">Terugzetten naar standaard (%1$s)</string>
+    <string name="http_api_port">HTTP API-poort</string>
+    <string name="default_port">Standaard: 80</string>
+    <string name="wifi_auto_connect">WIFI AUTO-CONNECT</string>
+    <string name="auto_connect">Automatisch verbinden</string>
+    <string name="wifi_ssid">WiFi SSID (netwerknaam)</string>
+    <string name="wifi_ssid_hint">Staat op de sticker van de camera</string>
+    <string name="wifi_password">WiFi-wachtwoord</string>
+    <string name="wifi_password_hint">Vaak: 12345678</string>
+
+    <!-- Camera Settings -->
+    <string name="audio_display">AUDIO &amp; WEERGAVE</string>
+    <string name="enable_audio">Audio inschakelen</string>
+    <string name="show_hotspot">Hotspot tonen (heetste punt)</string>
+    <string name="image_settings">BEELDINSTELLINGEN</string>
+    <string name="brightness">Helderheid</string>
+    <string name="contrast">Contrast</string>
+    <string name="advanced">GEAVANCEERD</string>
+
+    <!-- App Features -->
+    <string name="hunting">JACHT</string>
+    <string name="hunting_assistant">Jachtassistent</string>
+    <string name="hunting_assistant_subtitle">Documentatie, weer, kaarten, nazoek</string>
+    <string name="ai_features">AI-FUNCTIES</string>
+    <string name="ai_object_detection">AI-objectdetectie</string>
+    <string name="ai_detection_desc">Detecteert personen, voertuigen en dieren in het thermisch beeld met afstandsschatting.</string>
+    <string name="image_enhancement">BEELDVERBETERING</string>
+    <string name="enable_image_enhancement">Beeldverbetering inschakelen</string>
+    <string name="image_enhancement_desc">Verbetert contrast en scherpte van het thermisch beeld in realtime.</string>
+
+    <!-- Thermal Settings -->
+    <string name="camera_features">Camera-functies</string>
+    <string name="radiometry">Radiometrie</string>
+    <string name="focus">Focus</string>
+    <string name="gps">GPS</string>
+    <string name="shutter_nuc">Shutter / NUC-kalibratie</string>
+    <string name="calibrating">Kalibreren…</string>
+    <string name="emissivity">Emissiviteit: %1$.2f</string>
+    <string name="presets">Voorinstellingen</string>
+    <string name="skin">Huid</string>
+    <string name="wood">Hout</string>
+    <string name="steel">Staal</string>
+    <string name="aluminum">Aluminium</string>
+    <string name="distance">Afstand: %1$.1f m</string>
+    <string name="humidity">Luchtvochtigheid: %1$.0f %%</string>
+    <string name="reflect_temperature">Reflectietemperatuur: %1$.1f °C</string>
+    <string name="apply_settings">Instellingen toepassen</string>
+
+    <!-- Video Stream Screen -->
+    <string name="connecting">Verbinden…</string>
+    <string name="connecting_to_camera">Verbinden met camera…</string>
+    <string name="buffering">Bufferen %1$d%%</string>
+    <string name="live">LIVE</string>
+    <string name="offline">Offline</string>
+    <string name="rec">REC %1$s</string>
+    <string name="zoom">Zoom</string>
+    <string name="palette">Palet</string>
+    <string name="connect">Verbinden</string>
+    <string name="disconnect">Verbreken</string>
+    <string name="gallery">Galerij</string>
+    <string name="record">Opname</string>
+    <string name="stop_rec">Stop</string>
+    <string name="photo">Foto</string>
+    <string name="permissions_required">Machtigingen vereist</string>
+    <string name="wifi_connection_failed">WiFi-verbinding mislukt</string>
+    <string name="photo_saved">Foto opgeslagen</string>
+    <string name="video_saved">Video opgeslagen (%1$d KB)</string>
+    <string name="video_too_small">Video te klein/leeg</string>
+
+    <!-- Gallery -->
+    <string name="phone">Telefoon</string>
+    <string name="thermal">Thermisch</string>
+    <string name="no_viewer_found">Geen viewer gevonden</string>
+    <string name="error_loading">Fout bij laden</string>
+
+    <!-- Log Dialog -->
+    <string name="no_log_entries">Geen vermeldingen</string>
+
+    <!-- About Dialog -->
+    <string name="version">Versie %1$s</string>
+    <string name="about_description">Open Source Android-app voor Guide warmtebeeldcamera’s</string>
+    <string name="about_long_description">NoxVision is een krachtig alternatief voor de officiële Guide-app, speciaal ontwikkeld voor de Guide TE211M warmtebeeldmonoculair en compatibele TE-serie camera’s.</string>
+    <string name="features">Functies</string>
+    <string name="feature_stream">Live RTSP-videostream</string>
+    <string name="feature_ai">YOLO AI-objectdetectie</string>
+    <string name="feature_palettes">Meerdere kleurpaletten</string>
+    <string name="feature_capture">Screenshot &amp; video-opname</string>
+    <string name="feature_gallery">Geïntegreerde galerij</string>
+    <string name="feature_wifi">Auto-WiFi-verbinding</string>
+    <string name="feature_night">Nacht-geoptimaliseerd design</string>
+    <string name="supported_devices">Ondersteunde apparaten</string>
+    <string name="supported_devices_list">• Guide TE211M (primair getest)\n• Andere Guide TE-serie camera’s\n• Camera’s met RTSP op 192.168.42.1:8554</string>
+    <string name="technologies">Technologieën</string>
+
+    <!-- Welcome Dialog -->
+    <string name="welcome_title">Welkom bij NoxVision</string>
+    <string name="setup_connection">Verbinding instellen</string>
+    <string name="important_features">Belangrijke functies</string>
+    <string name="ready">Klaar!</string>
+    <string name="welcome_intro">Uw begeleider voor warmtebeeldopnames.\n\nDeze app biedt geavanceerde functies voor uw Guide-camera.</string>
+    <string name="welcome_wifi">Om de app te laten werken, moet u de juiste SSID en het wachtwoord van uw camera in de instellingen invullen.</string>
+    <string name="default_values">Standaardwaarden:</string>
+    <string name="ssid_hint">SSID: zie camera</string>
+    <string name="password_hint">Wachtwoord: vaak 12345678</string>
+    <string name="feature_gallery_desc">Beheer afbeeldingen &amp; video’s direct in de app</string>
+    <string name="feature_measurements">Metingen</string>
+    <string name="feature_measurements_desc">Temperatuurpunten en emissiviteit aanpassen</string>
+    <string name="feature_auto_connect">Auto-Connect</string>
+    <string name="feature_auto_connect_desc">Automatisch verbinden bij start</string>
+    <string name="feature_recording">Opname</string>
+    <string name="feature_recording_desc">Video’s met geluid opnemen</string>
+    <string name="welcome_outro">U kunt deze instellingen later altijd wijzigen via het tandwiel-icoon.\n\nVeel plezier met NoxVision!</string>
+
+    <!-- Whats New Dialog -->
+    <string name="whats_new_title">Nieuw!</string>
+
+    <!-- Hunting Hub -->
+    <string name="entries">%1$d vermeldingen</string>
+    <string name="hunting_diary">Jachtdagboek</string>
+    <string name="main_features">HOOFDFUNCTIES</string>
+    <string name="kill_documentation">Afschotregistratie</string>
+    <string name="kill_documentation_subtitle">Jachtdagboek bijhouden, GPS, foto’s, export</string>
+    <string name="tracking">Nazoek</string>
+    <string name="tracking_subtitle">Waypoints, kompas, vluchtrichting</string>
+    <string name="information">INFORMATIE</string>
+    <string name="weather">Weer</string>
+    <string name="weather_subtitle">Actuele omstandigheden, wind, voorspelling</string>
+    <string name="hunting_seasons">Jachtseizoenen</string>
+    <string name="hunting_seasons_subtitle">Duitse jachtseizoenen per deelstaat</string>
+    <string name="map">Kaart</string>
+    <string name="map_subtitle">Hoogzitten, waypoints, offline kaarten</string>
+
+    <!-- Weather Screen -->
+    <string name="no_weather_data">Geen weergegevens</string>
+    <string name="fetch_weather">Weer ophalen</string>
+    <string name="feels_like">Voelt als %1$s</string>
+    <string name="wind">WIND</string>
+    <string name="from_direction">uit %1$s</string>
+    <string name="gusts">Windstoten: %1$s</string>
+    <string name="details">DETAILS</string>
+    <string name="air_humidity">Luchtvochtigheid</string>
+    <string name="air_pressure">Luchtdruk</string>
+    <string name="cloud_cover">Bewolking</string>
+    <string name="visibility">Zicht</string>
+    <string name="sunrise">Zonsopgang</string>
+    <string name="sunset">Zonsondergang</string>
+    <string name="moon_phase">MAANFASE</string>
+    <string name="illumination">Verlichting: %1$d%%</string>
+    <string name="last_updated">Laatst bijgewerkt: %1$s</string>
+    <string name="data_outdated">Gegevens zijn verouderd - vernieuwen</string>
+    <string name="position_error">Positie kon niet worden bepaald</string>
+
+    <!-- Abschuss Form -->
+    <string name="new_kill">Nieuw afschot</string>
+    <string name="edit_kill">Afschot bewerken</string>
+    <string name="wildlife">WILD</string>
+    <string name="wildlife_type">Wildsoort</string>
+    <string name="gender_age">Geslacht/leeftijd</string>
+    <string name="not_specified">Niet opgegeven</string>
+    <string name="estimated_weight">Geschat gewicht (kg)</string>
+    <string name="position">POSITIE</string>
+    <string name="capture_gps">GPS vastleggen</string>
+    <string name="bundesland">Deelstaat</string>
+    <string name="photo_section">FOTO</string>
+    <string name="add_photo">Foto toevoegen</string>
+    <string name="remove_photo">Foto verwijderen</string>
+    <string name="notes">NOTITIES</string>
+    <string name="additional_notes">Extra notities</string>
+
+    <!-- Abschuss List -->
+    <string name="no_entries">Nog geen vermeldingen</string>
+    <string name="tap_to_add">Tik op + om een afschot te registreren</string>
+    <string name="export">Exporteren</string>
+    <string name="export_csv">Exporteren als CSV</string>
+    <string name="export_pdf">Exporteren als PDF</string>
+    <string name="csv_saved">CSV opgeslagen: %1$s</string>
+    <string name="pdf_saved">PDF opgeslagen: %1$s</string>
+    <string name="new_entry">Nieuwe vermelding</string>
+    <string name="delete_entry">Vermelding verwijderen?</string>
+    <string name="delete_entry_confirm">Deze vermelding wordt onherroepelijk verwijderd.</string>
+
+    <!-- Calendar Screen -->
+    <string name="hunting_seasons_active">%1$d jachtseizoenen actief</string>
+    <string name="starting_soon">%1$d beginnen in de komende 30 dagen</string>
+    <string name="show_active_only">Alleen actieve jachtseizoenen tonen</string>
+    <string name="starting_soon_section">BINNENKORT</string>
+    <string name="active_hunting_seasons">ACTIEVE JACHTSEIZOENEN</string>
+    <string name="all_hunting_seasons">ALLE JACHTSEIZOENEN</string>
+    <string name="all_genders">Alle</string>
+    <string name="in_days">over %1$d dagen</string>
+    <string name="starts_on">Begint op %1$d. %2$s</string>
+    <string name="hunting_seasons_note">Opmerking: De getoonde tijden komen overeen met de federale jachtperioden. Afwijkingen per deelstaat zijn mogelijk.</string>
+
+    <!-- Map Screen -->
+    <string name="my_location">Mijn locatie</string>
+    <string name="hunting_stands">Hoogzitten: %1$d</string>
+    <string name="waypoints_count">Waypoints: %1$d</string>
+    <string name="cache_size">Cache: %1$s</string>
+    <string name="long_press_hint">Lang indrukken om een hoogzit toe te voegen</string>
+    <string name="add_hunting_stand">Hoogzit toevoegen</string>
+    <string name="stand_name">Naam</string>
+    <string name="stand_type">Type</string>
+    <string name="stand_position">Positie: %1$s</string>
+    <string name="zoom_in">Inzoomen</string>
+    <string name="zoom_out">Uitzoomen</string>
+
+    <!-- Stand Types -->
+    <string name="stand_hochsitz">Hoogzit</string>
+    <string name="stand_kanzel">Kansel</string>
+    <string name="stand_druckjagd">Drijfjachtstand</string>
+    <string name="stand_ansitz">Aanzit</string>
+    <string name="stand_custom">Aangepast</string>
+
+    <!-- Waypoint Types -->
+    <string name="waypoint_anschuss">Aanschot</string>
+    <string name="waypoint_last_seen">Laatste waarneming</string>
+    <string name="waypoint_blood_trail">Bloedspoor</string>
+    <string name="waypoint_recovery">Vindplaats</string>
+    <string name="waypoint_custom">Aangepast</string>
+
+    <!-- Nachsuche Screen -->
+    <string name="current_position">Huidige positie</string>
+    <string name="accuracy">Nauwkeurigheid: %1$dm</string>
+    <string name="compass_unavailable">Kompas niet beschikbaar</string>
+    <string name="waypoints">WAYPOINTS</string>
+    <string name="no_waypoints">Geen waypoints</string>
+    <string name="tap_to_add_waypoint">Tik op + om een aanschot of waypoint te markeren</string>
+    <string name="add_waypoint">Waypoint toevoegen</string>
+    <string name="select_type">Type kiezen:</string>
+    <string name="target">Doel: %1$s</string>
+
+    <!-- Language Dialog -->
+    <string name="select_language">Taal kiezen</string>
+    <string name="system_language">Systeemtaal</string>
+    <string name="language_german">Duits</string>
+    <string name="language_english">Engels</string>
+    <string name="language_french">Frans</string>
+    <string name="language_spanish">Spaans</string>
+
+    <!-- Month names -->
+    <string name="month_january">Januari</string>
+    <string name="month_february">Februari</string>
+    <string name="month_march">Maart</string>
+    <string name="month_april">April</string>
+    <string name="month_may">Mei</string>
+    <string name="month_june">Juni</string>
+    <string name="month_july">Juli</string>
+    <string name="month_august">Augustus</string>
+    <string name="month_september">September</string>
+    <string name="month_october">Oktober</string>
+    <string name="month_november">November</string>
+    <string name="month_december">December</string>
+</resources>

@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.ZoomIn
+import androidx.compose.material.icons.filled.Forest
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -68,6 +69,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -99,6 +101,7 @@ import com.noxvision.app.ui.dialogs.GalleryDialog
 import com.noxvision.app.ui.dialogs.LogDialogContent
 import com.noxvision.app.ui.dialogs.WelcomeDialog
 import com.noxvision.app.ui.dialogs.WhatsNewDialog
+import com.noxvision.app.ui.hunting.HuntingHubScreen
 import com.noxvision.app.util.AppLogger
 import com.noxvision.app.util.captureScreenshot
 import com.noxvision.app.util.createVideoFile
@@ -152,6 +155,9 @@ fun VideoStreamScreen() {
 
     // Feature Bounties
     var showFeatureBountiesDialog by remember { mutableStateOf(false) }
+
+    // Hunting Hub
+    var showHuntingHub by remember { mutableStateOf(false) }
     val featureRepository = remember { FeatureBountyRepository(context) }
 
     // Create BillingManager with callback to repo
@@ -793,7 +799,7 @@ fun VideoStreamScreen() {
                 isConnecting = false
                 Toast.makeText(
                     context,
-                    "WiFi Verbindung fehlgeschlagen",
+                    context.getString(R.string.wifi_connection_failed),
                     Toast.LENGTH_LONG
                 ).show()
             }
@@ -992,7 +998,7 @@ fun VideoStreamScreen() {
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Offline",
+                                text = stringResource(R.string.offline),
                                 fontSize = 13.sp,
                                 color = NightColors.onBackground
                             )
@@ -1048,7 +1054,7 @@ fun VideoStreamScreen() {
                             modifier = Modifier.size(18.dp)
                         )
                         Text(
-                            text = "Zoom",
+                            text = stringResource(R.string.zoom),
                             fontSize = 12.sp,
                             color = NightColors.onSurface
                         )
@@ -1103,7 +1109,7 @@ fun VideoStreamScreen() {
                             modifier = Modifier.size(16.dp)
                         )
                         Text(
-                            text = "Palette",
+                            text = stringResource(R.string.palette),
                             fontSize = 11.sp,
                             color = NightColors.onSurface
                         )
@@ -1158,7 +1164,7 @@ fun VideoStreamScreen() {
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     DarkButton(
-                        text = if (isPlaying) "Disconnect" else "Connect",
+                        text = if (isPlaying) stringResource(R.string.disconnect) else stringResource(R.string.connect),
                         icon = if (isPlaying) Icons.Filled.Stop else Icons.Filled.PlayArrow,
                         onClick = {
                             if (isPlaying) {
@@ -1172,7 +1178,7 @@ fun VideoStreamScreen() {
                     )
 
                     DarkButton(
-                        text = "Gallery",
+                        text = stringResource(R.string.gallery),
                         icon = Icons.Filled.PhotoLibrary,
                         onClick = {
                             showGalleryDialog = true
@@ -1189,7 +1195,7 @@ fun VideoStreamScreen() {
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     DarkButton(
-                        text = if (isRecording) "Stop Rec" else "Record",
+                        text = if (isRecording) stringResource(R.string.stop_rec) else stringResource(R.string.record),
                         icon = if (isRecording) Icons.Filled.Stop else Icons.Filled.FiberManualRecord,
                         onClick = {
                             scope.launch {
@@ -1206,7 +1212,7 @@ fun VideoStreamScreen() {
                     )
 
                     DarkButton(
-                        text = "Foto",
+                        text = stringResource(R.string.photo),
                         icon = Icons.Filled.Camera,
                         onClick = {
                             scope.launch {
@@ -1215,7 +1221,7 @@ fun VideoStreamScreen() {
                                     galleryRefreshKey++
                                     Toast.makeText(
                                         context,
-                                        "Photo saved",
+                                        context.getString(R.string.photo_saved),
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
@@ -1225,6 +1231,17 @@ fun VideoStreamScreen() {
                         modifier = Modifier.weight(1f)
                     )
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Hunting Assistant Button (full width)
+                DarkButton(
+                    text = stringResource(R.string.hunting_assistant),
+                    icon = Icons.Filled.Forest,
+                    onClick = { showHuntingHub = true },
+                    enabled = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
 
@@ -1366,6 +1383,15 @@ fun VideoStreamScreen() {
                     baseUrl = baseUrl,
                     onDismiss = { showGalleryDialog = false }
                 )
+            }
+        }
+
+        if (showHuntingHub) {
+            Dialog(
+                onDismissRequest = { showHuntingHub = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                HuntingHubScreen(onClose = { showHuntingHub = false })
             }
         }
 
