@@ -59,6 +59,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -143,21 +145,22 @@ fun VideoStreamScreen() {
 
     var isConnecting by remember { mutableStateOf(false) }
     var zoomLevel by remember { mutableFloatStateOf(10f) }
-    var audioEnabled by remember { mutableStateOf(true) }
-    var selectedPalette by remember { mutableStateOf("whitehot") }
-    var showSettingsDialog by remember { mutableStateOf(false) }
-    var showGalleryDialog by remember { mutableStateOf(false) }
-    var galleryRefreshKey by remember { mutableIntStateOf(0) }
+    var audioEnabled by rememberSaveable { mutableStateOf(true) }
+    var selectedPalette by rememberSaveable { mutableStateOf("whitehot") }
+    var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
+    var showGalleryDialog by rememberSaveable { mutableStateOf(false) }
+    var galleryRefreshKey by rememberSaveable { mutableIntStateOf(0) }
 
     // First Run / Whats New
-    var showWelcomeDialog by remember { mutableStateOf(false) }
-    var showWhatsNewDialog by remember { mutableStateOf(false) }
+    var showWelcomeDialog by rememberSaveable { mutableStateOf(false) }
+    var showWhatsNewDialog by rememberSaveable { mutableStateOf(false) }
 
     // Feature Bounties
-    var showFeatureBountiesDialog by remember { mutableStateOf(false) }
+    var showFeatureBountiesDialog by rememberSaveable { mutableStateOf(false) }
 
     // Hunting Hub
-    var showHuntingHub by remember { mutableStateOf(false) }
+    var showHuntingHub by rememberSaveable { mutableStateOf(false) }
+
     val featureRepository = remember { FeatureBountyRepository(context) }
 
     // Create BillingManager with callback to repo
@@ -215,7 +218,7 @@ fun VideoStreamScreen() {
     var reflectTemperature by remember { mutableFloatStateOf(CameraSettings.getReflectTemperature(context)) }
 
     // Thermal settings dialog
-    var showThermalSettingsDialog by remember { mutableStateOf(false) }
+    var showThermalSettingsDialog by rememberSaveable { mutableStateOf(false) }
     var isShutterInProgress by remember { mutableStateOf(false) }
 
     // Lifecycle state

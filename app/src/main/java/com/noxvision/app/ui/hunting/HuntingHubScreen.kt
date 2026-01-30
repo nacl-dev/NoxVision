@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -42,8 +44,20 @@ enum class HuntingScreen {
 fun HuntingHubScreen(
     onClose: () -> Unit
 ) {
-    var currentScreen by remember { mutableStateOf(HuntingScreen.HUB) }
-    var selectedRecordId by remember { mutableStateOf<Long?>(null) }
+    var currentScreen by rememberSaveable { mutableStateOf(HuntingScreen.HUB) }
+    var selectedRecordId by rememberSaveable { mutableStateOf<Long?>(null) }
+
+    // Intercept back button to navigate internally
+    androidx.activity.compose.BackHandler(enabled = currentScreen != HuntingScreen.HUB) {
+        if (currentScreen == HuntingScreen.ABSCHUSS_FORM) {
+            // Special case: form goes back to list
+            selectedRecordId = null
+            currentScreen = HuntingScreen.ABSCHUSS_LIST
+        } else {
+            // All others go back to HUB
+            currentScreen = HuntingScreen.HUB
+        }
+    }
 
     val context = LocalContext.current
 
