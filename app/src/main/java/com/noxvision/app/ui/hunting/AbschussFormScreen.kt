@@ -22,6 +22,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import com.noxvision.app.hunting.maps.OfflineMapManager
+import org.osmdroid.events.MapEventsReceiver
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.MapEventsOverlay
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,6 +60,10 @@ fun AbschussFormScreen(
     val scope = rememberCoroutineScope()
     val db = remember { HuntingDatabase.getDatabase(context) }
     val locationManager = remember { HuntingLocationManager(context) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val mapManager = remember { OfflineMapManager(context) }
+
+    var mapView by remember { mutableStateOf<MapView?>(null) }
 
     var wildlifeType by remember { mutableStateOf("Rehwild") }
     var gender by remember { mutableStateOf<String?>(null) }
@@ -109,6 +125,68 @@ fun AbschussFormScreen(
                     photoUri = Uri.parse(path)
                 }
             }
+        }
+    }
+
+    // Lifecycle handling for MapView
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> mapView?.onResume()
+                Lifecycle.Event.ON_PAUSE -> mapView?.onPause()
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    // Update map marker when location changes (only if map is visible)
+    LaunchedEffect(latitude, longitude, mapView) {
+        if (latitude != null && longitude != null && mapView != null) {
+            val map = mapView!!
+            val point = GeoPoint(latitude!!, longitude!!)
+            
+            // Allow parent scroll only if not dragging
+            map.setOnTouchListener { v, event ->
+                v.parent.requestDisallowInterceptTouchEvent(true)
+                false
+            }
+
+            // Find existing marker or create new one
+            var marker = map.overlays.filterIsInstance<Marker>().firstOrNull { it.id == "location_marker" }
+            
+            if (marker == null) {
+                marker = Marker(map)
+                marker.id = "location_marker"
+                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                marker.title = "Abschussort"
+                marker.isDraggable = true
+                
+                marker.setOnMarkerDragListener(object : Marker.OnMarkerDragListener {
+                    override fun onMarkerDrag(marker: Marker) {}
+                    override fun onMarkerDragEnd(marker: Marker) {
+                        latitude = marker.position.latitude
+                        longitude = marker.position.longitude
+                    }
+                    override fun onMarkerDragStart(marker: Marker) {
+                        // Prevent map scrolling while dragging
+                        map.parent.requestDisallowInterceptTouchEvent(true)
+                    }
+                })
+                map.overlays.add(marker)
+            }
+            
+            // Only update position if it differs significantly (to avoid loops during drag)
+            val currentPos = marker.position
+            if (currentPos.latitude != latitude!! || currentPos.longitude != longitude!!) {
+                marker.position = point
+                map.controller.animateTo(point)
+            }
+            
+            map.invalidate()
         }
     }
 
@@ -250,11 +328,68 @@ fun AbschussFormScreen(
                 title = "POSITION"
             )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            if (latitude != null && longitude != null) {
+                // Show Map with Pin
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .border(1.dp, NightColors.surface, RoundedCornerShape(12.dp))
+                ) {
+                    AndroidView(
+                        modifier = Modifier.fillMaxSize(),
+                        factory = { ctx ->
+                            MapView(ctx).apply {
+                                setTileSource(mapManager.getTileSource())
+                                setMultiTouchControls(true)
+                                controller.setZoom(16.0)
+                                minZoomLevel = OfflineMapManager.MIN_ZOOM
+                                maxZoomLevel = OfflineMapManager.MAX_ZOOM
+                                
+                                // Disable parent scroll when touching map
+                                setOnTouchListener { v, event ->
+                                    v.parent.requestDisallowInterceptTouchEvent(true)
+                                    false
+                                }
+
+                                mapView = this
+                            }
+                        },
+                        update = { map ->
+                            // Initial update handled by LaunchedEffect
+                            if (latitude != null && longitude != null) {
+                                map.controller.setCenter(GeoPoint(latitude!!, longitude!!))
+                            }
+                        }
+                    )
+                    
+                    // Button to clear location / retake
+                    IconButton(
+                        onClick = { 
+                            latitude = null
+                            longitude = null
+                        },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                            .background(NightColors.surface.copy(alpha = 0.7f), RoundedCornerShape(4.dp))
+                    ) {
+                        Icon(
+                            Icons.Filled.Delete,
+                            contentDescription = "Position löschen",
+                            tint = NightColors.error
+                        )
+                    }
+                }
+                
+                Text(
+                    text = String.format("Lat: %.5f, Lon: %.5f", latitude, longitude),
+                    color = NightColors.onBackground,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            } else {
                 Button(
                     onClick = {
                         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -273,7 +408,8 @@ fun AbschussFormScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = NightColors.primary),
                     shape = RoundedCornerShape(8.dp),
-                    enabled = !locationLoading
+                    enabled = !locationLoading,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     if (locationLoading) {
                         CircularProgressIndicator(
@@ -285,15 +421,7 @@ fun AbschussFormScreen(
                         Icon(Icons.Filled.MyLocation, contentDescription = null)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("GPS erfassen")
-                }
-
-                if (latitude != null && longitude != null) {
-                    Text(
-                        text = String.format("%.5f, %.5f", latitude, longitude),
-                        color = NightColors.success,
-                        fontSize = 12.sp
-                    )
+                    Text("GPS Position erfassen")
                 }
             }
 
