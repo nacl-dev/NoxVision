@@ -47,27 +47,30 @@ fun createVideoFile(context: Context): File {
     return File(storageDir, "VID_$timestamp.mp4")
 }
 
-fun saveVideoToGallery(context: Context, file: File) {
-    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    val filename = "VID_$timestamp.mp4"
+suspend fun saveVideoToGallery(context: Context, file: File) {
+    withContext(Dispatchers.IO) {
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+        val filename = "VID_$timestamp.mp4"
 
-    val contentValues = ContentValues().apply {
-        put(MediaStore.Video.Media.DISPLAY_NAME, filename)
-        put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
-        put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis() / 1000)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            put(
-                MediaStore.Video.Media.RELATIVE_PATH,
-                Environment.DIRECTORY_DCIM + "/GuideCamera"
-            )
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Video.Media.DISPLAY_NAME, filename)
+            put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+            put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis() / 1000)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(
+                    MediaStore.Video.Media.RELATIVE_PATH,
+                    Environment.DIRECTORY_DCIM + "/GuideCamera"
+                )
+            }
         }
-    }
 
-    val uri = context.contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
-    uri?.let {
-        context.contentResolver.openOutputStream(it)?.use { outputStream ->
-            file.inputStream().use { inputStream ->
-                inputStream.copyTo(outputStream)
+        val uri =
+            context.contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
+        uri?.let {
+            context.contentResolver.openOutputStream(it)?.use { outputStream ->
+                file.inputStream().use { inputStream ->
+                    inputStream.copyTo(outputStream)
+                }
             }
         }
     }
