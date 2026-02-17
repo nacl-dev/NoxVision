@@ -37,7 +37,12 @@ class ThermalObjectDetector(context: Context) {
     private val INPUT_SIZE = 640
     private val FOCAL_LENGTH_PIXELS = 3350f
 
+    private val inputBuffer: ByteBuffer
+
     init {
+        inputBuffer = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * 3)
+        inputBuffer.order(ByteOrder.nativeOrder())
+
         try {
             val modelExists = try {
                 context.assets.open("detect.tflite").use { true }
@@ -96,15 +101,16 @@ class ThermalObjectDetector(context: Context) {
             val processedBitmap = enhanceThermalImage(bitmap)
             val scaledBitmap = Bitmap.createScaledBitmap(processedBitmap, INPUT_SIZE, INPUT_SIZE, true)
 
-            val inputBuffer = convertBitmapToFloatBuffer(scaledBitmap)
-
             val numClasses = labels.size
             val numElements = 4 + numClasses
             val numAnchors = 8400
 
             val outputArray = Array(1) { Array(numElements) { FloatArray(numAnchors) } }
 
-            interpreter?.run(inputBuffer, outputArray)
+            synchronized(this) {
+                convertBitmapToFloatBuffer(scaledBitmap)
+                interpreter?.run(inputBuffer, outputArray)
+            }
 
             val allDetections = mutableListOf<DetectedObject>()
 
@@ -171,9 +177,8 @@ class ThermalObjectDetector(context: Context) {
         }
     }
 
-    private fun convertBitmapToFloatBuffer(bitmap: Bitmap): ByteBuffer {
-        val byteBuffer = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * 3)
-        byteBuffer.order(ByteOrder.nativeOrder())
+    private fun convertBitmapToFloatBuffer(bitmap: Bitmap) {
+        inputBuffer.rewind()
 
         val intValues = IntArray(INPUT_SIZE * INPUT_SIZE)
         bitmap.getPixels(intValues, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
@@ -182,12 +187,11 @@ class ThermalObjectDetector(context: Context) {
         for (i in 0 until INPUT_SIZE) {
             for (j in 0 until INPUT_SIZE) {
                 val value = intValues[pixel++]
-                byteBuffer.putFloat(((value shr 16 and 0xFF) / 255.0f))
-                byteBuffer.putFloat(((value shr 8 and 0xFF) / 255.0f))
-                byteBuffer.putFloat(((value and 0xFF) / 255.0f))
+                inputBuffer.putFloat(((value shr 16 and 0xFF) / 255.0f))
+                inputBuffer.putFloat(((value shr 8 and 0xFF) / 255.0f))
+                inputBuffer.putFloat(((value and 0xFF) / 255.0f))
             }
         }
-        return byteBuffer
     }
 
     private fun applyNMS(detections: List<DetectedObject>, iouThreshold: Float): List<DetectedObject> {
