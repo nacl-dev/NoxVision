@@ -27,6 +27,22 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+private const val FOLDER_GUIDE_CAMERA = "GuideCamera"
+
+private fun createMediaContentValues(filename: String, mimeType: String): ContentValues {
+    return ContentValues().apply {
+        put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
+        put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+        put(MediaStore.MediaColumns.DATE_ADDED, System.currentTimeMillis() / 1000)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            put(
+                MediaStore.MediaColumns.RELATIVE_PATH,
+                Environment.DIRECTORY_DCIM + "/" + FOLDER_GUIDE_CAMERA
+            )
+        }
+    }
+}
+
 fun formatDuration(seconds: Int): String {
     val mins = seconds / 60
     val secs = seconds % 60
@@ -52,17 +68,7 @@ suspend fun saveVideoToGallery(context: Context, file: File) {
         val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         val filename = "VID_$timestamp.mp4"
 
-        val contentValues = ContentValues().apply {
-            put(MediaStore.Video.Media.DISPLAY_NAME, filename)
-            put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
-            put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis() / 1000)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(
-                    MediaStore.Video.Media.RELATIVE_PATH,
-                    Environment.DIRECTORY_DCIM + "/GuideCamera"
-                )
-            }
-        }
+        val contentValues = createMediaContentValues(filename, "video/mp4")
 
         val uri =
             context.contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
@@ -207,19 +213,8 @@ suspend fun downloadFile(baseUrl: String, filename: String, appContext: Context)
                     AppLogger.log("Korrekte URL: $downloadUrl", AppLogger.LogType.SUCCESS)
                     val inputStream = conn.inputStream
 
-                    val contentValues = ContentValues().apply {
-                        put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
-                        put(
-                            MediaStore.MediaColumns.MIME_TYPE,
-                            if (filename.endsWith(".mp4")) "video/mp4" else "image/jpeg"
-                        )
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            put(
-                                MediaStore.MediaColumns.RELATIVE_PATH,
-                                Environment.DIRECTORY_DCIM + "/GuideCamera"
-                            )
-                        }
-                    }
+                    val mimeType = if (filename.endsWith(".mp4")) "video/mp4" else "image/jpeg"
+                    val contentValues = createMediaContentValues(filename, mimeType)
 
                     val uri = if (filename.endsWith(".mp4")) {
                         appContext.contentResolver.insert(
@@ -280,7 +275,7 @@ suspend fun fetchPhoneMedia(context: Context, folder: PhoneFolder): List<PhoneMe
         val likePath = when (folder) {
             PhoneFolder.CAMERA -> "DCIM/Camera/%"
             PhoneFolder.PICTURES -> "Pictures/%"
-            PhoneFolder.NOXVISION -> "DCIM/GuideCamera/%"
+            PhoneFolder.NOXVISION -> "DCIM/$FOLDER_GUIDE_CAMERA/%"
         }
 
         val selection = buildString {
@@ -365,17 +360,7 @@ fun saveBitmapToGallery(context: Context, bitmap: Bitmap) {
     val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
     val filename = "IMG_$timestamp.jpg"
 
-    val contentValues = ContentValues().apply {
-        put(MediaStore.Images.Media.DISPLAY_NAME, filename)
-        put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-        put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            put(
-                MediaStore.Images.Media.RELATIVE_PATH,
-                Environment.DIRECTORY_DCIM + "/GuideCamera"
-            )
-        }
-    }
+    val contentValues = createMediaContentValues(filename, "image/jpeg")
 
     val uri = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
     uri?.let {
