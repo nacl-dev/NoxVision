@@ -27,6 +27,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+private const val FOLDER_GUIDE_CAMERA = "GuideCamera"
+
 fun formatDuration(seconds: Int): String {
     val mins = seconds / 60
     val secs = seconds % 60
@@ -58,7 +60,7 @@ fun saveVideoToGallery(context: Context, file: File) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             put(
                 MediaStore.Video.Media.RELATIVE_PATH,
-                Environment.DIRECTORY_DCIM + "/GuideCamera"
+                Environment.DIRECTORY_DCIM + "/$FOLDER_GUIDE_CAMERA"
             )
         }
     }
@@ -213,7 +215,7 @@ suspend fun downloadFile(baseUrl: String, filename: String, appContext: Context)
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             put(
                                 MediaStore.MediaColumns.RELATIVE_PATH,
-                                Environment.DIRECTORY_DCIM + "/GuideCamera"
+                                Environment.DIRECTORY_DCIM + "/$FOLDER_GUIDE_CAMERA"
                             )
                         }
                     }
@@ -277,7 +279,7 @@ suspend fun fetchPhoneMedia(context: Context, folder: PhoneFolder): List<PhoneMe
         val likePath = when (folder) {
             PhoneFolder.CAMERA -> "DCIM/Camera/%"
             PhoneFolder.PICTURES -> "Pictures/%"
-            PhoneFolder.NOXVISION -> "DCIM/GuideCamera/%"
+            PhoneFolder.NOXVISION -> "DCIM/$FOLDER_GUIDE_CAMERA/%"
         }
 
         val selection = buildString {
@@ -369,7 +371,7 @@ fun saveBitmapToGallery(context: Context, bitmap: Bitmap) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             put(
                 MediaStore.Images.Media.RELATIVE_PATH,
-                Environment.DIRECTORY_DCIM + "/GuideCamera"
+                Environment.DIRECTORY_DCIM + "/$FOLDER_GUIDE_CAMERA"
             )
         }
     }
