@@ -697,11 +697,11 @@ fun VideoStreamScreen() {
             setEventListener { event ->
                 when (event.type) {
                     MediaPlayer.Event.Opening -> {
-                        statusText = "Connecting..."
+                        statusText = context.getString(R.string.connecting)
                     }
 
                     MediaPlayer.Event.Playing -> {
-                        statusText = "LIVE"
+                        statusText = context.getString(R.string.live)
                         bufferPercent = 0f
                         isConnecting = false
                     }
@@ -709,14 +709,14 @@ fun VideoStreamScreen() {
                     MediaPlayer.Event.Buffering -> {
                         bufferPercent = event.buffering
                         if (event.buffering < 100f) {
-                            statusText = "Puffert ${event.buffering.toInt()}%"
+                            statusText = context.getString(R.string.buffering, event.buffering.toInt())
                         } else {
-                            statusText = "LIVE"
+                            statusText = context.getString(R.string.live)
                         }
                     }
 
                     MediaPlayer.Event.EncounteredError -> {
-                        statusText = "Error"
+                        statusText = context.getString(R.string.error)
                         isPlaying = false
                         isConnecting = false
                     }
@@ -766,7 +766,7 @@ fun VideoStreamScreen() {
             }
 
             if (connected || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                statusText = "Connecting..."
+                statusText = context.getString(R.string.connecting)
                 try {
                     val media = Media(libVLC, rtspUrl.toUri())
                     media.addOption(":network-caching=300")
@@ -790,7 +790,7 @@ fun VideoStreamScreen() {
                         }
                     }
                 } catch (e: Exception) {
-                    statusText = "Stream Error"
+                    statusText = context.getString(R.string.error)
                     isConnecting = false
                     AppLogger.log(
                         "Stream Error: ${e.message}",
@@ -798,7 +798,7 @@ fun VideoStreamScreen() {
                     )
                 }
             } else {
-                statusText = "WiFi Error"
+                statusText = context.getString(R.string.wifi_connection_failed)
                 isConnecting = false
                 Toast.makeText(
                     context,
@@ -843,7 +843,7 @@ fun VideoStreamScreen() {
         ) {
             Icon(
                 imageVector = Icons.Filled.Settings,
-                contentDescription = "Einstellungen",
+                contentDescription = stringResource(R.string.settings),
                 tint = NightColors.onSurface
             )
         }
@@ -862,7 +862,7 @@ fun VideoStreamScreen() {
                     strokeWidth = 3.dp
                 )
                 Text(
-                    text = "Connecting to camera...",
+                    text = stringResource(R.string.connecting_to_camera),
                     fontSize = 12.sp,
                     color = NightColors.onBackground,
                     modifier = Modifier.padding(bottom = 12.dp)
@@ -995,9 +995,9 @@ fun VideoStreamScreen() {
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Videocam,
-                                contentDescription = null,
+                                contentDescription = stringResource(R.string.offline),
                                 modifier = Modifier.size(48.dp),
-                                tint = Color(0xFF1A1A1A)
+                                tint = NightColors.onSurface.copy(alpha = 0.5f)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
