@@ -33,6 +33,7 @@ class ThermalObjectDetector(context: Context) {
     private var interpreter: org.tensorflow.lite.Interpreter? = null
     private val labels = mutableListOf<String>()
     private var isInitialized = false
+    private var outputArray: Array<Array<FloatArray>>? = null
 
     private val INPUT_SIZE = 640
     private val FOCAL_LENGTH_PIXELS = 3350f
@@ -53,6 +54,11 @@ class ThermalObjectDetector(context: Context) {
                 interpreter = org.tensorflow.lite.Interpreter(model, options)
 
                 loadLabels(context)
+
+                val numClasses = labels.size
+                val numElements = 4 + numClasses
+                val numAnchors = 8400
+                outputArray = Array(1) { Array(numElements) { FloatArray(numAnchors) } }
 
                 isInitialized = true
                 AppLogger.log("Thermal detector (YOLOv8) ready", AppLogger.LogType.SUCCESS)
@@ -99,12 +105,10 @@ class ThermalObjectDetector(context: Context) {
             val inputBuffer = convertBitmapToFloatBuffer(scaledBitmap)
 
             val numClasses = labels.size
-            val numElements = 4 + numClasses
             val numAnchors = 8400
+            val output = outputArray ?: return emptyList()
 
-            val outputArray = Array(1) { Array(numElements) { FloatArray(numAnchors) } }
-
-            interpreter?.run(inputBuffer, outputArray)
+            interpreter?.run(inputBuffer, output)
 
             val allDetections = mutableListOf<DetectedObject>()
 
@@ -113,7 +117,7 @@ class ThermalObjectDetector(context: Context) {
                 var maxClassIndex = -1
 
                 for (c in 0 until numClasses) {
-                    val score = outputArray[0][4 + c][i]
+                    val score = output[0][4 + c][i]
                     if (score > maxScore) {
                         maxScore = score
                         maxClassIndex = c
@@ -132,10 +136,10 @@ class ThermalObjectDetector(context: Context) {
                     }
 
                     if (maxScore >= minConf) {
-                        val cx = outputArray[0][0][i] / INPUT_SIZE.toFloat()
-                        val cy = outputArray[0][1][i] / INPUT_SIZE.toFloat()
-                        val w = outputArray[0][2][i] / INPUT_SIZE.toFloat()
-                        val h = outputArray[0][3][i] / INPUT_SIZE.toFloat()
+                        val cx = output[0][0][i] / INPUT_SIZE.toFloat()
+                        val cy = output[0][1][i] / INPUT_SIZE.toFloat()
+                        val w = output[0][2][i] / INPUT_SIZE.toFloat()
+                        val h = output[0][3][i] / INPUT_SIZE.toFloat()
 
                         val x1 = (cx - w / 2) * bitmap.width
                         val y1 = (cy - h / 2) * bitmap.height
@@ -262,6 +266,7 @@ class ThermalObjectDetector(context: Context) {
         try {
             interpreter?.close()
             interpreter = null
+            outputArray = null
         } catch (e: Exception) {
         }
     }
