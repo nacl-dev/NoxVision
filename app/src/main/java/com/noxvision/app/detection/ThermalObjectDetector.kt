@@ -37,6 +37,24 @@ class ThermalObjectDetector(context: Context) {
     private val INPUT_SIZE = 640
     private val FOCAL_LENGTH_PIXELS = 3350f
 
+    private var cachedEnhancedBitmap: Bitmap? = null
+    private val enhancedColorMatrix = android.graphics.ColorMatrix().apply {
+        val contrast = 1.3f
+        val translate = (1f - contrast) * 128f
+        set(
+            floatArrayOf(
+                contrast, 0f, 0f, 0f, translate,
+                0f, contrast, 0f, 0f, translate,
+                0f, 0f, contrast, 0f, translate,
+                0f, 0f, 0f, 1f, 0f
+            )
+        )
+        setSaturation(1.2f)
+    }
+    private val enhancedPaint = android.graphics.Paint().apply {
+        colorFilter = android.graphics.ColorMatrixColorFilter(enhancedColorMatrix)
+    }
+
     init {
         try {
             val modelExists = try {
@@ -160,8 +178,10 @@ class ThermalObjectDetector(context: Context) {
                 AppLogger.log("${topDetections.size} objects (${elapsed}ms) - Top: ${topDetections[0].label}", AppLogger.LogType.INFO)
             }
 
-            scaledBitmap.recycle()
-            processedBitmap.recycle()
+            if (scaledBitmap != processedBitmap) {
+                scaledBitmap.recycle()
+            }
+            // Do not recycle processedBitmap here as it is cached in cachedEnhancedBitmap
 
             return topDetections
 
@@ -228,25 +248,15 @@ class ThermalObjectDetector(context: Context) {
     private fun enhanceThermalImage(bitmap: Bitmap): Bitmap {
         val width = bitmap.width
         val height = bitmap.height
-        val enhanced = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+
+        if (cachedEnhancedBitmap == null || cachedEnhancedBitmap?.width != width || cachedEnhancedBitmap?.height != height) {
+            cachedEnhancedBitmap?.recycle()
+            cachedEnhancedBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        }
+        val enhanced = cachedEnhancedBitmap!!
+
         val canvas = android.graphics.Canvas(enhanced)
-        val colorMatrix = android.graphics.ColorMatrix().apply {
-            val contrast = 1.3f
-            val translate = (1f - contrast) * 128f
-            set(
-                floatArrayOf(
-                    contrast, 0f, 0f, 0f, translate,
-                    0f, contrast, 0f, 0f, translate,
-                    0f, 0f, contrast, 0f, translate,
-                    0f, 0f, 0f, 1f, 0f
-                )
-            )
-            setSaturation(1.2f)
-        }
-        val paint = android.graphics.Paint().apply {
-            colorFilter = android.graphics.ColorMatrixColorFilter(colorMatrix)
-        }
-        canvas.drawBitmap(bitmap, 0f, 0f, paint)
+        canvas.drawBitmap(bitmap, 0f, 0f, enhancedPaint)
         return enhanced
     }
 
@@ -262,6 +272,8 @@ class ThermalObjectDetector(context: Context) {
         try {
             interpreter?.close()
             interpreter = null
+            cachedEnhancedBitmap?.recycle()
+            cachedEnhancedBitmap = null
         } catch (e: Exception) {
         }
     }
