@@ -2,8 +2,8 @@ package com.noxvision.app.billing
 
 import android.app.Activity
 import android.content.Context
-import android.util.Log
 import com.android.billingclient.api.*
+import com.noxvision.app.util.AppLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,15 +37,15 @@ class BillingManager(
         _billingClient.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(billingResult: BillingResult) {
                 if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                    Log.d("BillingManager", "Billing setup finished")
+                    AppLogger.log("Billing setup finished", AppLogger.LogType.INFO)
                     queryProductDetails()
                 } else {
-                    Log.e("BillingManager", "Billing setup failed: ${billingResult.debugMessage}")
+                    AppLogger.log("Billing setup failed: ${billingResult.debugMessage}", AppLogger.LogType.ERROR)
                 }
             }
 
             override fun onBillingServiceDisconnected() {
-                Log.e("BillingManager", "Billing service disconnected")
+                AppLogger.log("Billing service disconnected", AppLogger.LogType.ERROR)
                 // TODO: Retry connection logic
             }
         })
@@ -67,7 +67,7 @@ class BillingManager(
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                 _productDetails.value = productDetailsList
             } else {
-                Log.e("BillingManager", "Error querying products: ${billingResult.debugMessage}")
+                AppLogger.log("Error querying products: ${billingResult.debugMessage}", AppLogger.LogType.ERROR)
             }
         }
     }
@@ -91,9 +91,9 @@ class BillingManager(
                 handlePurchase(purchase)
             }
         } else if (billingResult.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
-            Log.i("BillingManager", "User canceled purchase")
+            AppLogger.log("User canceled purchase", AppLogger.LogType.INFO)
         } else {
-            Log.e("BillingManager", "Purchase failed: ${billingResult.debugMessage}")
+            AppLogger.log("Purchase failed: ${billingResult.debugMessage}", AppLogger.LogType.ERROR)
         }
     }
 
