@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -96,7 +97,7 @@ fun MapScreen(
                 marker.position = GeoPoint(stand.latitude, stand.longitude)
                 marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                 marker.title = stand.name
-                marker.snippet = getStandTypeName(stand.type)
+                marker.snippet = context.getString(stand.type.displayNameRes)
                 map.overlays.add(marker)
             }
 
@@ -105,7 +106,7 @@ fun MapScreen(
                 val marker = Marker(map)
                 marker.position = GeoPoint(waypoint.latitude, waypoint.longitude)
                 marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-                marker.title = getWaypointTypeName(waypoint.type)
+                marker.title = context.getString(waypoint.type.displayNameRes)
                 map.overlays.add(marker)
             }
 
@@ -290,7 +291,7 @@ fun MapScreen(
                         onExpandedChange = { standTypeExpanded = it }
                     ) {
                         OutlinedTextField(
-                            value = getStandTypeName(standType),
+                            value = stringResource(standType.displayNameRes),
                             onValueChange = {},
                             readOnly = true,
                             label = { Text("Typ") },
@@ -305,7 +306,7 @@ fun MapScreen(
                         ) {
                             HuntingStandType.entries.forEach { type ->
                                 DropdownMenuItem(
-                                    text = { Text(getStandTypeName(type)) },
+                                    text = { Text(stringResource(type.displayNameRes)) },
                                     onClick = {
                                         standType = type
                                         standTypeExpanded = false
@@ -358,22 +359,3 @@ fun MapScreen(
     }
 }
 
-private fun getStandTypeName(type: HuntingStandType): String {
-    return when (type) {
-        HuntingStandType.HOCHSITZ -> "Hochsitz"
-        HuntingStandType.KANZEL -> "Kanzel"
-        HuntingStandType.DRUCKJAGD -> "Druckjagdstand"
-        HuntingStandType.ANSITZ -> "Ansitz"
-        HuntingStandType.CUSTOM -> "Benutzerdefiniert"
-    }
-}
-
-private fun getWaypointTypeName(type: com.noxvision.app.hunting.database.entities.WaypointType): String {
-    return when (type) {
-        com.noxvision.app.hunting.database.entities.WaypointType.ANSCHUSS -> "Anschuss"
-        com.noxvision.app.hunting.database.entities.WaypointType.LAST_SEEN -> "Letzte Sichtung"
-        com.noxvision.app.hunting.database.entities.WaypointType.BLOOD_TRAIL -> "Schweissfaehrte"
-        com.noxvision.app.hunting.database.entities.WaypointType.RECOVERY -> "Fundstelle"
-        com.noxvision.app.hunting.database.entities.WaypointType.CUSTOM -> "Benutzerdefiniert"
-    }
-}

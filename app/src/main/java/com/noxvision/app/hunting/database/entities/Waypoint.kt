@@ -1,9 +1,11 @@
 package com.noxvision.app.hunting.database.entities
 
+import androidx.annotation.StringRes
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.noxvision.app.R
 
 @Entity(
     tableName = "waypoints",
@@ -28,10 +30,10 @@ data class Waypoint(
     val notes: String?
 )
 
-enum class WaypointType {
-    LAST_SEEN,
-    BLOOD_TRAIL,
-    RECOVERY,
-    ANSCHUSS,
-    CUSTOM
+enum class WaypointType(@StringRes val displayNameRes: Int) {
+    LAST_SEEN(R.string.waypoint_last_seen),
+    BLOOD_TRAIL(R.string.waypoint_blood_trail),
+    RECOVERY(R.string.waypoint_recovery),
+    ANSCHUSS(R.string.waypoint_anschuss),
+    CUSTOM(R.string.waypoint_custom)
 }
