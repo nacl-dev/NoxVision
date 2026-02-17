@@ -3,6 +3,7 @@ package com.noxvision.app.billing
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import com.noxvision.app.BuildConfig
 import com.android.billingclient.api.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +38,9 @@ class BillingManager(
         _billingClient.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(billingResult: BillingResult) {
                 if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                    Log.d("BillingManager", "Billing setup finished")
+                    if (BuildConfig.DEBUG) {
+                        Log.d("BillingManager", "Billing setup finished")
+                    }
                     queryProductDetails()
                 } else {
                     Log.e("BillingManager", "Billing setup failed: ${billingResult.debugMessage}")
