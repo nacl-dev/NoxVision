@@ -47,4 +47,32 @@ class MediaUtilsTest {
         assertEquals("1 MB", formatFileSize(1024 * 1024))
         assertEquals("2 MB", formatFileSize(2 * 1024 * 1024 + 500))
     }
+
+    @Test
+    fun sanitizeFilename_validFilename() {
+        assertEquals("test.mp4", sanitizeFilename("test.mp4"))
+        assertEquals("IMG_20240101.jpg", sanitizeFilename("IMG_20240101.jpg"))
+    }
+
+    @Test
+    fun sanitizeFilename_pathTraversal() {
+        // Should strip path components
+        assertEquals("test.mp4", sanitizeFilename("../test.mp4"))
+        assertEquals("test.mp4", sanitizeFilename("foo/bar/test.mp4"))
+        assertEquals("passwd", sanitizeFilename("/etc/passwd"))
+    }
+
+    @Test
+    fun sanitizeFilename_specialChars() {
+        // Should replace special characters with underscores
+        assertEquals("bad_name.mp4", sanitizeFilename("bad*name.mp4"))
+        assertEquals("bad_name.mp4", sanitizeFilename("bad?name.mp4"))
+        assertEquals("bad_name.mp4", sanitizeFilename("bad:name.mp4"))
+    }
+
+    @Test
+    fun sanitizeFilename_spaces() {
+        // Should replace spaces with underscores
+        assertEquals("My_Video.mp4", sanitizeFilename("My Video.mp4"))
+    }
 }
