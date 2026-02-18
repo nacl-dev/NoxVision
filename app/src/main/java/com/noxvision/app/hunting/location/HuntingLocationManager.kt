@@ -19,6 +19,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.Locale
 import kotlin.coroutines.resume
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -169,7 +170,7 @@ class HuntingLocationManager(private val context: Context) {
         fun formatDistance(distanceMeters: Double): String {
             return when {
                 distanceMeters < 1000 -> "${distanceMeters.toInt()} m"
-                else -> String.format("%.1f km", distanceMeters / 1000)
+                else -> String.format(Locale.US, "%.1f km", distanceMeters / 1000)
             }
         }
 
@@ -178,6 +179,7 @@ class HuntingLocationManager(private val context: Context) {
             val lonDirection = if (longitude >= 0) "E" else "W"
 
             return String.format(
+                Locale.US,
                 "%.6f%s, %.6f%s",
                 kotlin.math.abs(latitude), latDirection,
                 kotlin.math.abs(longitude), lonDirection

@@ -71,8 +71,4 @@ class WeatherApiClient(private val apiKey: String = DEFAULT_API_KEY) {
             sunset = sys.getLong("sunset") * 1000
         )
     }
-
-    fun isApiKeyValid(): Boolean {
-        return apiKey.isNotEmpty()
-    }
 }
