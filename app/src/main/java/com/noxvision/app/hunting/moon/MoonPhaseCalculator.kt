@@ -9,7 +9,7 @@ object MoonPhaseCalculator {
     private const val SYNODIC_MONTH = 29.530588853
 
     // Reference new moon: January 6, 2000, 18:14 UTC
-    private const val REFERENCE_NEW_MOON_JD = 2451550.1
+    private const val REFERENCE_NEW_MOON_JD = 2451550.2597222
 
     enum class MoonPhase(val germanName: String, val icon: String, val illumination: String) {
         NEW_MOON("Neumond", "\uD83C\uDF11", "0%"),

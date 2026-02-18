@@ -2,6 +2,7 @@ package com.noxvision.app.util
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import com.noxvision.app.BuildConfig
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -26,7 +27,9 @@ object AppLogger {
         if (logs.size > 100) {
             logs.removeAt(logs.size - 1)
         }
-        Log.d("AppLogger", "[$type] $message")
+        if (BuildConfig.DEBUG) {
+            Log.d("AppLogger", "[$type] $message")
+        }
     }
 
     fun clear() {

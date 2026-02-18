@@ -29,6 +29,10 @@ import java.util.Locale
 
 private const val FOLDER_GUIDE_CAMERA = "GuideCamera"
 
+fun sanitizeFilename(name: String): String {
+    return File(name).name.replace(Regex("[^a-zA-Z0-9._-]"), "_")
+}
+
 private fun createMediaContentValues(filename: String, mimeType: String): ContentValues {
     return ContentValues().apply {
         put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
@@ -63,17 +67,20 @@ fun createVideoFile(context: Context): File {
     return File(storageDir, "VID_$timestamp.mp4")
 }
 
-fun saveVideoToGallery(context: Context, file: File) {
-    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    val filename = "VID_$timestamp.mp4"
+suspend fun saveVideoToGallery(context: Context, file: File) {
+    withContext(Dispatchers.IO) {
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+        val filename = "VID_$timestamp.mp4"
 
-    val contentValues = createMediaContentValues(filename, "video/mp4")
+        val contentValues = createMediaContentValues(filename, "video/mp4")
 
-    val uri = context.contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
-    uri?.let {
-        context.contentResolver.openOutputStream(it)?.use { outputStream ->
-            file.inputStream().use { inputStream ->
-                inputStream.copyTo(outputStream)
+        val uri =
+            context.contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
+        uri?.let {
+            context.contentResolver.openOutputStream(it)?.use { outputStream ->
+                file.inputStream().use { inputStream ->
+                    inputStream.copyTo(outputStream)
+                }
             }
         }
     }
@@ -89,7 +96,8 @@ suspend fun downloadVideoToCache(baseUrl: String, filename: String, context: Con
             "$baseUrl/$filename"
         )
 
-        val cacheFile = File(context.cacheDir, "video_preview_$filename")
+        val safeFilename = sanitizeFilename(filename)
+        val cacheFile = File(context.cacheDir, "video_preview_$safeFilename")
 
         for (downloadUrl in urlsToTry) {
             try {
@@ -132,7 +140,8 @@ suspend fun downloadVideoToCache(baseUrl: String, filename: String, context: Con
 
 fun deleteCacheVideo(filename: String, context: Context) {
     try {
-        val cacheFile = File(context.cacheDir, "video_preview_$filename")
+        val safeFilename = sanitizeFilename(filename)
+        val cacheFile = File(context.cacheDir, "video_preview_$safeFilename")
         if (cacheFile.exists()) {
             cacheFile.delete()
             AppLogger.log("Cache gelöscht: $filename", AppLogger.LogType.INFO)
@@ -210,10 +219,11 @@ suspend fun downloadFile(baseUrl: String, filename: String, appContext: Context)
                     AppLogger.log("Korrekte URL: $downloadUrl", AppLogger.LogType.SUCCESS)
                     val inputStream = conn.inputStream
 
-                    val mimeType = if (filename.endsWith(".mp4")) "video/mp4" else "image/jpeg"
-                    val contentValues = createMediaContentValues(filename, mimeType)
+                    val safeFilename = sanitizeFilename(filename)
+                    val mimeType = if (safeFilename.endsWith(".mp4")) "video/mp4" else "image/jpeg"
+                    val contentValues = createMediaContentValues(safeFilename, mimeType)
 
-                    val uri = if (filename.endsWith(".mp4")) {
+                    val uri = if (safeFilename.endsWith(".mp4")) {
                         appContext.contentResolver.insert(
                             MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                             contentValues
