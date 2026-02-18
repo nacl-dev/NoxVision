@@ -163,11 +163,7 @@ class ThermalObjectDetector(context: Context) {
             val numClasses = labels.size
             // numAnchors is class property
 
-            if (outputArray == null) {
-                val numElements = 4 + numClasses
-                outputArray = Array(1) { Array(numElements) { FloatArray(numAnchors) } }
-            }
-            val currentOutput = outputArray!!
+            val currentOutput = outputArray ?: return emptyList()
 
             interpreter?.run(imgData, currentOutput)
 
@@ -305,6 +301,7 @@ class ThermalObjectDetector(context: Context) {
         try {
             interpreter?.close()
             interpreter = null
+            outputArray = null
             enhancedBitmap?.recycle()
             enhancedBitmap = null
             scaledBitmap?.recycle()
