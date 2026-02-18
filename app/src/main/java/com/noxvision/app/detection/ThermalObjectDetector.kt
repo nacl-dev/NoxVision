@@ -40,6 +40,7 @@ class ThermalObjectDetector(context: Context) {
     private val INPUT_SIZE = 640
     private val FOCAL_LENGTH_PIXELS = 3350f
     private val numAnchors = 8400
+    private val MIN_CONFIDENCE_THRESHOLD = 0.45f
 
     // Reusable buffers to avoid allocations per frame
     private var imgData: ByteBuffer? = null
@@ -47,6 +48,25 @@ class ThermalObjectDetector(context: Context) {
     private var outputArray: Array<Array<FloatArray>>? = null
     private var enhancedBitmap: Bitmap? = null
     private var scaledBitmap: Bitmap? = null
+
+    // Cached objects to avoid allocation in enhanceThermalImage
+    private val enhancementColorMatrix = android.graphics.ColorMatrix().apply {
+        val contrast = 1.3f
+        val translate = (1f - contrast) * 128f
+        set(
+            floatArrayOf(
+                contrast, 0f, 0f, 0f, translate,
+                0f, contrast, 0f, 0f, translate,
+                0f, 0f, contrast, 0f, translate,
+                0f, 0f, 0f, 1f, 0f
+            )
+        )
+        setSaturation(1.2f)
+    }
+
+    private val enhancementPaint = Paint().apply {
+        colorFilter = android.graphics.ColorMatrixColorFilter(enhancementColorMatrix)
+    }
 
     init {
         try {
@@ -161,6 +181,8 @@ class ThermalObjectDetector(context: Context) {
                     }
                 }
 
+                if (maxScore < MIN_CONFIDENCE_THRESHOLD) continue
+
                 if (maxClassIndex != -1) {
                     val rawLabel = labels[maxClassIndex]
 
@@ -264,23 +286,7 @@ class ThermalObjectDetector(context: Context) {
 
     private fun enhanceThermalImage(src: Bitmap, dest: Bitmap) {
         val canvas = Canvas(dest)
-        val colorMatrix = android.graphics.ColorMatrix().apply {
-            val contrast = 1.3f
-            val translate = (1f - contrast) * 128f
-            set(
-                floatArrayOf(
-                    contrast, 0f, 0f, 0f, translate,
-                    0f, contrast, 0f, 0f, translate,
-                    0f, 0f, contrast, 0f, translate,
-                    0f, 0f, 0f, 1f, 0f
-                )
-            )
-            setSaturation(1.2f)
-        }
-        val paint = Paint().apply {
-            colorFilter = android.graphics.ColorMatrixColorFilter(colorMatrix)
-        }
-        canvas.drawBitmap(src, 0f, 0f, paint)
+        canvas.drawBitmap(src, 0f, 0f, enhancementPaint)
     }
 
     private fun estimateDistance(label: String, bbox: RectF, imageHeight: Int): Float? {

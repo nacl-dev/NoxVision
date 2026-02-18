@@ -21,6 +21,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -190,7 +191,7 @@ fun NachsucheScreen(
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "Ziel: ${getWaypointTypeName(selectedWaypoint!!.type)}",
+                                text = "Ziel: ${stringResource(selectedWaypoint!!.type.displayNameRes)}",
                                 color = NightColors.onBackground,
                                 fontSize = 12.sp
                             )
@@ -345,7 +346,7 @@ fun NachsucheScreen(
                                 onClick = { selectedType = type }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(getWaypointTypeName(type))
+                            Text(stringResource(type.displayNameRes))
                         }
                     }
                 }
@@ -416,7 +417,7 @@ private fun WaypointCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = getWaypointTypeName(waypoint.type),
+                    text = stringResource(waypoint.type.displayNameRes),
                     color = NightColors.onSurface,
                     fontWeight = FontWeight.Medium
                 )
@@ -525,16 +526,6 @@ private fun TrackingCompass(
             radius = 6f,
             center = center
         )
-    }
-}
-
-private fun getWaypointTypeName(type: WaypointType): String {
-    return when (type) {
-        WaypointType.ANSCHUSS -> "Anschuss"
-        WaypointType.LAST_SEEN -> "Letzte Sichtung"
-        WaypointType.BLOOD_TRAIL -> "Schweissfaehrte"
-        WaypointType.RECOVERY -> "Fundstelle"
-        WaypointType.CUSTOM -> "Benutzerdefiniert"
     }
 }
 
