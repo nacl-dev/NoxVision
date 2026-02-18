@@ -178,7 +178,7 @@ fun FeatureBountyScreen(
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    BountyStatus.values().forEach { status ->
+                    BountyStatus.entries.forEach { status ->
                         val isSelected = selectedStatus == status
                         val (title, selectedColor) = when(status) {
                             BountyStatus.ACTIVE -> "ACTIVE" to Color(0xFF424242)

@@ -2,6 +2,9 @@ package com.noxvision.app.detection
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.RectF
 import com.noxvision.app.util.AppLogger
 import java.io.FileInputStream
@@ -36,9 +39,18 @@ class ThermalObjectDetector(context: Context) {
 
     private val INPUT_SIZE = 640
     private val FOCAL_LENGTH_PIXELS = 3350f
+    private val numAnchors = 8400
+    private val MIN_CONFIDENCE_THRESHOLD = 0.45f
 
-    private var cachedEnhancedBitmap: Bitmap? = null
-    private val enhancedColorMatrix = android.graphics.ColorMatrix().apply {
+    // Reusable buffers to avoid allocations per frame
+    private var imgData: ByteBuffer? = null
+    private val intValues = IntArray(INPUT_SIZE * INPUT_SIZE)
+    private var outputArray: Array<Array<FloatArray>>? = null
+    private var enhancedBitmap: Bitmap? = null
+    private var scaledBitmap: Bitmap? = null
+
+    // Cached objects to avoid allocation in enhanceThermalImage
+    private val enhancementColorMatrix = android.graphics.ColorMatrix().apply {
         val contrast = 1.3f
         val translate = (1f - contrast) * 128f
         set(
@@ -51,8 +63,9 @@ class ThermalObjectDetector(context: Context) {
         )
         setSaturation(1.2f)
     }
-    private val enhancedPaint = android.graphics.Paint().apply {
-        colorFilter = android.graphics.ColorMatrixColorFilter(enhancedColorMatrix)
+
+    private val enhancementPaint = Paint().apply {
+        colorFilter = android.graphics.ColorMatrixColorFilter(enhancementColorMatrix)
     }
 
     init {
@@ -71,6 +84,14 @@ class ThermalObjectDetector(context: Context) {
                 interpreter = org.tensorflow.lite.Interpreter(model, options)
 
                 loadLabels(context)
+
+                // Initialize buffers
+                imgData = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * 3)
+                imgData?.order(ByteOrder.nativeOrder())
+
+                val numClasses = labels.size
+                val numElements = 4 + numClasses
+                outputArray = Array(1) { Array(numElements) { FloatArray(numAnchors) } }
 
                 isInitialized = true
                 AppLogger.log("Thermal detector (YOLOv8) ready", AppLogger.LogType.SUCCESS)
@@ -103,6 +124,7 @@ class ThermalObjectDetector(context: Context) {
         }
     }
 
+    @Synchronized
     fun detectObjects(bitmap: Bitmap): List<DetectedObject> {
         if (!isInitialized || interpreter == null) {
             return emptyList()
@@ -111,18 +133,39 @@ class ThermalObjectDetector(context: Context) {
         try {
             val startTime = System.currentTimeMillis()
 
-            val processedBitmap = enhanceThermalImage(bitmap)
-            val scaledBitmap = Bitmap.createScaledBitmap(processedBitmap, INPUT_SIZE, INPUT_SIZE, true)
+            // 1. Enhance
+            if (enhancedBitmap == null || enhancedBitmap?.width != bitmap.width || enhancedBitmap?.height != bitmap.height) {
+                enhancedBitmap?.recycle()
+                enhancedBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
+            }
+            val currentEnhanced = enhancedBitmap!!
+            enhanceThermalImage(bitmap, currentEnhanced)
 
-            val inputBuffer = convertBitmapToFloatBuffer(scaledBitmap)
+            // 2. Scale
+            if (scaledBitmap == null) {
+                scaledBitmap = Bitmap.createBitmap(INPUT_SIZE, INPUT_SIZE, Bitmap.Config.ARGB_8888)
+            }
+            val currentScaled = scaledBitmap!!
+            val canvas = Canvas(currentScaled)
+            // Use filtering for scaling
+            val paint = Paint()
+            paint.isFilterBitmap = true
+            canvas.drawBitmap(currentEnhanced, null, Rect(0, 0, INPUT_SIZE, INPUT_SIZE), paint)
+
+            // 3. Convert to Float Buffer
+            if (imgData == null) {
+                 // Should be initialized in init, but safe check
+                 imgData = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * 3)
+                 imgData?.order(ByteOrder.nativeOrder())
+            }
+            convertBitmapToFloatBuffer(currentScaled, imgData!!, intValues)
 
             val numClasses = labels.size
-            val numElements = 4 + numClasses
-            val numAnchors = 8400
+            // numAnchors is class property
 
-            val outputArray = Array(1) { Array(numElements) { FloatArray(numAnchors) } }
+            val currentOutput = outputArray ?: return emptyList()
 
-            interpreter?.run(inputBuffer, outputArray)
+            interpreter?.run(imgData, currentOutput)
 
             val allDetections = mutableListOf<DetectedObject>()
 
@@ -131,12 +174,14 @@ class ThermalObjectDetector(context: Context) {
                 var maxClassIndex = -1
 
                 for (c in 0 until numClasses) {
-                    val score = outputArray[0][4 + c][i]
+                    val score = currentOutput[0][4 + c][i]
                     if (score > maxScore) {
                         maxScore = score
                         maxClassIndex = c
                     }
                 }
+
+                if (maxScore < MIN_CONFIDENCE_THRESHOLD) continue
 
                 if (maxClassIndex != -1) {
                     val rawLabel = labels[maxClassIndex]
@@ -150,10 +195,10 @@ class ThermalObjectDetector(context: Context) {
                     }
 
                     if (maxScore >= minConf) {
-                        val cx = outputArray[0][0][i] / INPUT_SIZE.toFloat()
-                        val cy = outputArray[0][1][i] / INPUT_SIZE.toFloat()
-                        val w = outputArray[0][2][i] / INPUT_SIZE.toFloat()
-                        val h = outputArray[0][3][i] / INPUT_SIZE.toFloat()
+                        val cx = currentOutput[0][0][i] / INPUT_SIZE.toFloat()
+                        val cy = currentOutput[0][1][i] / INPUT_SIZE.toFloat()
+                        val w = currentOutput[0][2][i] / INPUT_SIZE.toFloat()
+                        val h = currentOutput[0][3][i] / INPUT_SIZE.toFloat()
 
                         val x1 = (cx - w / 2) * bitmap.width
                         val y1 = (cy - h / 2) * bitmap.height
@@ -178,10 +223,7 @@ class ThermalObjectDetector(context: Context) {
                 AppLogger.log("${topDetections.size} objects (${elapsed}ms) - Top: ${topDetections[0].label}", AppLogger.LogType.INFO)
             }
 
-            if (scaledBitmap != processedBitmap) {
-                scaledBitmap.recycle()
-            }
-            // Do not recycle processedBitmap here as it is cached in cachedEnhancedBitmap
+            // Do not recycle bitmaps here, they are reused
 
             return topDetections
 
@@ -191,11 +233,9 @@ class ThermalObjectDetector(context: Context) {
         }
     }
 
-    private fun convertBitmapToFloatBuffer(bitmap: Bitmap): ByteBuffer {
-        val byteBuffer = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * 3)
-        byteBuffer.order(ByteOrder.nativeOrder())
+    private fun convertBitmapToFloatBuffer(bitmap: Bitmap, byteBuffer: ByteBuffer, intValues: IntArray) {
+        byteBuffer.rewind() // Important!
 
-        val intValues = IntArray(INPUT_SIZE * INPUT_SIZE)
         bitmap.getPixels(intValues, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
 
         var pixel = 0
@@ -207,7 +247,6 @@ class ThermalObjectDetector(context: Context) {
                 byteBuffer.putFloat(((value and 0xFF) / 255.0f))
             }
         }
-        return byteBuffer
     }
 
     private fun applyNMS(detections: List<DetectedObject>, iouThreshold: Float): List<DetectedObject> {
@@ -245,19 +284,9 @@ class ThermalObjectDetector(context: Context) {
         return if (unionArea > 0) intersectArea / unionArea else 0f
     }
 
-    private fun enhanceThermalImage(bitmap: Bitmap): Bitmap {
-        val width = bitmap.width
-        val height = bitmap.height
-
-        if (cachedEnhancedBitmap == null || cachedEnhancedBitmap?.width != width || cachedEnhancedBitmap?.height != height) {
-            cachedEnhancedBitmap?.recycle()
-            cachedEnhancedBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        }
-        val enhanced = cachedEnhancedBitmap!!
-
-        val canvas = android.graphics.Canvas(enhanced)
-        canvas.drawBitmap(bitmap, 0f, 0f, enhancedPaint)
-        return enhanced
+    private fun enhanceThermalImage(src: Bitmap, dest: Bitmap) {
+        val canvas = Canvas(dest)
+        canvas.drawBitmap(src, 0f, 0f, enhancementPaint)
     }
 
     private fun estimateDistance(label: String, bbox: RectF, imageHeight: Int): Float? {
@@ -272,8 +301,11 @@ class ThermalObjectDetector(context: Context) {
         try {
             interpreter?.close()
             interpreter = null
-            cachedEnhancedBitmap?.recycle()
-            cachedEnhancedBitmap = null
+            outputArray = null
+            enhancedBitmap?.recycle()
+            enhancedBitmap = null
+            scaledBitmap?.recycle()
+            scaledBitmap = null
         } catch (e: Exception) {
         }
     }
