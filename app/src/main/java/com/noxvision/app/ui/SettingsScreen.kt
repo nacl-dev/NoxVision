@@ -2,6 +2,7 @@ package com.noxvision.app.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.noxvision.app.CameraSettings
+import com.noxvision.app.CrosshairStyle
 import com.noxvision.app.R
 import com.noxvision.app.ui.NightColors
 import com.noxvision.app.ui.dialogs.AboutDialogContent
@@ -48,6 +50,8 @@ fun SettingsScreen(
     hotspotEnabled: Boolean,
     brightness: Int,
     contrast: Int,
+    crosshairEnabled: Boolean,
+    crosshairStyle: CrosshairStyle,
     enhancementEnabled: Boolean,
     objectDetectionEnabled: Boolean,
     cameraIp: String,
@@ -56,6 +60,8 @@ fun SettingsScreen(
     onHotspotChange: (Boolean) -> Unit,
     onBrightnessChange: (Int) -> Unit,
     onContrastChange: (Int) -> Unit,
+    onCrosshairEnabledChange: (Boolean) -> Unit,
+    onCrosshairStyleChange: (CrosshairStyle) -> Unit,
     onEnhancementChange: (Boolean) -> Unit,
     onObjectDetectionChange: (Boolean) -> Unit,
     onCameraIpChange: (String) -> Unit,
@@ -144,10 +150,14 @@ fun SettingsScreen(
                 hotspotEnabled = hotspotEnabled,
                 brightness = brightness,
                 contrast = contrast,
+                crosshairEnabled = crosshairEnabled,
+                crosshairStyle = crosshairStyle,
                 onAudioChange = onAudioChange,
                 onHotspotChange = onHotspotChange,
                 onBrightnessChange = onBrightnessChange,
                 onContrastChange = onContrastChange,
+                onCrosshairEnabledChange = onCrosshairEnabledChange,
+                onCrosshairStyleChange = onCrosshairStyleChange,
                 onShowThermalSettings = onShowThermalSettings
             )
             SettingsPage.APP_FEATURES -> AppFeaturesPage(
@@ -545,10 +555,14 @@ private fun CameraSettingsPage(
     hotspotEnabled: Boolean,
     brightness: Int,
     contrast: Int,
+    crosshairEnabled: Boolean,
+    crosshairStyle: CrosshairStyle,
     onAudioChange: (Boolean) -> Unit,
     onHotspotChange: (Boolean) -> Unit,
     onBrightnessChange: (Int) -> Unit,
     onContrastChange: (Int) -> Unit,
+    onCrosshairEnabledChange: (Boolean) -> Unit,
+    onCrosshairStyleChange: (CrosshairStyle) -> Unit,
     onShowThermalSettings: () -> Unit
 ) {
     Column(
@@ -587,6 +601,58 @@ private fun CameraSettingsPage(
             checked = hotspotEnabled,
             onCheckedChange = onHotspotChange
         )
+
+        HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 8.dp))
+
+        // Crosshair Settings
+        SettingsSectionHeader(
+            icon = {
+                Icon(
+                    Icons.Filled.CenterFocusStrong,
+                    contentDescription = null,
+                    tint = NightColors.primary,
+                    modifier = Modifier.size(18.dp)
+                )
+            },
+            title = stringResource(R.string.crosshair_settings)
+        )
+
+        SettingsToggleRow(
+            icon = Icons.Filled.CenterFocusStrong,
+            label = stringResource(R.string.enable_crosshair),
+            checked = crosshairEnabled,
+            onCheckedChange = onCrosshairEnabledChange
+        )
+
+        if (crosshairEnabled) {
+            Column(modifier = Modifier.padding(start = 12.dp, end = 12.dp)) {
+                Text(
+                    text = stringResource(R.string.crosshair_style),
+                    fontSize = 12.sp,
+                    color = NightColors.onBackground,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CrosshairStyle.values().forEach { style ->
+                        FilterChip(
+                            selected = crosshairStyle == style,
+                            onClick = { onCrosshairStyleChange(style) },
+                            label = { Text(stringResource(style.displayNameRes)) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = NightColors.primaryDim,
+                                selectedLabelColor = NightColors.onSurface
+                            )
+                        )
+                    }
+                }
+            }
+        }
 
         HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 8.dp))
 
