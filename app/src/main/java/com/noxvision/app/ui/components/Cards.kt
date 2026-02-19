@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.VideoFile
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,7 +49,8 @@ fun PaletteButton(
     name: String,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isLoading: Boolean = false
 ) {
     Column(
         modifier = modifier
@@ -56,6 +58,7 @@ fun PaletteButton(
             .selectable(
                 selected = isSelected,
                 onClick = onClick,
+                enabled = !isLoading,
                 role = Role.RadioButton
             )
             .background(NightColors.surface)
@@ -67,15 +70,29 @@ fun PaletteButton(
             .padding(6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painter = painterResource(id = imageRes),
-            contentDescription = null,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(30.dp)
-                .clip(RoundedCornerShape(4.dp)),
-            contentScale = ContentScale.Fit
-        )
+                .height(30.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = NightColors.primary
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(4.dp)),
+                    contentScale = ContentScale.Fit
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = name,

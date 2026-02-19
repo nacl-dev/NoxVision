@@ -154,6 +154,7 @@ fun VideoStreamScreen() {
     var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
     var showGalleryDialog by rememberSaveable { mutableStateOf(false) }
     var galleryRefreshKey by rememberSaveable { mutableIntStateOf(0) }
+    var loadingPaletteId by remember { mutableStateOf<String?>(null) }
 
     // First Run / Whats New
     var showWelcomeDialog by rememberSaveable { mutableStateOf(false) }
@@ -1151,9 +1152,12 @@ fun VideoStreamScreen() {
                             imageRes = imageRes,
                             name = name,
                             isSelected = selectedPalette == id,
+                            isLoading = loadingPaletteId == id,
                             onClick = {
                                 scope.launch {
+                                    loadingPaletteId = id
                                     val success = setPalette(id)
+                                    loadingPaletteId = null
                                     if (success) selectedPalette = id
                                 }
                             },
