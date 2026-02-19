@@ -15,7 +15,12 @@ import androidx.core.graphics.createBitmap
 import com.noxvision.app.data.CameraFile
 import com.noxvision.app.data.PhoneFolder
 import com.noxvision.app.data.PhoneMediaFile
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -27,6 +32,7 @@ import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicInteger
 
 private const val FOLDER_GUIDE_CAMERA = "GuideCamera"
 
@@ -107,6 +113,56 @@ suspend fun saveVideoToGallery(context: Context, file: File) {
     }
 }
 
+private suspend fun connectToBestUrl(urls: List<String>): Pair<HttpURLConnection, String>? {
+    val deferred = CompletableDeferred<Pair<HttpURLConnection, String>?>()
+    val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    val failures = AtomicInteger(0)
+
+    urls.forEach { urlStr ->
+        scope.launch {
+            var conn: HttpURLConnection? = null
+            try {
+                if (deferred.isCompleted) return@launch
+
+                val url = URL(urlStr)
+                conn = url.openConnection() as HttpURLConnection
+                conn.connectTimeout = 5000
+                conn.readTimeout = 60000
+                conn.requestMethod = "GET"
+
+                val code = conn.responseCode
+
+                if (deferred.isCompleted) {
+                    conn.disconnect()
+                    return@launch
+                }
+
+                if (code == 200) {
+                    if (deferred.complete(conn to urlStr)) {
+                        // Winner
+                    } else {
+                        conn.disconnect()
+                    }
+                } else {
+                    conn.disconnect()
+                    if (failures.incrementAndGet() == urls.size) {
+                        deferred.complete(null)
+                    }
+                }
+            } catch (e: Exception) {
+                conn?.disconnect()
+                if (failures.incrementAndGet() == urls.size) {
+                    deferred.complete(null)
+                }
+            }
+        }
+    }
+
+    val result = deferred.await()
+    scope.cancel()
+    return result
+}
+
 suspend fun downloadVideoToCache(baseUrl: String, filename: String, context: Context): File? {
     return withContext(Dispatchers.IO) {
         val urlsToTry = buildDownloadUrls(baseUrl, filename)
@@ -114,42 +170,37 @@ suspend fun downloadVideoToCache(baseUrl: String, filename: String, context: Con
         val safeFilename = sanitizeFilename(filename)
         val cacheFile = File(context.cacheDir, "video_preview_$safeFilename")
 
-        for (downloadUrl in urlsToTry) {
-            try {
-                AppLogger.log("Cache-Download versuche: $downloadUrl", AppLogger.LogType.INFO)
-                val url = URL(downloadUrl)
-                val conn = url.openConnection() as HttpURLConnection
-                conn.connectTimeout = 5000
-                conn.readTimeout = 60000
-                conn.requestMethod = "GET"
+        AppLogger.log("Starting parallel connectivity check for ${urlsToTry.size} URLs...", AppLogger.LogType.INFO)
 
-                val responseCode = conn.responseCode
-                if (responseCode == 200) {
-                    AppLogger.log("Cache-Download URL OK: $downloadUrl", AppLogger.LogType.SUCCESS)
-                    conn.inputStream.use { input ->
-                        cacheFile.outputStream().use { output ->
-                            val buffer = ByteArray(8192)
-                            var bytesRead: Int
-                            var totalBytes = 0L
-                            while (input.read(buffer).also { bytesRead = it } != -1) {
-                                output.write(buffer, 0, bytesRead)
-                                totalBytes += bytesRead
-                            }
-                            AppLogger.log("Cache-Download OK: ${totalBytes / 1024}KB", AppLogger.LogType.SUCCESS)
+        val result = connectToBestUrl(urlsToTry)
+
+        if (result != null) {
+            val (conn, downloadUrl) = result
+            try {
+                AppLogger.log("Cache-Download URL OK: $downloadUrl", AppLogger.LogType.SUCCESS)
+                conn.inputStream.use { input ->
+                    cacheFile.outputStream().use { output ->
+                        val buffer = ByteArray(8192)
+                        var bytesRead: Int
+                        var totalBytes = 0L
+                        while (input.read(buffer).also { bytesRead = it } != -1) {
+                            output.write(buffer, 0, bytesRead)
+                            totalBytes += bytesRead
                         }
+                        AppLogger.log("Cache-Download OK: ${totalBytes / 1024}KB", AppLogger.LogType.SUCCESS)
                     }
-                    conn.disconnect()
-                    return@withContext cacheFile
-                } else {
-                    AppLogger.log("HTTP $responseCode für $downloadUrl", AppLogger.LogType.INFO)
-                    conn.disconnect()
                 }
+                conn.disconnect()
+                return@withContext cacheFile
             } catch (e: Exception) {
                 AppLogger.log("Cache-Download Fehler: ${e.message}", AppLogger.LogType.INFO)
+                conn.disconnect()
+                return@withContext null
             }
+        } else {
+            AppLogger.log("Alle Cache-Download URLs fehlgeschlagen!", AppLogger.LogType.ERROR)
+            return@withContext null
         }
-        AppLogger.log("Alle Cache-Download URLs fehlgeschlagen!", AppLogger.LogType.ERROR)
-        null
     }
 }
 
