@@ -6,6 +6,8 @@ import com.android.billingclient.api.*
 import com.noxvision.app.util.AppLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -15,6 +17,11 @@ class BillingManager(
     private val context: Context,
     private val onPurchaseConsumed: (String) -> Unit // Callback when a consumable is bought and consumed
 ) : PurchasesUpdatedListener {
+
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var retryCount = 0
+    private val maxRetryAttempts = 3
+    private val baseDelayMillis = 1000L
 
     private val _billingClient = BillingClient.newBuilder(context)
         .setListener(this)
@@ -38,6 +45,7 @@ class BillingManager(
             override fun onBillingSetupFinished(billingResult: BillingResult) {
                 if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                     AppLogger.log("Billing setup finished", AppLogger.LogType.INFO)
+                    retryCount = 0
                     queryProductDetails()
                 } else {
                     AppLogger.log("Billing setup failed: ${billingResult.debugMessage}", AppLogger.LogType.ERROR)
@@ -46,9 +54,24 @@ class BillingManager(
 
             override fun onBillingServiceDisconnected() {
                 AppLogger.log("Billing service disconnected", AppLogger.LogType.ERROR)
-                // TODO: Retry connection logic
+                retryConnection()
             }
         })
+    }
+
+    private fun retryConnection() {
+        if (retryCount < maxRetryAttempts) {
+            retryCount++
+            val delayMillis = (baseDelayMillis * (1 shl (retryCount - 1)))
+            AppLogger.log("Retrying billing connection in ${delayMillis}ms (Attempt $retryCount/$maxRetryAttempts)", AppLogger.LogType.INFO)
+
+            scope.launch {
+                delay(delayMillis)
+                startConnection()
+            }
+        } else {
+            AppLogger.log("Max billing retry attempts reached. Giving up.", AppLogger.LogType.ERROR)
+        }
     }
 
     private fun queryProductDetails() {
