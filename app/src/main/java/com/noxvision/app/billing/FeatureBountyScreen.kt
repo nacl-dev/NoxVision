@@ -32,6 +32,9 @@ import com.noxvision.app.ui.NightColors
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
@@ -47,9 +50,11 @@ fun FeatureBountyScreen(
 ) {
     val userCredits by repository.userCredits.collectAsState()
     val bounties by repository.bounties.collectAsState()
+    val activities by repository.activities.collectAsState()
     var showBuyCreditsDialog by remember { mutableStateOf(false) }
     var showDonateDialog by remember { mutableStateOf<FeatureBounty?>(null) }
     var showFaqDialog by remember { mutableStateOf(false) }
+    var showActivityDialog by remember { mutableStateOf(false) }
     var selectedStatus by remember { mutableStateOf(BountyStatus.ACTIVE) }
 
     val filteredBounties = remember(bounties, selectedStatus) {
@@ -143,7 +148,7 @@ fun FeatureBountyScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Button(
-                                onClick = { /* TODO: View Activity */ },
+                                onClick = { showActivityDialog = true },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0xFF424242)
                                 ),
@@ -257,6 +262,13 @@ fun FeatureBountyScreen(
         if (showFaqDialog) {
             FeatureBountyFaqDialog(onDismiss = { showFaqDialog = false })
         }
+
+        if (showActivityDialog) {
+            ActivityDialog(
+                activities = activities,
+                onDismiss = { showActivityDialog = false }
+            )
+        }
     }
 }
 
@@ -317,6 +329,96 @@ fun BountyCard(bounty: FeatureBounty, onDonateClick: () -> Unit, primaryColor: C
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ActivityDialog(activities: List<BountyActivity>, onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            colors = CardDefaults.cardColors(containerColor = NightColors.surface),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 500.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Activity",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = NightColors.onBackground
+                    )
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Default.Close, contentDescription = "Close", tint = NightColors.onSurface)
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                if (activities.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No activity yet.", color = Color.Gray)
+                    }
+                } else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.weight(1f, fill = false)
+                    ) {
+                        items(activities) { activity ->
+                            ActivityItem(activity)
+                            HorizontalDivider(color = Color.DarkGray, thickness = 0.5.dp)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ActivityItem(activity: BountyActivity) {
+    val dateStr = remember(activity.timestamp) {
+        SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()).format(Date(activity.timestamp))
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = activity.description,
+                color = NightColors.onBackground,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = dateStr,
+                color = Color.Gray,
+                fontSize = 12.sp
+            )
+        }
+
+        Text(
+            text = if (activity.amount > 0) "+${activity.amount}" else "${activity.amount}",
+            color = if (activity.amount > 0) Color(0xFF43A047) else Color(0xFFE91E63),
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp
+        )
     }
 }
 
