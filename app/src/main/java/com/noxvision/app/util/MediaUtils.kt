@@ -21,6 +21,7 @@ import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
@@ -68,6 +69,27 @@ private fun createMediaContentValues(filename: String, mimeType: String): Conten
     }
 }
 
+private fun saveMediaToGallery(
+    context: Context,
+    filename: String,
+    mimeType: String,
+    writeAction: (OutputStream) -> Unit
+) {
+    val contentValues = createMediaContentValues(filename, mimeType)
+    val collectionUri = if (mimeType.startsWith("video")) {
+        MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+    } else {
+        MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+    }
+
+    val uri = context.contentResolver.insert(collectionUri, contentValues)
+    uri?.let {
+        context.contentResolver.openOutputStream(it)?.use { outputStream ->
+            writeAction(outputStream)
+        }
+    }
+}
+
 fun formatDuration(seconds: Int): String {
     val mins = seconds / 60
     val secs = seconds % 60
@@ -93,15 +115,9 @@ suspend fun saveVideoToGallery(context: Context, file: File) {
         val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         val filename = "VID_$timestamp.mp4"
 
-        val contentValues = createMediaContentValues(filename, "video/mp4")
-
-        val uri =
-            context.contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
-        uri?.let {
-            context.contentResolver.openOutputStream(it)?.use { outputStream ->
-                file.inputStream().use { inputStream ->
-                    inputStream.copyTo(outputStream)
-                }
+        saveMediaToGallery(context, filename, "video/mp4") { outputStream ->
+            file.inputStream().use { inputStream ->
+                inputStream.copyTo(outputStream)
             }
         }
     }
@@ -235,31 +251,16 @@ suspend fun downloadFile(baseUrl: String, filename: String, appContext: Context)
 
                     val safeFilename = sanitizeFilename(filename)
                     val mimeType = if (safeFilename.endsWith(".mp4")) "video/mp4" else "image/jpeg"
-                    val contentValues = createMediaContentValues(safeFilename, mimeType)
 
-                    val uri = if (safeFilename.endsWith(".mp4")) {
-                        appContext.contentResolver.insert(
-                            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                            contentValues
-                        )
-                    } else {
-                        appContext.contentResolver.insert(
-                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                            contentValues
-                        )
-                    }
-
-                    uri?.let {
-                        appContext.contentResolver.openOutputStream(it)?.use { outputStream ->
-                            val buffer = ByteArray(8192)
-                            var bytesRead: Int
-                            var totalBytes = 0L
-                            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                                outputStream.write(buffer, 0, bytesRead)
-                                totalBytes += bytesRead
-                            }
-                            AppLogger.log("Download OK: ${totalBytes / 1024}KB", AppLogger.LogType.SUCCESS)
+                    saveMediaToGallery(appContext, safeFilename, mimeType) { outputStream ->
+                        val buffer = ByteArray(8192)
+                        var bytesRead: Int
+                        var totalBytes = 0L
+                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                            outputStream.write(buffer, 0, bytesRead)
+                            totalBytes += bytesRead
                         }
+                        AppLogger.log("Download OK: ${totalBytes / 1024}KB", AppLogger.LogType.SUCCESS)
                     }
 
                     conn.disconnect()
@@ -381,12 +382,7 @@ fun saveBitmapToGallery(context: Context, bitmap: Bitmap) {
     val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
     val filename = "IMG_$timestamp.jpg"
 
-    val contentValues = createMediaContentValues(filename, "image/jpeg")
-
-    val uri = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-    uri?.let {
-        context.contentResolver.openOutputStream(it)?.use { outputStream ->
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 95, outputStream)
-        }
+    saveMediaToGallery(context, filename, "image/jpeg") { outputStream ->
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 95, outputStream)
     }
 }
