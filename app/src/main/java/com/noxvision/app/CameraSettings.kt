@@ -2,11 +2,28 @@ package com.noxvision.app
 
 import android.content.Context
 
+enum class CrosshairStyle(val displayNameRes: Int, val id: Int) {
+    SIMPLE(R.string.crosshair_simple, 0),
+    GAP(R.string.crosshair_gap, 1),
+    CIRCLE_DOT(R.string.crosshair_circle_dot, 2),
+    CHEVRON(R.string.crosshair_chevron, 3);
+
+    companion object {
+        fun fromId(id: Int): CrosshairStyle {
+            return values().find { it.id == id } ?: SIMPLE
+        }
+    }
+}
+
 /**
  * Manages camera connection and thermal measurement settings with SharedPreferences persistence.
  */
 object CameraSettings {
     private const val PREFS_NAME = "noxvision_settings"
+
+    // Crosshair settings
+    private const val KEY_CROSSHAIR_ENABLED = "crosshair_enabled"
+    private const val KEY_CROSSHAIR_STYLE = "crosshair_style"
     
     // Connection settings
     private const val KEY_CAMERA_IP = "camera_ip"
@@ -330,5 +347,28 @@ object CameraSettings {
     fun setLastVersionCode(context: Context, versionCode: Int) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().putInt(KEY_LAST_VERSION_CODE, versionCode).apply()
+    }
+
+    // ==================== Crosshair Settings ====================
+
+    fun isCrosshairEnabled(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(KEY_CROSSHAIR_ENABLED, false)
+    }
+
+    fun setCrosshairEnabled(context: Context, enabled: Boolean) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putBoolean(KEY_CROSSHAIR_ENABLED, enabled).apply()
+    }
+
+    fun getCrosshairStyle(context: Context): CrosshairStyle {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val id = prefs.getInt(KEY_CROSSHAIR_STYLE, CrosshairStyle.SIMPLE.id)
+        return CrosshairStyle.fromId(id)
+    }
+
+    fun setCrosshairStyle(context: Context, style: CrosshairStyle) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putInt(KEY_CROSSHAIR_STYLE, style.id).apply()
     }
 }

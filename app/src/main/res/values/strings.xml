@@ -52,6 +52,13 @@
     <string name="audio_display">AUDIO &amp; ANZEIGE</string>
     <string name="enable_audio">Audio aktivieren</string>
     <string name="show_hotspot">Hotspot anzeigen (heißester Punkt)</string>
+    <string name="crosshair_settings">FADENKREUZ</string>
+    <string name="enable_crosshair">Fadenkreuz aktivieren</string>
+    <string name="crosshair_style">Fadenkreuz-Stil</string>
+    <string name="crosshair_simple">Einfach</string>
+    <string name="crosshair_gap">Lücke</string>
+    <string name="crosshair_circle_dot">Kreis-Punkt</string>
+    <string name="crosshair_chevron">Chevron</string>
     <string name="image_settings">BILDEINSTELLUNGEN</string>
     <string name="brightness">Helligkeit</string>
     <string name="contrast">Kontrast</string>

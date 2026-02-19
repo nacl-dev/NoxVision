@@ -66,6 +66,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
@@ -86,6 +87,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import com.noxvision.app.CameraApiClient
 import com.noxvision.app.CameraCapabilities
 import com.noxvision.app.CameraSettings
+import com.noxvision.app.CrosshairStyle
 import com.noxvision.app.DeviceInfo
 import com.noxvision.app.MainActivity
 import com.noxvision.app.getCapabilities
@@ -141,6 +143,8 @@ fun VideoStreamScreen() {
 
     var brightness by remember { mutableIntStateOf(3) }
     var contrast by remember { mutableIntStateOf(3) }
+    var crosshairEnabled by remember { mutableStateOf(CameraSettings.isCrosshairEnabled(context)) }
+    var crosshairStyle by remember { mutableStateOf(CameraSettings.getCrosshairStyle(context)) }
     var enhancementEnabled by remember { mutableStateOf(false) }
 
     var isConnecting by remember { mutableStateOf(false) }
@@ -940,6 +944,11 @@ fun VideoStreamScreen() {
                             },
                             modifier = Modifier.fillMaxSize()
                         )
+
+                        if (crosshairEnabled) {
+                            CrosshairOverlay(style = crosshairStyle)
+                        }
+
                         // Canvas overlay for AI detections
                         if (objectDetectionEnabled && detectedObjects.isNotEmpty()) {
                             Canvas(modifier = Modifier.fillMaxSize()) {
@@ -1258,6 +1267,8 @@ fun VideoStreamScreen() {
                     hotspotEnabled = hotspotEnabled,
                     brightness = brightness,
                     contrast = contrast,
+                    crosshairEnabled = crosshairEnabled,
+                    crosshairStyle = crosshairStyle,
                     enhancementEnabled = enhancementEnabled,
                     objectDetectionEnabled = objectDetectionEnabled,
                     cameraIp = cameraIp,
@@ -1285,6 +1296,14 @@ fun VideoStreamScreen() {
                             val success = setContrast(level)
                             if (success) contrast = level
                         }
+                    },
+                    onCrosshairEnabledChange = { enabled ->
+                        crosshairEnabled = enabled
+                        CameraSettings.setCrosshairEnabled(context, enabled)
+                    },
+                    onCrosshairStyleChange = { style ->
+                        crosshairStyle = style
+                        CameraSettings.setCrosshairStyle(context, style)
                     },
                     onEnhancementChange = { enabled ->
                         scope.launch {
@@ -1463,6 +1482,49 @@ fun VideoStreamScreen() {
                         }
                     }
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CrosshairOverlay(style: CrosshairStyle) {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val cx = size.width / 2
+        val cy = size.height / 2
+        val color = Color.Red.copy(alpha = 0.8f)
+        val strokeWidth = 2.dp.toPx()
+
+        when (style) {
+            CrosshairStyle.SIMPLE -> {
+                val len = 20.dp.toPx()
+                drawLine(color, Offset(cx - len, cy), Offset(cx + len, cy), strokeWidth)
+                drawLine(color, Offset(cx, cy - len), Offset(cx, cy + len), strokeWidth)
+            }
+            CrosshairStyle.GAP -> {
+                val gap = 8.dp.toPx()
+                val len = 24.dp.toPx()
+                drawLine(color, Offset(cx - len, cy), Offset(cx - gap, cy), strokeWidth)
+                drawLine(color, Offset(cx + gap, cy), Offset(cx + len, cy), strokeWidth)
+                drawLine(color, Offset(cx, cy - len), Offset(cx, cy - gap), strokeWidth)
+                drawLine(color, Offset(cx, cy + gap), Offset(cx, cy + len), strokeWidth)
+            }
+            CrosshairStyle.CIRCLE_DOT -> {
+                val dotRadius = 2.dp.toPx()
+                val circleRadius = 16.dp.toPx()
+                drawCircle(color, radius = dotRadius, center = Offset(cx, cy))
+                drawCircle(color, radius = circleRadius, center = Offset(cx, cy), style = Stroke(strokeWidth))
+            }
+            CrosshairStyle.CHEVRON -> {
+                val w = 12.dp.toPx()
+                val h1 = 4.dp.toPx()
+                val h2 = 8.dp.toPx()
+                val path = Path().apply {
+                    moveTo(cx - w, cy + h1)
+                    lineTo(cx, cy - h2)
+                    lineTo(cx + w, cy + h1)
+                }
+                drawPath(path, color, style = Stroke(strokeWidth))
             }
         }
     }
