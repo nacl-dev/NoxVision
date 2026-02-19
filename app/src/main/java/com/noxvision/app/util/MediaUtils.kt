@@ -23,6 +23,7 @@ import java.io.File
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -31,6 +32,26 @@ private const val FOLDER_GUIDE_CAMERA = "GuideCamera"
 
 fun sanitizeFilename(name: String): String {
     return File(name).name.replace(Regex("[^a-zA-Z0-9._-]"), "_")
+}
+
+fun buildDownloadUrls(baseUrl: String, filename: String): List<String> {
+    val encodedFilename = try {
+        URLEncoder.encode(filename, "UTF-8").replace("+", "%20")
+    } catch (e: Exception) {
+        filename
+    }
+
+    return listOf(
+        "$baseUrl/api/v1/files/download/$encodedFilename",
+        "$baseUrl/videos/$encodedFilename",
+        "$baseUrl/api/v1/files/download/videos/$encodedFilename",
+        "$baseUrl/api/v1/files/videos/$encodedFilename",
+        "$baseUrl/$encodedFilename"
+    )
+}
+
+fun buildPrimaryDownloadUrl(baseUrl: String, filename: String): String {
+    return buildDownloadUrls(baseUrl, filename).first()
 }
 
 private fun createMediaContentValues(filename: String, mimeType: String): ContentValues {
@@ -88,13 +109,7 @@ suspend fun saveVideoToGallery(context: Context, file: File) {
 
 suspend fun downloadVideoToCache(baseUrl: String, filename: String, context: Context): File? {
     return withContext(Dispatchers.IO) {
-        val urlsToTry = listOf(
-            "$baseUrl/api/v1/files/download/$filename",
-            "$baseUrl/videos/$filename",
-            "$baseUrl/api/v1/files/download/videos/$filename",
-            "$baseUrl/api/v1/files/videos/$filename",
-            "$baseUrl/$filename"
-        )
+        val urlsToTry = buildDownloadUrls(baseUrl, filename)
 
         val safeFilename = sanitizeFilename(filename)
         val cacheFile = File(context.cacheDir, "video_preview_$safeFilename")
@@ -195,13 +210,12 @@ suspend fun fetchCameraFiles(baseUrl: String): List<CameraFile> {
 
 suspend fun downloadFile(baseUrl: String, filename: String, appContext: Context) {
     withContext(Dispatchers.IO) {
-        val urlsToTry = listOf(
-            "$baseUrl/videos/$filename",
-            "$baseUrl/api/v1/files/download/videos/$filename",
-            "$baseUrl/api/v1/files/videos/$filename",
-            "$baseUrl/api/v1/files/download/$filename",
-            "$baseUrl/$filename"
-        )
+        // We use the same URLs as video cache, but order might be different in original code?
+        // Original: videos/, download/videos/, files/videos/, download/, root
+        // buildDownloadUrls: download/, videos/, download/videos/, files/videos/, root
+        // The order shouldn't matter much as long as we try them all.
+        // Let's reuse buildDownloadUrls for consistency and simplicity.
+        val urlsToTry = buildDownloadUrls(baseUrl, filename)
 
         var lastError: Exception? = null
 
