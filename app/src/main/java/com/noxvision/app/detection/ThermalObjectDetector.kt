@@ -10,6 +10,7 @@ import com.noxvision.app.util.AppLogger
 import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.FloatBuffer
 import java.nio.channels.FileChannel
 
 data class ObjectInfo(val label: String, val heightMeters: Float)
@@ -44,7 +45,9 @@ class ThermalObjectDetector(context: Context) {
 
     // Reusable buffers to avoid allocations per frame
     private var imgData: ByteBuffer? = null
+    private var floatBuffer: FloatBuffer? = null
     private val intValues = IntArray(INPUT_SIZE * INPUT_SIZE)
+    private val floatValues = FloatArray(INPUT_SIZE * INPUT_SIZE * 3)
     private var outputArray: Array<Array<FloatArray>>? = null
     private var enhancedBitmap: Bitmap? = null
     private var scaledBitmap: Bitmap? = null
@@ -86,8 +89,7 @@ class ThermalObjectDetector(context: Context) {
                 loadLabels(context)
 
                 // Initialize buffers
-                imgData = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * 3)
-                imgData?.order(ByteOrder.nativeOrder())
+                initBuffers()
 
                 val numClasses = labels.size
                 val numElements = 4 + numClasses
@@ -103,6 +105,12 @@ class ThermalObjectDetector(context: Context) {
             interpreter = null
             isInitialized = false
         }
+    }
+
+    private fun initBuffers() {
+        imgData = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * 3)
+        imgData?.order(ByteOrder.nativeOrder())
+        floatBuffer = imgData?.asFloatBuffer()
     }
 
     private fun loadModelFile(context: Context, filename: String): ByteBuffer {
@@ -155,10 +163,9 @@ class ThermalObjectDetector(context: Context) {
             // 3. Convert to Float Buffer
             if (imgData == null) {
                  // Should be initialized in init, but safe check
-                 imgData = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * 3)
-                 imgData?.order(ByteOrder.nativeOrder())
+                 initBuffers()
             }
-            convertBitmapToFloatBuffer(currentScaled, imgData!!, intValues)
+            convertBitmapToFloatBuffer(currentScaled)
 
             val numClasses = labels.size
             // numAnchors is class property
@@ -233,20 +240,26 @@ class ThermalObjectDetector(context: Context) {
         }
     }
 
-    private fun convertBitmapToFloatBuffer(bitmap: Bitmap, byteBuffer: ByteBuffer, intValues: IntArray) {
-        byteBuffer.rewind() // Important!
+    private fun convertBitmapToFloatBuffer(bitmap: Bitmap) {
+        floatBuffer?.rewind() // Important!
 
         bitmap.getPixels(intValues, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
 
         var pixel = 0
-        for (i in 0 until INPUT_SIZE) {
-            for (j in 0 until INPUT_SIZE) {
-                val value = intValues[pixel++]
-                byteBuffer.putFloat(((value shr 16 and 0xFF) / 255.0f))
-                byteBuffer.putFloat(((value shr 8 and 0xFF) / 255.0f))
-                byteBuffer.putFloat(((value and 0xFF) / 255.0f))
-            }
+        var floatIdx = 0
+        val inv255 = 1.0f / 255.0f
+
+        // Flattened loop for performance
+        val totalPixels = INPUT_SIZE * INPUT_SIZE
+        for (i in 0 until totalPixels) {
+            val value = intValues[pixel++]
+            // Use multiplication instead of division for performance
+            floatValues[floatIdx++] = ((value shr 16 and 0xFF) * inv255)
+            floatValues[floatIdx++] = ((value shr 8 and 0xFF) * inv255)
+            floatValues[floatIdx++] = ((value and 0xFF) * inv255)
         }
+
+        floatBuffer?.put(floatValues)
     }
 
     private fun applyNMS(detections: List<DetectedObject>, iouThreshold: Float): List<DetectedObject> {
