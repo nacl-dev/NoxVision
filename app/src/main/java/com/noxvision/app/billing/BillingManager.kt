@@ -6,6 +6,8 @@ import com.android.billingclient.api.*
 import com.noxvision.app.util.AppLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -15,6 +17,8 @@ class BillingManager(
     private val context: Context,
     private val onPurchaseConsumed: (String) -> Unit // Callback when a consumable is bought and consumed
 ) : PurchasesUpdatedListener {
+
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private val _billingClient = BillingClient.newBuilder(context)
         .setListener(this)
@@ -46,9 +50,17 @@ class BillingManager(
 
             override fun onBillingServiceDisconnected() {
                 AppLogger.log("Billing service disconnected", AppLogger.LogType.ERROR)
-                // TODO: Retry connection logic
+                retryConnection()
             }
         })
+    }
+
+    private fun retryConnection() {
+        scope.launch {
+            delay(2000)
+            AppLogger.log("Retrying billing connection...", AppLogger.LogType.INFO)
+            startConnection()
+        }
     }
 
     private fun queryProductDetails() {
@@ -104,7 +116,7 @@ class BillingManager(
                 .setPurchaseToken(purchase.purchaseToken)
                 .build()
 
-            CoroutineScope(Dispatchers.IO).launch {
+            scope.launch {
                 val result = _billingClient.consumePurchase(consumeParams)
                 if (result.billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                     withContext(Dispatchers.Main) {
