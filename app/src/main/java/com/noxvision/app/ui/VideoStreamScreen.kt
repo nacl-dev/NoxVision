@@ -2,6 +2,7 @@ package com.noxvision.app.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -115,7 +116,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import org.videolan.libvlc.LibVLC
 import org.videolan.libvlc.Media
 import org.videolan.libvlc.MediaPlayer
@@ -664,28 +668,43 @@ fun VideoStreamScreen() {
     // AI Object Detection
     LaunchedEffect(objectDetectionEnabled, isPlaying) {
         if (objectDetectionEnabled && isPlaying) {
+            var reusableBitmap: Bitmap? = null
             while (isActive && objectDetectionEnabled && isPlaying) {
                 delay(1500)
 
                 surfaceView?.let { view ->
                     try {
-                        val bitmap = createBitmap(view.width, view.height)
-                        PixelCopy.request(
-                            view.holder.surface,
-                            bitmap,
-                            { copyResult ->
-                                if (copyResult == PixelCopy.SUCCESS) {
-                                    scope.launch(Dispatchers.Default) {
-                                        val objects = detector.detectObjects(bitmap)
-                                        withContext(Dispatchers.Main) {
-                                            detectedObjects = objects
+                        if (reusableBitmap == null || reusableBitmap?.width != view.width || reusableBitmap?.height != view.height) {
+                            reusableBitmap?.recycle()
+                            reusableBitmap = createBitmap(view.width, view.height)
+                        }
+                        val bitmap = reusableBitmap!!
+
+                        val result = suspendCancellableCoroutine<Int> { cont ->
+                            try {
+                                PixelCopy.request(
+                                    view.holder.surface,
+                                    bitmap,
+                                    { copyResult ->
+                                        if (cont.isActive) {
+                                            cont.resume(copyResult)
                                         }
-                                        bitmap.recycle()
-                                    }
+                                    },
+                                    Handler(Looper.getMainLooper())
+                                )
+                            } catch (e: Exception) {
+                                if (cont.isActive) {
+                                    cont.resumeWithException(e)
                                 }
-                            },
-                            Handler(Looper.getMainLooper())
-                        )
+                            }
+                        }
+
+                        if (result == PixelCopy.SUCCESS) {
+                            val objects = withContext(Dispatchers.Default) {
+                                detector.detectObjects(bitmap)
+                            }
+                            detectedObjects = objects
+                        }
                     } catch (e: Exception) {
                         AppLogger.log("Frame Capture Error: ${e.message}", AppLogger.LogType.ERROR)
                     }
