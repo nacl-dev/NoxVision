@@ -56,6 +56,7 @@ import coil.request.ImageRequest
 import com.noxvision.app.data.CameraFile
 import com.noxvision.app.ui.NightColors
 import com.noxvision.app.util.AppLogger
+import com.noxvision.app.util.buildPrimaryDownloadUrl
 import com.noxvision.app.util.deleteCacheVideo
 import com.noxvision.app.util.downloadFile
 import com.noxvision.app.util.downloadVideoToCache
@@ -232,7 +233,7 @@ fun PreviewDialog(
                         if (file.type == "image") {
                             AsyncImage(
                                 model = ImageRequest.Builder(context)
-                                    .data("$baseUrl/api/v1/files/download/${file.name}")
+                                    .data(buildPrimaryDownloadUrl(baseUrl, file.name))
                                     .crossfade(true)
                                     .build(),
                                 contentDescription = file.name,
