@@ -24,6 +24,8 @@ Reverse/
 
 # Local configuration file
 local.properties
+keystore/
+*.jks
 
 # Android Studio / IntelliJ IDEA
 *.iml

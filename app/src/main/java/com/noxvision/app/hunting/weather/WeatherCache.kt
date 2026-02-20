@@ -3,6 +3,7 @@ package com.noxvision.app.hunting.weather
 import android.content.Context
 import com.noxvision.app.hunting.database.HuntingDatabase
 import com.noxvision.app.hunting.database.entities.CachedWeather
+import com.noxvision.app.util.AppLogger
 import java.util.Locale
 
 class WeatherCache(context: Context) {
@@ -26,6 +27,8 @@ class WeatherCache(context: Context) {
                 return fresh
             }
         }
+        val errorMessage = result.exceptionOrNull()?.message ?: "Unknown weather error"
+        AppLogger.log("Weather fetch failed: $errorMessage", AppLogger.LogType.ERROR)
 
         // Return cached even if expired (offline mode)
         return cached

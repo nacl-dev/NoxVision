@@ -15,6 +15,21 @@ if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
 }
 
+fun readSecret(name: String): String? =
+    localProperties.getProperty(name)?.takeIf { it.isNotBlank() }
+        ?: System.getenv(name)?.takeIf { it.isNotBlank() }
+
+val uploadStoreFilePath = readSecret("UPLOAD_STORE_FILE")
+val uploadStorePassword = readSecret("UPLOAD_STORE_PASSWORD")
+val uploadKeyAlias = readSecret("UPLOAD_KEY_ALIAS")
+val uploadKeyPassword = readSecret("UPLOAD_KEY_PASSWORD")
+val hasUploadSigning = listOf(
+    uploadStoreFilePath,
+    uploadStorePassword,
+    uploadKeyAlias,
+    uploadKeyPassword
+).all { !it.isNullOrBlank() }
+
 android {
     namespace = "com.noxvision.app"
     compileSdk = 35  // Korrigiert!
@@ -46,12 +61,31 @@ android {
         // Set APK name
         base.archivesName.set("NoxVision-v${versionName}")
 
-        val apiKey = localProperties.getProperty("OPENWEATHER_API_KEY") ?: ""
+        val apiKey = readSecret("OPENWEATHER_API_KEY")
+            ?.trim()
+            ?.removeSurrounding("\"")
+            ?: ""
         buildConfigField("String", "OPENWEATHER_API_KEY", "\"$apiKey\"")
+    }
+
+    signingConfigs {
+        if (hasUploadSigning) {
+            create("release") {
+                storeFile = rootProject.file(uploadStoreFilePath!!)
+                storePassword = uploadStorePassword
+                keyAlias = uploadKeyAlias
+                keyPassword = uploadKeyPassword
+                enableV1Signing = true
+                enableV2Signing = true
+            }
+        }
     }
 
     buildTypes {
         release {
+            if (hasUploadSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -104,7 +138,6 @@ dependencies {
     implementation(libs.coil.compose)
 
     implementation(libs.tensorflow.lite)
-    implementation(libs.tensorflow.lite.support)
     implementation(libs.billing.ktx)
 
     // Room Database

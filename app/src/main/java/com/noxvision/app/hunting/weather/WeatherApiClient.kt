@@ -20,23 +20,42 @@ class WeatherApiClient(private val apiKey: String = DEFAULT_API_KEY) {
 
     suspend fun fetchWeather(latitude: Double, longitude: Double): Result<CachedWeather> {
         return withContext(Dispatchers.IO) {
+            val sanitizedKey = apiKey.trim().removeSurrounding("\"")
+            if (sanitizedKey.isBlank()) {
+                return@withContext Result.failure(
+                    IllegalStateException("OPENWEATHER_API_KEY is missing")
+                )
+            }
+
             try {
-                val url = URL("$BASE_URL?lat=$latitude&lon=$longitude&appid=$apiKey&units=metric&lang=de")
+                val url = URL("$BASE_URL?lat=$latitude&lon=$longitude&appid=$sanitizedKey&units=metric&lang=de")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.connectTimeout = 10000
                 connection.readTimeout = 10000
                 connection.requestMethod = "GET"
 
-                val responseCode = connection.responseCode
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    val response = connection.inputStream.bufferedReader().use { it.readText() }
+                try {
+                    val responseCode = connection.responseCode
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                        val response = connection.inputStream.bufferedReader().use { it.readText() }
+                        val weather = parseWeatherResponse(response, latitude, longitude)
+                        Result.success(weather)
+                    } else {
+                        val errorBody = connection.errorStream
+                            ?.bufferedReader()
+                            ?.use { it.readText() }
+                            ?.take(200)
+                            ?.replace('\n', ' ')
+                            ?.trim()
+                            .orEmpty()
+                        if (errorBody.isNotBlank()) {
+                            Result.failure(Exception("HTTP Error: $responseCode ($errorBody)"))
+                        } else {
+                            Result.failure(Exception("HTTP Error: $responseCode"))
+                        }
+                    }
+                } finally {
                     connection.disconnect()
-
-                    val weather = parseWeatherResponse(response, latitude, longitude)
-                    Result.success(weather)
-                } else {
-                    connection.disconnect()
-                    Result.failure(Exception("HTTP Error: $responseCode"))
                 }
             } catch (e: Exception) {
                 Result.failure(e)
