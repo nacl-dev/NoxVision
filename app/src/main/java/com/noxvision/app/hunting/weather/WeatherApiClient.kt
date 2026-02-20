@@ -3,12 +3,15 @@ package com.noxvision.app.hunting.weather
 import com.noxvision.app.hunting.database.entities.CachedWeather
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import java.net.HttpURLConnection
 import java.net.URL
 import com.noxvision.app.BuildConfig
 
 class WeatherApiClient(private val apiKey: String = DEFAULT_API_KEY) {
+
+    private val jsonParser = Json { ignoreUnknownKeys = true }
 
     companion object {
         // OpenWeatherMap Free Tier API Key loaded from local.properties via BuildConfig
@@ -42,33 +45,33 @@ class WeatherApiClient(private val apiKey: String = DEFAULT_API_KEY) {
         }
     }
 
-    private fun parseWeatherResponse(json: String, latitude: Double, longitude: Double): CachedWeather {
-        val obj = JSONObject(json)
+    internal fun parseWeatherResponse(json: String, latitude: Double, longitude: Double): CachedWeather {
+        val response = jsonParser.decodeFromString<WeatherResponse>(json)
 
-        val main = obj.getJSONObject("main")
-        val wind = obj.getJSONObject("wind")
-        val clouds = obj.getJSONObject("clouds")
-        val sys = obj.getJSONObject("sys")
-        val weather = obj.getJSONArray("weather").getJSONObject(0)
+        val main = response.main
+        val wind = response.wind
+        val clouds = response.clouds
+        val sys = response.sys
+        val weather = response.weather[0]
 
         return CachedWeather(
             id = 0,
             timestamp = System.currentTimeMillis(),
             latitude = latitude,
             longitude = longitude,
-            temperature = main.getDouble("temp"),
-            feelsLike = main.getDouble("feels_like"),
-            humidity = main.getInt("humidity"),
-            pressure = main.getInt("pressure"),
-            windSpeed = wind.getDouble("speed"),
-            windDirection = wind.optInt("deg", 0),
-            windGust = wind.optDouble("gust", 0.0).takeIf { it > 0 },
-            cloudiness = clouds.getInt("all"),
-            visibility = obj.optInt("visibility", 10000),
-            description = weather.getString("description"),
-            icon = weather.getString("icon"),
-            sunrise = sys.getLong("sunrise") * 1000,
-            sunset = sys.getLong("sunset") * 1000
+            temperature = main.temp,
+            feelsLike = main.feelsLike,
+            humidity = main.humidity,
+            pressure = main.pressure,
+            windSpeed = wind.speed,
+            windDirection = wind.deg ?: 0,
+            windGust = wind.gust?.takeIf { it > 0.0 },
+            cloudiness = clouds.all,
+            visibility = response.visibility ?: 10000,
+            description = weather.description,
+            icon = weather.icon,
+            sunrise = sys.sunrise * 1000,
+            sunset = sys.sunset * 1000
         )
     }
 }
