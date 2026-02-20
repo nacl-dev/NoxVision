@@ -23,31 +23,27 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import com.noxvision.app.hunting.maps.OfflineMapManager
-import org.osmdroid.events.MapEventsReceiver
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.MapEventsOverlay
-import org.osmdroid.views.overlay.Marker
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.AsyncImage
 import com.noxvision.app.hunting.calendar.HuntingSeasonData
 import com.noxvision.app.hunting.database.HuntingDatabase
 import com.noxvision.app.hunting.database.entities.HuntRecord
 import com.noxvision.app.hunting.database.entities.WildlifeTypes
 import com.noxvision.app.hunting.location.HuntingLocationManager
+import com.noxvision.app.hunting.maps.OfflineMapManager
 import com.noxvision.app.hunting.moon.MoonPhaseCalculator
 import com.noxvision.app.ui.NightColors
 import com.noxvision.app.ui.SettingsSectionHeader
 import kotlinx.coroutines.launch
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,11 +55,6 @@ fun AbschussFormScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val db = remember { HuntingDatabase.getDatabase(context) }
-    val locationManager = remember { HuntingLocationManager(context) }
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val mapManager = remember { OfflineMapManager(context) }
-
-    var mapView by remember { mutableStateOf<MapView?>(null) }
 
     var wildlifeType by remember { mutableStateOf("Rehwild") }
     var gender by remember { mutableStateOf<String?>(null) }
@@ -73,37 +64,7 @@ fun AbschussFormScreen(
     var longitude by remember { mutableStateOf<Double?>(null) }
     var bundesland by remember { mutableStateOf(HuntingSeasonData.Bundesland.BAYERN) }
     var isLoading by remember { mutableStateOf(false) }
-    var locationLoading by remember { mutableStateOf(false) }
     var photoUri by remember { mutableStateOf<Uri?>(null) }
-
-    var wildlifeTypeExpanded by remember { mutableStateOf(false) }
-    var genderExpanded by remember { mutableStateOf(false) }
-    var bundeslandExpanded by remember { mutableStateOf(false) }
-
-    val genderOptions = WildlifeTypes.getGendersForType(wildlifeType)
-
-    // Image picker launcher
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let { photoUri = it }
-    }
-
-    val locationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (granted) {
-            locationLoading = true
-            scope.launch {
-                val location = locationManager.getCurrentLocation()
-                location?.let {
-                    latitude = it.latitude
-                    longitude = it.longitude
-                }
-                locationLoading = false
-            }
-        }
-    }
 
     // Load existing record if editing
     LaunchedEffect(recordId) {
@@ -125,68 +86,6 @@ fun AbschussFormScreen(
                     photoUri = Uri.parse(path)
                 }
             }
-        }
-    }
-
-    // Lifecycle handling for MapView
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_RESUME -> mapView?.onResume()
-                Lifecycle.Event.ON_PAUSE -> mapView?.onPause()
-                else -> {}
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
-
-    // Update map marker when location changes (only if map is visible)
-    LaunchedEffect(latitude, longitude, mapView) {
-        if (latitude != null && longitude != null && mapView != null) {
-            val map = mapView!!
-            val point = GeoPoint(latitude!!, longitude!!)
-            
-            // Allow parent scroll only if not dragging
-            map.setOnTouchListener { v, event ->
-                v.parent.requestDisallowInterceptTouchEvent(true)
-                false
-            }
-
-            // Find existing marker or create new one
-            var marker = map.overlays.filterIsInstance<Marker>().firstOrNull { it.id == "location_marker" }
-            
-            if (marker == null) {
-                marker = Marker(map)
-                marker.id = "location_marker"
-                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                marker.title = "Abschussort"
-                marker.isDraggable = true
-                
-                marker.setOnMarkerDragListener(object : Marker.OnMarkerDragListener {
-                    override fun onMarkerDrag(marker: Marker) {}
-                    override fun onMarkerDragEnd(marker: Marker) {
-                        latitude = marker.position.latitude
-                        longitude = marker.position.longitude
-                    }
-                    override fun onMarkerDragStart(marker: Marker) {
-                        // Prevent map scrolling while dragging
-                        map.parent.requestDisallowInterceptTouchEvent(true)
-                    }
-                })
-                map.overlays.add(marker)
-            }
-            
-            // Only update position if it differs significantly (to avoid loops during drag)
-            val currentPos = marker.position
-            if (currentPos.latitude != latitude!! || currentPos.longitude != longitude!!) {
-                marker.position = point
-                map.controller.animateTo(point)
-            }
-            
-            map.invalidate()
         }
     }
 
@@ -226,330 +125,43 @@ fun AbschussFormScreen(
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Wildlife Type
-            SettingsSectionHeader(
-                icon = {
-                    Icon(
-                        Icons.Filled.Pets,
-                        contentDescription = null,
-                        tint = NightColors.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
+            WildlifeSection(
+                wildlifeType = wildlifeType,
+                onWildlifeTypeChange = {
+                    wildlifeType = it
+                    gender = null // Reset gender when type changes
                 },
-                title = "WILD"
-            )
-
-            ExposedDropdownMenuBox(
-                expanded = wildlifeTypeExpanded,
-                onExpandedChange = { wildlifeTypeExpanded = it }
-            ) {
-                OutlinedTextField(
-                    value = wildlifeType,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Wildart") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = wildlifeTypeExpanded) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(),
-                    colors = huntingTextFieldColors()
-                )
-                ExposedDropdownMenu(
-                    expanded = wildlifeTypeExpanded,
-                    onDismissRequest = { wildlifeTypeExpanded = false }
-                ) {
-                    WildlifeTypes.ALL_TYPES.keys.forEach { type ->
-                        DropdownMenuItem(
-                            text = { Text(type) },
-                            onClick = {
-                                wildlifeType = type
-                                gender = null
-                                wildlifeTypeExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
-
-            if (genderOptions.isNotEmpty()) {
-                ExposedDropdownMenuBox(
-                    expanded = genderExpanded,
-                    onExpandedChange = { genderExpanded = it }
-                ) {
-                    OutlinedTextField(
-                        value = gender ?: "Nicht angegeben",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Geschlecht/Alter") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = genderExpanded) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(),
-                        colors = huntingTextFieldColors()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = genderExpanded,
-                        onDismissRequest = { genderExpanded = false }
-                    ) {
-                        genderOptions.forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(option) },
-                                onClick = {
-                                    gender = option
-                                    genderExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-
-            OutlinedTextField(
-                value = estimatedWeight,
-                onValueChange = { if (it.all { c -> c.isDigit() }) estimatedWeight = it },
-                label = { Text("Geschaetztes Gewicht (kg)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-                colors = huntingTextFieldColors()
+                gender = gender,
+                onGenderChange = { gender = it },
+                estimatedWeight = estimatedWeight,
+                onEstimatedWeightChange = { estimatedWeight = it }
             )
 
             HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 4.dp))
 
-            // Location
-            SettingsSectionHeader(
-                icon = {
-                    Icon(
-                        Icons.Filled.LocationOn,
-                        contentDescription = null,
-                        tint = NightColors.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
+            LocationSection(
+                latitude = latitude,
+                longitude = longitude,
+                onLocationChange = { lat, lon ->
+                    latitude = lat
+                    longitude = lon
                 },
-                title = "POSITION"
+                bundesland = bundesland,
+                onBundeslandChange = { bundesland = it }
             )
-
-            if (latitude != null && longitude != null) {
-                // Show Map with Pin
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(250.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .border(1.dp, NightColors.surface, RoundedCornerShape(12.dp))
-                ) {
-                    AndroidView(
-                        modifier = Modifier.fillMaxSize(),
-                        factory = { ctx ->
-                            MapView(ctx).apply {
-                                setTileSource(mapManager.getTileSource())
-                                setMultiTouchControls(true)
-                                controller.setZoom(16.0)
-                                minZoomLevel = OfflineMapManager.MIN_ZOOM
-                                maxZoomLevel = OfflineMapManager.MAX_ZOOM
-                                
-                                // Disable parent scroll when touching map
-                                setOnTouchListener { v, event ->
-                                    v.parent.requestDisallowInterceptTouchEvent(true)
-                                    false
-                                }
-
-                                mapView = this
-                            }
-                        },
-                        update = { map ->
-                            // Initial update handled by LaunchedEffect
-                            if (latitude != null && longitude != null) {
-                                map.controller.setCenter(GeoPoint(latitude!!, longitude!!))
-                            }
-                        }
-                    )
-                    
-                    // Button to clear location / retake
-                    IconButton(
-                        onClick = { 
-                            latitude = null
-                            longitude = null
-                        },
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(8.dp)
-                            .background(NightColors.surface.copy(alpha = 0.7f), RoundedCornerShape(4.dp))
-                    ) {
-                        Icon(
-                            Icons.Filled.Delete,
-                            contentDescription = "Position löschen",
-                            tint = NightColors.error
-                        )
-                    }
-                }
-                
-                Text(
-                    text = String.format("Lat: %.5f, Lon: %.5f", latitude, longitude),
-                    color = NightColors.onBackground,
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
-            } else {
-                Button(
-                    onClick = {
-                        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                            locationLoading = true
-                            scope.launch {
-                                val location = locationManager.getCurrentLocation()
-                                location?.let {
-                                    latitude = it.latitude
-                                    longitude = it.longitude
-                                }
-                                locationLoading = false
-                            }
-                        } else {
-                            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = NightColors.primary),
-                    shape = RoundedCornerShape(8.dp),
-                    enabled = !locationLoading,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (locationLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
-                            color = NightColors.onSurface,
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Icon(Icons.Filled.MyLocation, contentDescription = null)
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("GPS Position erfassen")
-                }
-            }
-
-            ExposedDropdownMenuBox(
-                expanded = bundeslandExpanded,
-                onExpandedChange = { bundeslandExpanded = it }
-            ) {
-                OutlinedTextField(
-                    value = bundesland.displayName,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Bundesland") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = bundeslandExpanded) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(),
-                    colors = huntingTextFieldColors()
-                )
-                ExposedDropdownMenu(
-                    expanded = bundeslandExpanded,
-                    onDismissRequest = { bundeslandExpanded = false }
-                ) {
-                    HuntingSeasonData.Bundesland.entries.forEach { bl ->
-                        DropdownMenuItem(
-                            text = { Text(bl.displayName) },
-                            onClick = {
-                                bundesland = bl
-                                bundeslandExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
 
             HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 4.dp))
 
-            // Photo
-            SettingsSectionHeader(
-                icon = {
-                    Icon(
-                        Icons.Filled.PhotoCamera,
-                        contentDescription = null,
-                        tint = NightColors.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                },
-                title = "FOTO"
+            PhotoSection(
+                photoUri = photoUri,
+                onPhotoUriChange = { photoUri = it }
             )
-
-            if (photoUri != null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .border(1.dp, NightColors.surface, RoundedCornerShape(12.dp))
-                        .clickable { imagePickerLauncher.launch("image/*") }
-                ) {
-                    AsyncImage(
-                        model = photoUri,
-                        contentDescription = "Foto",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                    IconButton(
-                        onClick = { photoUri = null },
-                        modifier = Modifier.align(Alignment.TopEnd)
-                    ) {
-                        Icon(
-                            Icons.Filled.Close,
-                            contentDescription = "Foto entfernen",
-                            tint = NightColors.error
-                        )
-                    }
-                }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(NightColors.surface)
-                        .border(1.dp, NightColors.onBackground.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                        .clickable { imagePickerLauncher.launch("image/*") },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            Icons.Filled.AddAPhoto,
-                            contentDescription = null,
-                            tint = NightColors.onBackground,
-                            modifier = Modifier.size(32.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Foto hinzufuegen",
-                            color = NightColors.onBackground,
-                            fontSize = 12.sp
-                        )
-                    }
-                }
-            }
 
             HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 4.dp))
 
-            // Notes
-            SettingsSectionHeader(
-                icon = {
-                    Icon(
-                        Icons.Filled.Notes,
-                        contentDescription = null,
-                        tint = NightColors.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                },
-                title = "NOTIZEN"
-            )
-
-            OutlinedTextField(
-                value = notes,
-                onValueChange = { notes = it },
-                label = { Text("Zusaetzliche Notizen") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp),
-                colors = huntingTextFieldColors()
+            NotesSection(
+                notes = notes,
+                onNotesChange = { notes = it }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -607,6 +219,449 @@ fun AbschussFormScreen(
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun WildlifeSection(
+    wildlifeType: String,
+    onWildlifeTypeChange: (String) -> Unit,
+    gender: String?,
+    onGenderChange: (String?) -> Unit,
+    estimatedWeight: String,
+    onEstimatedWeightChange: (String) -> Unit
+) {
+    var wildlifeTypeExpanded by remember { mutableStateOf(false) }
+    var genderExpanded by remember { mutableStateOf(false) }
+    val genderOptions = WildlifeTypes.getGendersForType(wildlifeType)
+
+    SettingsSectionHeader(
+        icon = {
+            Icon(
+                Icons.Filled.Pets,
+                contentDescription = null,
+                tint = NightColors.primary,
+                modifier = Modifier.size(18.dp)
+            )
+        },
+        title = "WILD"
+    )
+
+    ExposedDropdownMenuBox(
+        expanded = wildlifeTypeExpanded,
+        onExpandedChange = { wildlifeTypeExpanded = it }
+    ) {
+        OutlinedTextField(
+            value = wildlifeType,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Wildart") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = wildlifeTypeExpanded) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(),
+            colors = huntingTextFieldColors()
+        )
+        ExposedDropdownMenu(
+            expanded = wildlifeTypeExpanded,
+            onDismissRequest = { wildlifeTypeExpanded = false }
+        ) {
+            WildlifeTypes.ALL_TYPES.keys.forEach { type ->
+                DropdownMenuItem(
+                    text = { Text(type) },
+                    onClick = {
+                        onWildlifeTypeChange(type)
+                        wildlifeTypeExpanded = false
+                    }
+                )
+            }
+        }
+    }
+
+    if (genderOptions.isNotEmpty()) {
+        ExposedDropdownMenuBox(
+            expanded = genderExpanded,
+            onExpandedChange = { genderExpanded = it }
+        ) {
+            OutlinedTextField(
+                value = gender ?: "Nicht angegeben",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Geschlecht/Alter") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = genderExpanded) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
+                colors = huntingTextFieldColors()
+            )
+            ExposedDropdownMenu(
+                expanded = genderExpanded,
+                onDismissRequest = { genderExpanded = false }
+            ) {
+                genderOptions.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            onGenderChange(option)
+                            genderExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    OutlinedTextField(
+        value = estimatedWeight,
+        onValueChange = { if (it.all { c -> c.isDigit() }) onEstimatedWeightChange(it) },
+        label = { Text("Geschaetztes Gewicht (kg)") },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        modifier = Modifier.fillMaxWidth(),
+        colors = huntingTextFieldColors()
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LocationSection(
+    latitude: Double?,
+    longitude: Double?,
+    onLocationChange: (Double?, Double?) -> Unit,
+    bundesland: HuntingSeasonData.Bundesland,
+    onBundeslandChange: (HuntingSeasonData.Bundesland) -> Unit
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val locationManager = remember { HuntingLocationManager(context) }
+    val mapManager = remember { OfflineMapManager(context) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    var mapView by remember { mutableStateOf<MapView?>(null) }
+    var locationLoading by remember { mutableStateOf(false) }
+    var bundeslandExpanded by remember { mutableStateOf(false) }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            locationLoading = true
+            scope.launch {
+                val location = locationManager.getCurrentLocation()
+                location?.let {
+                    onLocationChange(it.latitude, it.longitude)
+                }
+                locationLoading = false
+            }
+        }
+    }
+
+    // Lifecycle handling for MapView
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> mapView?.onResume()
+                Lifecycle.Event.ON_PAUSE -> mapView?.onPause()
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    // Update map marker when location changes (only if map is visible)
+    LaunchedEffect(latitude, longitude, mapView) {
+        if (latitude != null && longitude != null && mapView != null) {
+            val map = mapView!!
+            val point = GeoPoint(latitude, longitude)
+
+            // Allow parent scroll only if not dragging
+            map.setOnTouchListener { v, event ->
+                v.parent.requestDisallowInterceptTouchEvent(true)
+                false
+            }
+
+            // Find existing marker or create new one
+            var marker = map.overlays.filterIsInstance<Marker>().firstOrNull { it.id == "location_marker" }
+
+            if (marker == null) {
+                marker = Marker(map)
+                marker.id = "location_marker"
+                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                marker.title = "Abschussort"
+                marker.isDraggable = true
+
+                marker.setOnMarkerDragListener(object : Marker.OnMarkerDragListener {
+                    override fun onMarkerDrag(marker: Marker) {}
+                    override fun onMarkerDragEnd(marker: Marker) {
+                        onLocationChange(marker.position.latitude, marker.position.longitude)
+                    }
+                    override fun onMarkerDragStart(marker: Marker) {
+                        // Prevent map scrolling while dragging
+                        map.parent.requestDisallowInterceptTouchEvent(true)
+                    }
+                })
+                map.overlays.add(marker)
+            }
+
+            // Only update position if it differs significantly (to avoid loops during drag)
+            val currentPos = marker.position
+            if (currentPos.latitude != latitude || currentPos.longitude != longitude) {
+                marker.position = point
+                map.controller.animateTo(point)
+            }
+
+            map.invalidate()
+        }
+    }
+
+    SettingsSectionHeader(
+        icon = {
+            Icon(
+                Icons.Filled.LocationOn,
+                contentDescription = null,
+                tint = NightColors.primary,
+                modifier = Modifier.size(18.dp)
+            )
+        },
+        title = "POSITION"
+    )
+
+    if (latitude != null && longitude != null) {
+        // Show Map with Pin
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(250.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .border(1.dp, NightColors.surface, RoundedCornerShape(12.dp))
+        ) {
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = { ctx ->
+                    MapView(ctx).apply {
+                        setTileSource(mapManager.getTileSource())
+                        setMultiTouchControls(true)
+                        controller.setZoom(16.0)
+                        minZoomLevel = OfflineMapManager.MIN_ZOOM
+                        maxZoomLevel = OfflineMapManager.MAX_ZOOM
+
+                        // Disable parent scroll when touching map
+                        setOnTouchListener { v, event ->
+                            v.parent.requestDisallowInterceptTouchEvent(true)
+                            false
+                        }
+
+                        mapView = this
+                    }
+                },
+                update = { map ->
+                    // Initial update handled by LaunchedEffect
+                    if (latitude != null && longitude != null) {
+                        map.controller.setCenter(GeoPoint(latitude, longitude))
+                    }
+                }
+            )
+
+            // Button to clear location / retake
+            IconButton(
+                onClick = {
+                    onLocationChange(null, null)
+                },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+                    .background(NightColors.surface.copy(alpha = 0.7f), RoundedCornerShape(4.dp))
+            ) {
+                Icon(
+                    Icons.Filled.Delete,
+                    contentDescription = "Position löschen",
+                    tint = NightColors.error
+                )
+            }
+        }
+
+        Text(
+            text = String.format("Lat: %.5f, Lon: %.5f", latitude, longitude),
+            color = NightColors.onBackground,
+            fontSize = 12.sp,
+            modifier = Modifier.padding(start = 4.dp)
+        )
+    } else {
+        Button(
+            onClick = {
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    locationLoading = true
+                    scope.launch {
+                        val location = locationManager.getCurrentLocation()
+                        location?.let {
+                            onLocationChange(it.latitude, it.longitude)
+                        }
+                        locationLoading = false
+                    }
+                } else {
+                    locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                }
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = NightColors.primary),
+            shape = RoundedCornerShape(8.dp),
+            enabled = !locationLoading,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (locationLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    color = NightColors.onSurface,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Icon(Icons.Filled.MyLocation, contentDescription = null)
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("GPS Position erfassen")
+        }
+    }
+
+    ExposedDropdownMenuBox(
+        expanded = bundeslandExpanded,
+        onExpandedChange = { bundeslandExpanded = it }
+    ) {
+        OutlinedTextField(
+            value = bundesland.displayName,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Bundesland") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = bundeslandExpanded) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(),
+            colors = huntingTextFieldColors()
+        )
+        ExposedDropdownMenu(
+            expanded = bundeslandExpanded,
+            onDismissRequest = { bundeslandExpanded = false }
+        ) {
+            HuntingSeasonData.Bundesland.entries.forEach { bl ->
+                DropdownMenuItem(
+                    text = { Text(bl.displayName) },
+                    onClick = {
+                        onBundeslandChange(bl)
+                        bundeslandExpanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PhotoSection(
+    photoUri: Uri?,
+    onPhotoUriChange: (Uri?) -> Unit
+) {
+    // Image picker launcher
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { onPhotoUriChange(it) }
+    }
+
+    SettingsSectionHeader(
+        icon = {
+            Icon(
+                Icons.Filled.PhotoCamera,
+                contentDescription = null,
+                tint = NightColors.primary,
+                modifier = Modifier.size(18.dp)
+            )
+        },
+        title = "FOTO"
+    )
+
+    if (photoUri != null) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .border(1.dp, NightColors.surface, RoundedCornerShape(12.dp))
+                .clickable { imagePickerLauncher.launch("image/*") }
+        ) {
+            AsyncImage(
+                model = photoUri,
+                contentDescription = "Foto",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+            IconButton(
+                onClick = { onPhotoUriChange(null) },
+                modifier = Modifier.align(Alignment.TopEnd)
+            ) {
+                Icon(
+                    Icons.Filled.Close,
+                    contentDescription = "Foto entfernen",
+                    tint = NightColors.error
+                )
+            }
+        }
+    } else {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(NightColors.surface)
+                .border(1.dp, NightColors.onBackground.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                .clickable { imagePickerLauncher.launch("image/*") },
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    Icons.Filled.AddAPhoto,
+                    contentDescription = null,
+                    tint = NightColors.onBackground,
+                    modifier = Modifier.size(32.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Foto hinzufuegen",
+                    color = NightColors.onBackground,
+                    fontSize = 12.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun NotesSection(
+    notes: String,
+    onNotesChange: (String) -> Unit
+) {
+    SettingsSectionHeader(
+        icon = {
+            Icon(
+                Icons.Filled.Notes,
+                contentDescription = null,
+                tint = NightColors.primary,
+                modifier = Modifier.size(18.dp)
+            )
+        },
+        title = "NOTIZEN"
+    )
+
+    OutlinedTextField(
+        value = notes,
+        onValueChange = onNotesChange,
+        label = { Text("Zusaetzliche Notizen") },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(120.dp),
+        colors = huntingTextFieldColors()
+    )
 }
 
 @Composable
