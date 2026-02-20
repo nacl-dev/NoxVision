@@ -48,7 +48,7 @@ object MoonPhaseCalculator {
 
         val phase = getPhaseFromCycleProgress(currentCycleProgress)
         val illumination = calculateIllumination(currentCycleProgress)
-        val activity = predictWildlifeActivity(phase, illumination)
+        val activity = predictWildlifeActivity(phase)
 
         return MoonInfo(
             phase = phase,
@@ -103,7 +103,7 @@ object MoonPhaseCalculator {
         return ((1 - kotlin.math.cos(angle)) / 2) * 100
     }
 
-    private fun predictWildlifeActivity(phase: MoonPhase, illumination: Double): WildlifeActivityPrediction {
+    private fun predictWildlifeActivity(phase: MoonPhase): WildlifeActivityPrediction {
         // Wildlife activity tends to be higher during bright moonlit nights
         // and around the full moon period
         return when (phase) {

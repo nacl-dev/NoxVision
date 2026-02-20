@@ -111,7 +111,9 @@ class PdfExporter(private val context: Context) {
                         contentStream.beginText()
                         contentStream.setFont(fontRegular, 9f)
                         contentStream.newLineAtOffset(50f, yPosition)
-                        contentStream.showText("Position: ${String.format("%.6f", record.latitude)}, ${String.format("%.6f", record.longitude)}")
+                        contentStream.showText(
+                            "Position: ${String.format(Locale.US, "%.6f", record.latitude)}, ${String.format(Locale.US, "%.6f", record.longitude)}"
+                        )
                         contentStream.endText()
                         yPosition -= 12f
                     }

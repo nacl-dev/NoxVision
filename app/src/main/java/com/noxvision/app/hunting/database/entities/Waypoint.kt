@@ -30,7 +30,7 @@ data class Waypoint(
     val notes: String?
 )
 
-enum class WaypointType(@StringRes val displayNameRes: Int) {
+enum class WaypointType(@param:StringRes val displayNameRes: Int) {
     LAST_SEEN(R.string.waypoint_last_seen),
     BLOOD_TRAIL(R.string.waypoint_blood_trail),
     RECOVERY(R.string.waypoint_recovery),

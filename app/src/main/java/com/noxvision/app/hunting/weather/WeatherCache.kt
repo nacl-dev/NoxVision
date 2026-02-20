@@ -3,6 +3,7 @@ package com.noxvision.app.hunting.weather
 import android.content.Context
 import com.noxvision.app.hunting.database.HuntingDatabase
 import com.noxvision.app.hunting.database.entities.CachedWeather
+import java.util.Locale
 
 class WeatherCache(context: Context) {
     private val weatherDao = HuntingDatabase.getDatabase(context).weatherDao()
@@ -79,12 +80,12 @@ object WeatherIconHelper {
     }
 
     fun formatTemperature(celsius: Double): String {
-        return String.format("%.1f\u00B0C", celsius)
+        return String.format(Locale.GERMANY, "%.1f\u00B0C", celsius)
     }
 
     fun formatWindSpeed(speedMs: Double): String {
         val kmh = speedMs * 3.6
-        return String.format("%.1f km/h", kmh)
+        return String.format(Locale.GERMANY, "%.1f km/h", kmh)
     }
 
     fun isGoodHuntingWeather(weather: CachedWeather): Pair<Boolean, String> {

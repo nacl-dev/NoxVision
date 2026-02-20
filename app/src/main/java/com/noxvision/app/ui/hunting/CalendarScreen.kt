@@ -14,9 +14,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.noxvision.app.R
 import com.noxvision.app.hunting.calendar.HuntingSeasonData
 import com.noxvision.app.ui.NightColors
 import com.noxvision.app.ui.SettingsSectionHeader
@@ -54,7 +56,7 @@ fun CalendarScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Jagdzeiten",
+                        text = stringResource(R.string.hunting_seasons),
                         color = NightColors.onSurface
                     )
                 },
@@ -62,7 +64,7 @@ fun CalendarScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Zurueck",
+                            contentDescription = stringResource(R.string.back),
                             tint = NightColors.onSurface
                         )
                     }
@@ -93,7 +95,7 @@ fun CalendarScreen(
                         value = selectedBundesland.displayName,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Bundesland") },
+                        label = { Text(stringResource(R.string.bundesland)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = bundeslandExpanded) },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -132,7 +134,7 @@ fun CalendarScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Nur aktuelle Jagdzeiten anzeigen",
+                        text = stringResource(R.string.show_active_only),
                         color = NightColors.onSurface,
                         fontSize = 14.sp
                     )
@@ -167,7 +169,7 @@ fun CalendarScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "${inSeasonSeasons.size} Jagdzeiten aktiv",
+                                text = stringResource(R.string.hunting_seasons_active, inSeasonSeasons.size),
                                 color = NightColors.success,
                                 fontWeight = FontWeight.Medium
                             )
@@ -185,7 +187,7 @@ fun CalendarScreen(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "${upcomingSeasons.size} beginnen in den naechsten 30 Tagen",
+                                    text = stringResource(R.string.starting_soon, upcomingSeasons.size),
                                     color = NightColors.primary,
                                     fontSize = 13.sp
                                 )
@@ -208,7 +210,7 @@ fun CalendarScreen(
                                 modifier = Modifier.size(18.dp)
                             )
                         },
-                        title = "BALD BEGINNEND"
+                        title = stringResource(R.string.starting_soon_section)
                     )
                 }
 
@@ -232,7 +234,11 @@ fun CalendarScreen(
                             modifier = Modifier.size(18.dp)
                         )
                     },
-                    title = if (showOnlyInSeason) "AKTIVE JAGDZEITEN" else "ALLE JAGDZEITEN"
+                    title = if (showOnlyInSeason) {
+                        stringResource(R.string.active_hunting_seasons)
+                    } else {
+                        stringResource(R.string.all_hunting_seasons)
+                    }
                 )
             }
 
@@ -240,8 +246,7 @@ fun CalendarScreen(
                 item {
                     WildlifeTypeSection(
                         wildlifeType = wildlifeType,
-                        seasons = seasons,
-                        inSeasonSeasons = inSeasonSeasons
+                        seasons = seasons
                     )
                 }
             }
@@ -251,7 +256,7 @@ fun CalendarScreen(
 
                 // Note about federal seasons
                 Text(
-                    text = "Hinweis: Angezeigte Zeiten entsprechen den Bundesjagdzeiten. Laenderspezifische Abweichungen sind moeglich.",
+                    text = stringResource(R.string.hunting_seasons_note),
                     color = NightColors.onBackground,
                     fontSize = 11.sp
                 )
@@ -265,8 +270,7 @@ fun CalendarScreen(
 @Composable
 private fun WildlifeTypeSection(
     wildlifeType: String,
-    seasons: List<HuntingSeasonData.HuntingSeason>,
-    inSeasonSeasons: List<HuntingSeasonData.HuntingSeason>
+    seasons: List<HuntingSeasonData.HuntingSeason>
 ) {
     val calendar = Calendar.getInstance()
     val currentMonth = calendar.get(Calendar.MONTH) + 1
@@ -312,7 +316,7 @@ private fun WildlifeTypeSection(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = season.gender ?: "Alle",
+                            text = season.gender ?: stringResource(R.string.all_genders),
                             color = if (isInSeason) NightColors.onSurface else NightColors.onBackground,
                             fontSize = 14.sp
                         )
@@ -363,7 +367,11 @@ private fun UpcomingSeasonCard(
                     fontWeight = FontWeight.Medium
                 )
                 Text(
-                    text = "Beginnt am ${season.startDay}. ${getMonthName(season.startMonth)}",
+                    text = stringResource(
+                        R.string.starts_on,
+                        season.startDay,
+                        getMonthName(season.startMonth)
+                    ),
                     color = NightColors.onBackground,
                     fontSize = 12.sp
                 )
@@ -374,7 +382,7 @@ private fun UpcomingSeasonCard(
                 color = NightColors.primary
             ) {
                 Text(
-                    text = "in $daysUntil Tagen",
+                    text = stringResource(R.string.in_days, daysUntil),
                     color = Color.White,
                     fontSize = 12.sp,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
@@ -384,20 +392,21 @@ private fun UpcomingSeasonCard(
     }
 }
 
+@Composable
 private fun getMonthName(month: Int): String {
     return when (month) {
-        1 -> "Januar"
-        2 -> "Februar"
-        3 -> "Maerz"
-        4 -> "April"
-        5 -> "Mai"
-        6 -> "Juni"
-        7 -> "Juli"
-        8 -> "August"
-        9 -> "September"
-        10 -> "Oktober"
-        11 -> "November"
-        12 -> "Dezember"
+        1 -> stringResource(R.string.month_january)
+        2 -> stringResource(R.string.month_february)
+        3 -> stringResource(R.string.month_march)
+        4 -> stringResource(R.string.month_april)
+        5 -> stringResource(R.string.month_may)
+        6 -> stringResource(R.string.month_june)
+        7 -> stringResource(R.string.month_july)
+        8 -> stringResource(R.string.month_august)
+        9 -> stringResource(R.string.month_september)
+        10 -> stringResource(R.string.month_october)
+        11 -> stringResource(R.string.month_november)
+        12 -> stringResource(R.string.month_december)
         else -> ""
     }
 }

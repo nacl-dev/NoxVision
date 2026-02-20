@@ -42,12 +42,9 @@ import androidx.compose.material.icons.filled.Forest
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -85,10 +82,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.noxvision.app.CameraApiClient
-import com.noxvision.app.CameraCapabilities
 import com.noxvision.app.CameraSettings
 import com.noxvision.app.CrosshairStyle
-import com.noxvision.app.DeviceInfo
 import com.noxvision.app.MainActivity
 import com.noxvision.app.getCapabilities
 import com.noxvision.app.R
@@ -100,9 +95,7 @@ import com.noxvision.app.detection.KNOWN_OBJECTS
 import com.noxvision.app.detection.ThermalObjectDetector
 import com.noxvision.app.ui.components.DarkButton
 import com.noxvision.app.ui.components.PaletteButton
-import com.noxvision.app.ui.dialogs.AboutDialogContent
 import com.noxvision.app.ui.dialogs.GalleryDialog
-import com.noxvision.app.ui.dialogs.LogDialogContent
 import com.noxvision.app.ui.dialogs.WelcomeDialog
 import com.noxvision.app.ui.dialogs.WhatsNewDialog
 import com.noxvision.app.ui.hunting.HuntingHubScreen
@@ -164,6 +157,12 @@ fun VideoStreamScreen() {
 
     // Hunting Hub
     var showHuntingHub by rememberSaveable { mutableStateOf(false) }
+    var huntingAssistantHomeEnabled by remember {
+        mutableStateOf(CameraSettings.isHuntingAssistantHomeEnabled(context))
+    }
+    var huntingAssistantCountry by remember {
+        mutableStateOf(CameraSettings.getHuntingAssistantCountry(context))
+    }
 
     val featureRepository = remember { FeatureBountyRepository(context) }
 
@@ -212,8 +211,8 @@ fun VideoStreamScreen() {
     val apiClient = remember(baseUrl) { CameraApiClient(baseUrl) }
 
     // Device info and capabilities
-    var deviceInfo by remember { mutableStateOf<DeviceInfo?>(CameraSettings.getCachedDeviceInfo(context)) }
-    var cameraCapabilities by remember { mutableStateOf<CameraCapabilities?>(deviceInfo?.getCapabilities()) }
+    var deviceInfo by remember { mutableStateOf(CameraSettings.getCachedDeviceInfo(context)) }
+    var cameraCapabilities by remember { mutableStateOf(deviceInfo?.getCapabilities()) }
 
     // Thermal measurement settings
     var emissivity by remember { mutableFloatStateOf(CameraSettings.getEmissivity(context)) }
@@ -254,7 +253,7 @@ fun VideoStreamScreen() {
                 val success = responseCode == 200
 
                 if (success) {
-                    val zoomDisplay = String.format(Locale.getDefault(), "%.1f", level / 10.0)
+                    val zoomDisplay = String.format(Locale.US, "%.1f", level / 10.0)
                     AppLogger.log("Zoom: ${zoomDisplay}x", AppLogger.LogType.SUCCESS)
                 } else {
                     AppLogger.log("Zoom error: HTTP $responseCode", AppLogger.LogType.ERROR)
@@ -553,7 +552,7 @@ fun VideoStreamScreen() {
         )
     }
 
-    suspend fun startRecordingViaVlc() {
+    fun startRecordingViaVlc() {
         if (recordingPlayer != null) return
 
         val file = createVideoFile(context)
@@ -644,7 +643,9 @@ fun VideoStreamScreen() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 add(Manifest.permission.ACCESS_FINE_LOCATION)
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 add(Manifest.permission.READ_MEDIA_VIDEO)
                 add(Manifest.permission.READ_MEDIA_IMAGES)
             } else {
@@ -1072,7 +1073,7 @@ fun VideoStreamScreen() {
                         )
                     }
                     Text(
-                        text = String.format(Locale.getDefault(), "%.1fx", zoomLevel / 10),
+                        text = String.format(Locale.US, "%.1fx", zoomLevel / 10),
                         fontSize = 12.sp,
                         color = NightColors.primary,
                         fontWeight = FontWeight.Bold
@@ -1246,14 +1247,16 @@ fun VideoStreamScreen() {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Hunting Assistant Button (full width)
-                DarkButton(
-                    text = stringResource(R.string.hunting_assistant),
-                    icon = Icons.Filled.Forest,
-                    onClick = { showHuntingHub = true },
-                    enabled = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                if (huntingAssistantHomeEnabled) {
+                    // Hunting Assistant Button (full width)
+                    DarkButton(
+                        text = stringResource(R.string.hunting_assistant),
+                        icon = Icons.Filled.Forest,
+                        onClick = { showHuntingHub = true },
+                        enabled = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
 
@@ -1271,6 +1274,8 @@ fun VideoStreamScreen() {
                     crosshairStyle = crosshairStyle,
                     enhancementEnabled = enhancementEnabled,
                     objectDetectionEnabled = objectDetectionEnabled,
+                    huntingAssistantHomeEnabled = huntingAssistantHomeEnabled,
+                    huntingAssistantCountry = huntingAssistantCountry,
                     cameraIp = cameraIp,
                     onClose = { showSettingsDialog = false },
                     onAudioChange = { enabled ->
@@ -1315,13 +1320,19 @@ fun VideoStreamScreen() {
                         objectDetectionEnabled = enabled
                         AppLogger.log("AI Erkennung ${if (enabled) "EIN" else "AUS"}", AppLogger.LogType.INFO)
                     },
+                    onHuntingAssistantHomeEnabledChange = { enabled ->
+                        huntingAssistantHomeEnabled = enabled
+                        CameraSettings.setHuntingAssistantHomeEnabled(context, enabled)
+                    },
+                    onHuntingAssistantCountryChange = { country ->
+                        huntingAssistantCountry = country
+                        CameraSettings.setHuntingAssistantCountry(context, country)
+                    },
                     onCameraIpChange = { newIp ->
                         CameraSettings.setCameraIp(context, newIp)
                         cameraIp = newIp
                         AppLogger.log("Kamera IP geandert: $newIp", AppLogger.LogType.SUCCESS)
                     },
-                    onShowLog = { /* Handled internally by SettingsScreen */ },
-                    onShowAbout = { /* Handled internally by SettingsScreen */ },
                     onShowThermalSettings = {
                         showSettingsDialog = false
                         showThermalSettingsDialog = true
@@ -1340,7 +1351,6 @@ fun VideoStreamScreen() {
                     onAutoConnectChange = { enabled ->
                         CameraSettings.setAutoConnectEnabled(context, enabled)
                     },
-                    onShowWhatsNew = { /* Handled internally by SettingsScreen */ },
                     onShowFeatureBounties = {
                         showSettingsDialog = false
                         showFeatureBountiesDialog = true
@@ -1363,22 +1373,29 @@ fun VideoStreamScreen() {
         }
 
         if (showWelcomeDialog) {
-            WelcomeDialog(onDismiss = {
-                val currentVersionCode = try {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                        context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode.toInt()
-                    } else {
-                        @Suppress("DEPRECATION")
-                        context.packageManager.getPackageInfo(context.packageName, 0).versionCode
+            WelcomeDialog(
+                huntingAssistantHomeEnabled = huntingAssistantHomeEnabled,
+                onHuntingAssistantHomeEnabledChange = { enabled ->
+                    huntingAssistantHomeEnabled = enabled
+                    CameraSettings.setHuntingAssistantHomeEnabled(context, enabled)
+                },
+                onDismiss = {
+                    val currentVersionCode = try {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode.toInt()
+                        } else {
+                            @Suppress("DEPRECATION")
+                            context.packageManager.getPackageInfo(context.packageName, 0).versionCode
+                        }
+                    } catch (e: Exception) {
+                        1
                     }
-                } catch (e: Exception) {
-                    1
-                }
 
-                CameraSettings.setFirstRunCompleted(context)
-                CameraSettings.setLastVersionCode(context, currentVersionCode)
-                showWelcomeDialog = false
-            })
+                    CameraSettings.setFirstRunCompleted(context)
+                    CameraSettings.setLastVersionCode(context, currentVersionCode)
+                    showWelcomeDialog = false
+                }
+            )
         }
 
         if (showWhatsNewDialog) {
@@ -1413,7 +1430,10 @@ fun VideoStreamScreen() {
                 onDismissRequest = { showHuntingHub = false },
                 properties = DialogProperties(usePlatformDefaultWidth = false)
             ) {
-                HuntingHubScreen(onClose = { showHuntingHub = false })
+                HuntingHubScreen(
+                    onClose = { showHuntingHub = false },
+                    selectedCountry = huntingAssistantCountry
+                )
             }
         }
 

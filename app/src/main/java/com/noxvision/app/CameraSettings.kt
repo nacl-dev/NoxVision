@@ -1,6 +1,7 @@
 package com.noxvision.app
 
 import android.content.Context
+import androidx.core.content.edit
 
 enum class CrosshairStyle(val displayNameRes: Int, val id: Int) {
     SIMPLE(R.string.crosshair_simple, 0),
@@ -10,7 +11,28 @@ enum class CrosshairStyle(val displayNameRes: Int, val id: Int) {
 
     companion object {
         fun fromId(id: Int): CrosshairStyle {
-            return values().find { it.id == id } ?: SIMPLE
+            return entries.find { it.id == id } ?: SIMPLE
+        }
+    }
+}
+
+enum class HuntingAssistantCountry(
+    val code: String,
+    val displayNameRes: Int,
+    val supportsGermanSeasons: Boolean
+) {
+    GERMANY("DE", R.string.hunting_country_germany, true),
+    FRANCE("FR", R.string.hunting_country_france, false),
+    SPAIN("ES", R.string.hunting_country_spain, false),
+    ITALY("IT", R.string.hunting_country_italy, false),
+    NETHERLANDS("NL", R.string.hunting_country_netherlands, false),
+    POLAND("PL", R.string.hunting_country_poland, false),
+    UKRAINE("UA", R.string.hunting_country_ukraine, false),
+    INTERNATIONAL("INTL", R.string.hunting_country_international, false);
+
+    companion object {
+        fun fromCode(code: String?): HuntingAssistantCountry {
+            return entries.find { it.code == code } ?: GERMANY
         }
     }
 }
@@ -24,6 +46,10 @@ object CameraSettings {
     // Crosshair settings
     private const val KEY_CROSSHAIR_ENABLED = "crosshair_enabled"
     private const val KEY_CROSSHAIR_STYLE = "crosshair_style"
+
+    // Hunting assistant settings
+    private const val KEY_HUNTING_ASSISTANT_HOME_ENABLED = "hunting_assistant_home_enabled"
+    private const val KEY_HUNTING_COUNTRY = "hunting_country"
     
     // Connection settings
     private const val KEY_CAMERA_IP = "camera_ip"
@@ -60,6 +86,7 @@ object CameraSettings {
     private const val DEFAULT_WIFI_PASSWORD = "12345678"
     private const val DEFAULT_HTTP_PORT = 80
     private const val DEFAULT_AUTOCONNECT_ENABLED = true
+    private const val DEFAULT_HUNTING_ASSISTANT_HOME_ENABLED = true
     
     // ==================== Connection Settings ====================
     
@@ -76,7 +103,7 @@ object CameraSettings {
      */
     fun setCameraIp(context: Context, ip: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_CAMERA_IP, ip).apply()
+        prefs.edit { putString(KEY_CAMERA_IP, ip) }
     }
     
     /**
@@ -107,7 +134,7 @@ object CameraSettings {
      */
     fun setWifiSsid(context: Context, ssid: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_WIFI_SSID, ssid).apply()
+        prefs.edit { putString(KEY_WIFI_SSID, ssid) }
     }
     
     /**
@@ -123,7 +150,7 @@ object CameraSettings {
      */
     fun setWifiPassword(context: Context, password: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_WIFI_PASSWORD, password).apply()
+        prefs.edit { putString(KEY_WIFI_PASSWORD, password) }
     }
     
     /**
@@ -139,7 +166,7 @@ object CameraSettings {
      */
     fun setHttpPort(context: Context, port: Int) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putInt(KEY_HTTP_PORT, port).apply()
+        prefs.edit { putInt(KEY_HTTP_PORT, port) }
     }
     
     /**
@@ -155,7 +182,7 @@ object CameraSettings {
      */
     fun setAutoConnectEnabled(context: Context, enabled: Boolean) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putBoolean(KEY_AUTOCONNECT_ENABLED, enabled).apply()
+        prefs.edit { putBoolean(KEY_AUTOCONNECT_ENABLED, enabled) }
     }
     
     /**
@@ -199,7 +226,7 @@ object CameraSettings {
      */
     fun setEmissivity(context: Context, value: Float) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putFloat(KEY_EMISSIVITY, value.coerceIn(0.01f, 1.0f)).apply()
+        prefs.edit { putFloat(KEY_EMISSIVITY, value.coerceIn(0.01f, 1.0f)) }
     }
     
     /**
@@ -215,7 +242,7 @@ object CameraSettings {
      */
     fun setDistance(context: Context, meters: Float) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putFloat(KEY_DISTANCE, meters.coerceAtLeast(0f)).apply()
+        prefs.edit { putFloat(KEY_DISTANCE, meters.coerceAtLeast(0f)) }
     }
     
     /**
@@ -231,7 +258,7 @@ object CameraSettings {
      */
     fun setHumidity(context: Context, percent: Float) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putFloat(KEY_HUMIDITY, percent.coerceIn(0f, 100f)).apply()
+        prefs.edit { putFloat(KEY_HUMIDITY, percent.coerceIn(0f, 100f)) }
     }
     
     /**
@@ -247,7 +274,7 @@ object CameraSettings {
      */
     fun setReflectTemperature(context: Context, celsius: Float) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putFloat(KEY_REFLECT_TEMP, celsius).apply()
+        prefs.edit { putFloat(KEY_REFLECT_TEMP, celsius) }
     }
     
     /**
@@ -277,12 +304,12 @@ object CameraSettings {
      */
     fun saveDeviceInfo(context: Context, deviceInfo: DeviceInfo) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit()
-            .putString(KEY_DEVICE_NAME, deviceInfo.deviceName)
-            .putString(KEY_CAMERA_NAME, deviceInfo.cameraName)
-            .putInt(KEY_VIDEO_WIDTH, deviceInfo.videoWidth)
-            .putInt(KEY_VIDEO_HEIGHT, deviceInfo.videoHeight)
-            .apply()
+        prefs.edit {
+            putString(KEY_DEVICE_NAME, deviceInfo.deviceName)
+            putString(KEY_CAMERA_NAME, deviceInfo.cameraName)
+            putInt(KEY_VIDEO_WIDTH, deviceInfo.videoWidth)
+            putInt(KEY_VIDEO_HEIGHT, deviceInfo.videoHeight)
+        }
     }
     
     /**
@@ -309,12 +336,12 @@ object CameraSettings {
      */
     fun clearDeviceInfo(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit()
-            .remove(KEY_DEVICE_NAME)
-            .remove(KEY_CAMERA_NAME)
-            .remove(KEY_VIDEO_WIDTH)
-            .remove(KEY_VIDEO_HEIGHT)
-            .apply()
+        prefs.edit {
+            remove(KEY_DEVICE_NAME)
+            remove(KEY_CAMERA_NAME)
+            remove(KEY_VIDEO_WIDTH)
+            remove(KEY_VIDEO_HEIGHT)
+        }
     }
 
     /**
@@ -330,7 +357,7 @@ object CameraSettings {
      */
     fun setFirstRunCompleted(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putBoolean(KEY_FIRST_RUN, false).apply()
+        prefs.edit { putBoolean(KEY_FIRST_RUN, false) }
     }
 
     /**
@@ -346,7 +373,7 @@ object CameraSettings {
      */
     fun setLastVersionCode(context: Context, versionCode: Int) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putInt(KEY_LAST_VERSION_CODE, versionCode).apply()
+        prefs.edit { putInt(KEY_LAST_VERSION_CODE, versionCode) }
     }
 
     // ==================== Crosshair Settings ====================
@@ -358,7 +385,7 @@ object CameraSettings {
 
     fun setCrosshairEnabled(context: Context, enabled: Boolean) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putBoolean(KEY_CROSSHAIR_ENABLED, enabled).apply()
+        prefs.edit { putBoolean(KEY_CROSSHAIR_ENABLED, enabled) }
     }
 
     fun getCrosshairStyle(context: Context): CrosshairStyle {
@@ -369,6 +396,29 @@ object CameraSettings {
 
     fun setCrosshairStyle(context: Context, style: CrosshairStyle) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putInt(KEY_CROSSHAIR_STYLE, style.id).apply()
+        prefs.edit { putInt(KEY_CROSSHAIR_STYLE, style.id) }
+    }
+
+    // ==================== Hunting Assistant Settings ====================
+
+    fun isHuntingAssistantHomeEnabled(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(KEY_HUNTING_ASSISTANT_HOME_ENABLED, DEFAULT_HUNTING_ASSISTANT_HOME_ENABLED)
+    }
+
+    fun setHuntingAssistantHomeEnabled(context: Context, enabled: Boolean) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit { putBoolean(KEY_HUNTING_ASSISTANT_HOME_ENABLED, enabled) }
+    }
+
+    fun getHuntingAssistantCountry(context: Context): HuntingAssistantCountry {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val code = prefs.getString(KEY_HUNTING_COUNTRY, HuntingAssistantCountry.GERMANY.code)
+        return HuntingAssistantCountry.fromCode(code)
+    }
+
+    fun setHuntingAssistantCountry(context: Context, country: HuntingAssistantCountry) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit { putString(KEY_HUNTING_COUNTRY, country.code) }
     }
 }

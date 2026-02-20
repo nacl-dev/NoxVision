@@ -15,7 +15,7 @@ data class HuntingStand(
     val notes: String?
 )
 
-enum class HuntingStandType(@StringRes val displayNameRes: Int) {
+enum class HuntingStandType(@param:StringRes val displayNameRes: Int) {
     HOCHSITZ(R.string.stand_hochsitz),
     KANZEL(R.string.stand_kanzel),
     DRUCKJAGD(R.string.stand_druckjagd),

@@ -1,6 +1,5 @@
 package com.noxvision.app.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -16,7 +15,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -25,8 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.noxvision.app.CameraSettings
 import com.noxvision.app.CrosshairStyle
+import com.noxvision.app.HuntingAssistantCountry
 import com.noxvision.app.R
-import com.noxvision.app.ui.NightColors
 import com.noxvision.app.ui.dialogs.AboutDialogContent
 import com.noxvision.app.ui.dialogs.LanguageDialog
 import com.noxvision.app.ui.dialogs.LogDialogContent
@@ -55,6 +53,8 @@ fun SettingsScreen(
     crosshairStyle: CrosshairStyle,
     enhancementEnabled: Boolean,
     objectDetectionEnabled: Boolean,
+    huntingAssistantHomeEnabled: Boolean,
+    huntingAssistantCountry: HuntingAssistantCountry,
     cameraIp: String,
     onClose: () -> Unit,
     onAudioChange: (Boolean) -> Unit,
@@ -65,15 +65,14 @@ fun SettingsScreen(
     onCrosshairStyleChange: (CrosshairStyle) -> Unit,
     onEnhancementChange: (Boolean) -> Unit,
     onObjectDetectionChange: (Boolean) -> Unit,
+    onHuntingAssistantHomeEnabledChange: (Boolean) -> Unit,
+    onHuntingAssistantCountryChange: (HuntingAssistantCountry) -> Unit,
     onCameraIpChange: (String) -> Unit,
-    onShowLog: () -> Unit,
-    onShowAbout: () -> Unit,
     onShowThermalSettings: () -> Unit,
     onWifiSsidChange: (String) -> Unit,
     onWifiPasswordChange: (String) -> Unit,
     onHttpPortChange: (Int) -> Unit,
     onAutoConnectChange: (Boolean) -> Unit,
-    onShowWhatsNew: () -> Unit,
     onShowFeatureBounties: () -> Unit
 ) {
     var currentPage by remember { mutableStateOf(SettingsPage.MAIN) }
@@ -84,8 +83,6 @@ fun SettingsScreen(
     var showWhatsNewDialog by remember { mutableStateOf(false) }
     var showHuntingHub by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
-
-    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -153,20 +150,24 @@ fun SettingsScreen(
                 contrast = contrast,
                 crosshairEnabled = crosshairEnabled,
                 crosshairStyle = crosshairStyle,
+                enhancementEnabled = enhancementEnabled,
                 onAudioChange = onAudioChange,
                 onHotspotChange = onHotspotChange,
                 onBrightnessChange = onBrightnessChange,
                 onContrastChange = onContrastChange,
                 onCrosshairEnabledChange = onCrosshairEnabledChange,
                 onCrosshairStyleChange = onCrosshairStyleChange,
+                onEnhancementChange = onEnhancementChange,
                 onShowThermalSettings = onShowThermalSettings
             )
             SettingsPage.APP_FEATURES -> AppFeaturesPage(
                 paddingValues = paddingValues,
                 objectDetectionEnabled = objectDetectionEnabled,
-                enhancementEnabled = enhancementEnabled,
+                huntingAssistantHomeEnabled = huntingAssistantHomeEnabled,
+                huntingAssistantCountry = huntingAssistantCountry,
                 onObjectDetectionChange = onObjectDetectionChange,
-                onEnhancementChange = onEnhancementChange,
+                onHuntingAssistantHomeEnabledChange = onHuntingAssistantHomeEnabledChange,
+                onHuntingAssistantCountryChange = onHuntingAssistantCountryChange,
                 onShowHuntingHub = { showHuntingHub = true }
             )
         }
@@ -186,7 +187,10 @@ fun SettingsScreen(
     }
 
     if (showHuntingHub) {
-        HuntingHubScreen(onClose = { showHuntingHub = false })
+        HuntingHubScreen(
+            onClose = { showHuntingHub = false },
+            selectedCountry = huntingAssistantCountry
+        )
     }
 
     if (showLanguageDialog) {
@@ -298,6 +302,12 @@ private fun MainSettingsPage(
             icon = Icons.Filled.Info,
             title = stringResource(R.string.about_noxvision),
             onClick = onShowAbout
+        )
+
+        SettingsActionItem(
+            icon = Icons.Filled.Star,
+            title = "Feature Bounties",
+            onClick = onShowFeatureBounties
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -558,12 +568,14 @@ private fun CameraSettingsPage(
     contrast: Int,
     crosshairEnabled: Boolean,
     crosshairStyle: CrosshairStyle,
+    enhancementEnabled: Boolean,
     onAudioChange: (Boolean) -> Unit,
     onHotspotChange: (Boolean) -> Unit,
     onBrightnessChange: (Int) -> Unit,
     onContrastChange: (Int) -> Unit,
     onCrosshairEnabledChange: (Boolean) -> Unit,
     onCrosshairStyleChange: (CrosshairStyle) -> Unit,
+    onEnhancementChange: (Boolean) -> Unit,
     onShowThermalSettings: () -> Unit
 ) {
     Column(
@@ -640,7 +652,7 @@ private fun CameraSettingsPage(
                         .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    CrosshairStyle.values().forEach { style ->
+                    CrosshairStyle.entries.forEach { style ->
                         FilterChip(
                             selected = crosshairStyle == style,
                             onClick = { onCrosshairStyleChange(style) },
@@ -730,6 +742,44 @@ private fun CameraSettingsPage(
 
         HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 8.dp))
 
+        // Image enhancement
+        SettingsSectionHeader(
+            icon = {
+                Icon(
+                    Icons.Filled.AutoFixHigh,
+                    contentDescription = null,
+                    tint = NightColors.primary,
+                    modifier = Modifier.size(18.dp)
+                )
+            },
+            title = stringResource(R.string.image_enhancement)
+        )
+
+        Card(
+            colors = CardDefaults.cardColors(containerColor = NightColors.surface),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                SettingsToggleRow(
+                    icon = Icons.Filled.AutoFixHigh,
+                    label = stringResource(R.string.enable_image_enhancement),
+                    checked = enhancementEnabled,
+                    onCheckedChange = onEnhancementChange
+                )
+
+                if (enhancementEnabled) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.image_enhancement_desc),
+                        color = NightColors.onBackground,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+        }
+
+        HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 8.dp))
+
         // Thermal Settings Link
         SettingsSectionHeader(
             icon = {
@@ -762,15 +812,20 @@ private fun CameraSettingsPage(
 // APP FEATURES PAGE
 // ═══════════════════════════════════════════════════════════
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AppFeaturesPage(
     paddingValues: PaddingValues,
     objectDetectionEnabled: Boolean,
-    enhancementEnabled: Boolean,
+    huntingAssistantHomeEnabled: Boolean,
+    huntingAssistantCountry: HuntingAssistantCountry,
     onObjectDetectionChange: (Boolean) -> Unit,
-    onEnhancementChange: (Boolean) -> Unit,
+    onHuntingAssistantHomeEnabledChange: (Boolean) -> Unit,
+    onHuntingAssistantCountryChange: (HuntingAssistantCountry) -> Unit,
     onShowHuntingHub: () -> Unit
 ) {
+    var countryExpanded by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -800,6 +855,65 @@ private fun AppFeaturesPage(
             subtitle = stringResource(R.string.hunting_assistant_subtitle),
             onClick = onShowHuntingHub
         )
+
+        Card(
+            colors = CardDefaults.cardColors(containerColor = NightColors.surface),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                SettingsToggleRow(
+                    icon = Icons.Filled.Home,
+                    label = stringResource(R.string.show_hunting_assistant_home),
+                    checked = huntingAssistantHomeEnabled,
+                    onCheckedChange = onHuntingAssistantHomeEnabledChange
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                ExposedDropdownMenuBox(
+                    expanded = countryExpanded,
+                    onExpandedChange = { countryExpanded = it }
+                ) {
+                    OutlinedTextField(
+                        value = stringResource(huntingAssistantCountry.displayNameRes),
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text(stringResource(R.string.hunting_country)) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = countryExpanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true),
+                        colors = nightTextFieldColors()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = countryExpanded,
+                        onDismissRequest = { countryExpanded = false }
+                    ) {
+                        HuntingAssistantCountry.entries.forEach { country ->
+                            DropdownMenuItem(
+                                text = { Text(stringResource(country.displayNameRes)) },
+                                onClick = {
+                                    onHuntingAssistantCountryChange(country)
+                                    countryExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+                if (!huntingAssistantCountry.supportsGermanSeasons) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(
+                            R.string.hunting_seasons_not_available_for_country,
+                            stringResource(huntingAssistantCountry.displayNameRes)
+                        ),
+                        color = NightColors.onBackground,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+        }
 
         HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 8.dp))
 
@@ -832,44 +946,6 @@ private fun AppFeaturesPage(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = stringResource(R.string.ai_detection_desc),
-                        color = NightColors.onBackground,
-                        fontSize = 12.sp
-                    )
-                }
-            }
-        }
-
-        HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 8.dp))
-
-        // Bildverbesserung
-        SettingsSectionHeader(
-            icon = {
-                Icon(
-                    Icons.Filled.AutoFixHigh,
-                    contentDescription = null,
-                    tint = NightColors.primary,
-                    modifier = Modifier.size(18.dp)
-                )
-            },
-            title = stringResource(R.string.image_enhancement)
-        )
-
-        Card(
-            colors = CardDefaults.cardColors(containerColor = NightColors.surface),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                SettingsToggleRow(
-                    icon = Icons.Filled.AutoFixHigh,
-                    label = stringResource(R.string.enable_image_enhancement),
-                    checked = enhancementEnabled,
-                    onCheckedChange = onEnhancementChange
-                )
-
-                if (enhancementEnabled) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = stringResource(R.string.image_enhancement_desc),
                         color = NightColors.onBackground,
                         fontSize = 12.sp
                     )

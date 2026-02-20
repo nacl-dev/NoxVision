@@ -52,6 +52,13 @@
     <string name="audio_display">AUDIO &amp; DISPLAY</string>
     <string name="enable_audio">Enable audio</string>
     <string name="show_hotspot">Show hotspot (hottest point)</string>
+    <string name="crosshair_settings">CROSSHAIR</string>
+    <string name="enable_crosshair">Enable crosshair</string>
+    <string name="crosshair_style">Crosshair style</string>
+    <string name="crosshair_simple">Simple</string>
+    <string name="crosshair_gap">Gap</string>
+    <string name="crosshair_circle_dot">Circle Dot</string>
+    <string name="crosshair_chevron">Chevron</string>
     <string name="image_settings">IMAGE SETTINGS</string>
     <string name="brightness">Brightness</string>
     <string name="contrast">Contrast</string>
@@ -67,6 +74,17 @@
     <string name="image_enhancement">IMAGE ENHANCEMENT</string>
     <string name="enable_image_enhancement">Enable image enhancement</string>
     <string name="image_enhancement_desc">Improves contrast and sharpness of thermal images in real-time.</string>
+    <string name="show_hunting_assistant_home">Show on home screen</string>
+    <string name="hunting_country">Country profile</string>
+    <string name="hunting_country_germany">Germany</string>
+    <string name="hunting_country_france">France</string>
+    <string name="hunting_country_spain">Spain</string>
+    <string name="hunting_country_italy">Italy</string>
+    <string name="hunting_country_netherlands">Netherlands</string>
+    <string name="hunting_country_poland">Poland</string>
+    <string name="hunting_country_ukraine">Ukraine</string>
+    <string name="hunting_country_international">International</string>
+    <string name="hunting_seasons_not_available_for_country">Hunting seasons are currently not available for %1$s.</string>
 
     <!-- Thermal Settings -->
     <string name="camera_features">Camera Features</string>
@@ -150,6 +168,7 @@
     <string name="feature_recording">Recording</string>
     <string name="feature_recording_desc">Record videos with audio</string>
     <string name="welcome_outro">You can change these settings at any time via the gear icon.\n\nEnjoy NoxVision!</string>
+    <string name="welcome_hunting_toggle_hint">You can change this option at any time in Settings under App Features.</string>
 
     <!-- Whats New Dialog -->
     <string name="whats_new_title">What\'s New!</string>

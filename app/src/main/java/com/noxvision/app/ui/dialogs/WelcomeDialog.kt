@@ -31,11 +31,14 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,8 +55,15 @@ import com.noxvision.app.ui.NightColors
 import com.noxvision.app.ui.components.WelcomeFeatureItem
 
 @Composable
-fun WelcomeDialog(onDismiss: () -> Unit) {
+fun WelcomeDialog(
+    huntingAssistantHomeEnabled: Boolean,
+    onHuntingAssistantHomeEnabledChange: (Boolean) -> Unit,
+    onDismiss: () -> Unit
+) {
     var step by remember { mutableIntStateOf(0) }
+    var homeToggleEnabled by remember(huntingAssistantHomeEnabled) {
+        mutableStateOf(huntingAssistantHomeEnabled)
+    }
 
     Dialog(
         onDismissRequest = {},
@@ -158,6 +168,55 @@ fun WelcomeDialog(onDismiss: () -> Unit) {
                                 horizontalAlignment = Alignment.Start,
                                 modifier = Modifier.verticalScroll(rememberScrollState())
                             ) {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = CardDefaults.cardColors(containerColor = NightColors.background),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(12.dp)) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Filled.Settings,
+                                                    contentDescription = null,
+                                                    tint = NightColors.primary
+                                                )
+                                                Text(
+                                                    text = stringResource(R.string.show_hunting_assistant_home),
+                                                    color = NightColors.onSurface,
+                                                    fontWeight = FontWeight.Medium
+                                                )
+                                            }
+                                            Switch(
+                                                checked = homeToggleEnabled,
+                                                onCheckedChange = { enabled ->
+                                                    homeToggleEnabled = enabled
+                                                    onHuntingAssistantHomeEnabledChange(enabled)
+                                                },
+                                                colors = SwitchDefaults.colors(
+                                                    checkedThumbColor = NightColors.primary,
+                                                    checkedTrackColor = NightColors.primary.copy(alpha = 0.5f)
+                                                )
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = stringResource(R.string.welcome_hunting_toggle_hint),
+                                            color = NightColors.onBackground,
+                                            fontSize = MaterialTheme.typography.bodySmall.fontSize
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
                                 WelcomeFeatureItem(
                                     Icons.Filled.Camera,
                                     stringResource(R.string.gallery),

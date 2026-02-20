@@ -13,8 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
@@ -455,7 +453,7 @@ fun DonateDialog(
                     Button(
                         onClick = {
                             val amount = amountText.toIntOrNull() ?: 0
-                            if (amount > 0 && amount <= userCredits) {
+                            if (amount in 1..userCredits) {
                                 onConfirm(amount)
                             }
                         },

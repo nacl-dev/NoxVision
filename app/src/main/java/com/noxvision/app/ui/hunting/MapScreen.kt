@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.noxvision.app.R
 import com.noxvision.app.hunting.database.HuntingDatabase
 import com.noxvision.app.hunting.database.entities.HuntingStand
 import com.noxvision.app.hunting.database.entities.HuntingStandType
@@ -36,6 +37,7 @@ import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +54,7 @@ fun MapScreen(
     var mapView by remember { mutableStateOf<MapView?>(null) }
     var showAddStandDialog by remember { mutableStateOf(false) }
     var longPressLocation by remember { mutableStateOf<GeoPoint?>(null) }
-    var cacheSize by remember { mutableStateOf(mapManager.getCacheSize()) }
+    var cacheSize by remember { mutableLongStateOf(mapManager.getCacheSize()) }
 
     val huntingStands by db.huntingStandDao().getAllStands().collectAsState(initial = emptyList())
     val waypoints by db.waypointDao().getAllWaypoints().collectAsState(initial = emptyList())
@@ -121,7 +123,7 @@ fun MapScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Karte",
+                        text = stringResource(R.string.map),
                         color = NightColors.onSurface
                     )
                 },
@@ -129,7 +131,7 @@ fun MapScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Zurueck",
+                            contentDescription = stringResource(R.string.back),
                             tint = NightColors.onSurface
                         )
                     }
@@ -152,7 +154,7 @@ fun MapScreen(
                     ) {
                         Icon(
                             Icons.Filled.MyLocation,
-                            contentDescription = "Meine Position",
+                            contentDescription = stringResource(R.string.my_location),
                             tint = NightColors.onSurface
                         )
                     }
@@ -220,14 +222,14 @@ fun MapScreen(
                     containerColor = NightColors.surface,
                     modifier = Modifier.size(48.dp)
                 ) {
-                    Icon(Icons.Filled.Add, contentDescription = "Hineinzoomen")
+                    Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.zoom_in))
                 }
                 FloatingActionButton(
                     onClick = { mapView?.controller?.zoomOut() },
                     containerColor = NightColors.surface,
                     modifier = Modifier.size(48.dp)
                 ) {
-                    Icon(Icons.Filled.Remove, contentDescription = "Herauszoomen")
+                    Icon(Icons.Filled.Remove, contentDescription = stringResource(R.string.zoom_out))
                 }
             }
 
@@ -241,22 +243,22 @@ fun MapScreen(
             ) {
                 Column(modifier = Modifier.padding(8.dp)) {
                     Text(
-                        text = "Hochsitze: ${huntingStands.size}",
+                        text = stringResource(R.string.hunting_stands, huntingStands.size),
                         color = NightColors.onSurface,
                         fontSize = 12.sp
                     )
                     Text(
-                        text = "Wegpunkte: ${waypoints.size}",
+                        text = stringResource(R.string.waypoints_count, waypoints.size),
                         color = NightColors.onSurface,
                         fontSize = 12.sp
                     )
                     Text(
-                        text = "Cache: ${mapManager.formatCacheSize(cacheSize)}",
+                        text = stringResource(R.string.cache_size, mapManager.formatCacheSize(cacheSize)),
                         color = NightColors.onBackground,
                         fontSize = 10.sp
                     )
                     Text(
-                        text = "Lang druecken um Hochsitz hinzuzufuegen",
+                        text = stringResource(R.string.long_press_hint),
                         color = NightColors.onBackground,
                         fontSize = 10.sp
                     )
@@ -276,13 +278,13 @@ fun MapScreen(
                 showAddStandDialog = false
                 longPressLocation = null
             },
-            title = { Text("Hochsitz hinzufuegen") },
+            title = { Text(stringResource(R.string.add_hunting_stand)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
                         value = standName,
                         onValueChange = { standName = it },
-                        label = { Text("Name") },
+                        label = { Text(stringResource(R.string.stand_name)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -295,7 +297,7 @@ fun MapScreen(
                             value = stringResource(standType.displayNameRes),
                             onValueChange = {},
                             readOnly = true,
-                            label = { Text("Typ") },
+                            label = { Text(stringResource(R.string.stand_type)) },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = standTypeExpanded) },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -318,7 +320,10 @@ fun MapScreen(
                     }
 
                     Text(
-                        text = "Position: ${String.format("%.5f", longPressLocation!!.latitude)}, ${String.format("%.5f", longPressLocation!!.longitude)}",
+                        text = stringResource(
+                            R.string.stand_position,
+                            "${String.format(Locale.US, "%.5f", longPressLocation!!.latitude)}, ${String.format(Locale.US, "%.5f", longPressLocation!!.longitude)}"
+                        ),
                         fontSize = 12.sp
                     )
                 }
@@ -343,7 +348,7 @@ fun MapScreen(
                     },
                     enabled = standName.isNotBlank()
                 ) {
-                    Text("Speichern")
+                    Text(stringResource(R.string.save))
                 }
             },
             dismissButton = {
@@ -353,7 +358,7 @@ fun MapScreen(
                         longPressLocation = null
                     }
                 ) {
-                    Text("Abbrechen")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )

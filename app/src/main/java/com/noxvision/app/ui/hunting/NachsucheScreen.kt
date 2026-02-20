@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.noxvision.app.R
 import com.noxvision.app.hunting.database.HuntingDatabase
 import com.noxvision.app.hunting.database.entities.Waypoint
 import com.noxvision.app.hunting.database.entities.WaypointType
@@ -95,7 +96,7 @@ fun NachsucheScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Nachsuche",
+                        text = stringResource(R.string.tracking),
                         color = NightColors.onSurface
                     )
                 },
@@ -103,7 +104,7 @@ fun NachsucheScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Zurueck",
+                            contentDescription = stringResource(R.string.back),
                             tint = NightColors.onSurface
                         )
                     }
@@ -125,7 +126,7 @@ fun NachsucheScreen(
                 containerColor = NightColors.primary,
                 modifier = Modifier.padding(bottom = 32.dp)
             ) {
-                Icon(Icons.Filled.AddLocation, contentDescription = "Wegpunkt hinzufuegen")
+                Icon(Icons.Filled.AddLocation, contentDescription = stringResource(R.string.add_waypoint))
             }
         },
         containerColor = NightColors.background
@@ -186,13 +187,16 @@ fun NachsucheScreen(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Entfernung: ${HuntingLocationManager.formatDistance(distance)}",
+                                text = HuntingLocationManager.formatDistance(distance),
                                 color = NightColors.primary,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "Ziel: ${stringResource(selectedWaypoint!!.type.displayNameRes)}",
+                                text = stringResource(
+                                    R.string.target,
+                                    stringResource(selectedWaypoint!!.type.displayNameRes)
+                                ),
                                 color = NightColors.onBackground,
                                 fontSize = 12.sp
                             )
@@ -206,7 +210,7 @@ fun NachsucheScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Kompass nicht verfuegbar",
+                            text = stringResource(R.string.compass_unavailable),
                             color = NightColors.onBackground,
                             fontSize = 14.sp
                         )
@@ -237,7 +241,7 @@ fun NachsucheScreen(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = "Aktuelle Position",
+                                text = stringResource(R.string.current_position),
                                 color = NightColors.onSurface,
                                 fontWeight = FontWeight.Medium
                             )
@@ -250,7 +254,7 @@ fun NachsucheScreen(
                                 fontSize = 12.sp
                             )
                             Text(
-                                text = "Genauigkeit: ${currentLocation!!.accuracy.toInt()}m",
+                                text = stringResource(R.string.accuracy, currentLocation!!.accuracy.toInt()),
                                 color = NightColors.onBackground,
                                 fontSize = 11.sp
                             )
@@ -271,7 +275,7 @@ fun NachsucheScreen(
                         modifier = Modifier.size(18.dp)
                     )
                 },
-                title = "WEGPUNKTE"
+                title = stringResource(R.string.waypoints)
             )
 
             if (waypoints.isEmpty()) {
@@ -287,12 +291,12 @@ fun NachsucheScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Keine Wegpunkte",
+                            text = stringResource(R.string.no_waypoints),
                             color = NightColors.onBackground
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Tippe auf + um einen Anschuss oder Wegpunkt zu markieren",
+                            text = stringResource(R.string.tap_to_add_waypoint),
                             color = NightColors.onBackground,
                             fontSize = 12.sp
                         )
@@ -329,10 +333,10 @@ fun NachsucheScreen(
     if (showAddDialog) {
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
-            title = { Text("Wegpunkt hinzufuegen") },
+            title = { Text(stringResource(R.string.add_waypoint)) },
             text = {
                 Column {
-                    Text("Typ auswaehlen:")
+                    Text(stringResource(R.string.select_type))
                     Spacer(modifier = Modifier.height(12.dp))
 
                     WaypointType.entries.forEach { type ->
@@ -372,12 +376,12 @@ fun NachsucheScreen(
                         showAddDialog = false
                     }
                 ) {
-                    Text("Speichern")
+                    Text(stringResource(R.string.save))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAddDialog = false }) {
-                    Text("Abbrechen")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -392,7 +396,7 @@ private fun WaypointCard(
     onSelect: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val dateFormat = remember { SimpleDateFormat("HH:mm", Locale.GERMANY) }
+    val dateFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -443,7 +447,7 @@ private fun WaypointCard(
             IconButton(onClick = onDelete) {
                 Icon(
                     Icons.Filled.Delete,
-                    contentDescription = "Loeschen",
+                    contentDescription = stringResource(R.string.delete),
                     tint = NightColors.error
                 )
             }

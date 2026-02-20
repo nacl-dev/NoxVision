@@ -1,3 +1,4 @@
+import java.io.File
 import java.util.Properties
 
 plugins {
@@ -9,7 +10,7 @@ plugins {
 }
 
 val localProperties = Properties()
-val localPropertiesFile = rootProject.file("local.properties")
+val localPropertiesFile: File = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
 }
@@ -85,7 +86,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)
-    testImplementation("org.json:json:20210307")
+    testImplementation(libs.json)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -98,7 +99,7 @@ dependencies {
 
     // LibVLC und andere
     implementation(libs.androidx.compose.material.icons.extended)
-    implementation("org.videolan.android:libvlc-all:3.3.5")
+    implementation(libs.libvlc)
     implementation(libs.okhttp)
     implementation(libs.coil.compose)
 

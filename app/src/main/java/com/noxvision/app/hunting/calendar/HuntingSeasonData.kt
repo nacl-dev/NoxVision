@@ -39,7 +39,7 @@ object HuntingSeasonData {
             return if (start <= end) {
                 current in start..end
             } else {
-                current >= start || current <= end
+                current !in (end + 1) until start
             }
         }
 
@@ -118,7 +118,9 @@ object HuntingSeasonData {
     fun getSeasonsForBundesland(bundesland: Bundesland): List<HuntingSeason> {
         // For now, return federal seasons
         // In a complete implementation, this would have state-specific overrides
-        return federalSeasons
+        return when (bundesland) {
+            else -> federalSeasons
+        }
     }
 
     fun getSeasonsInEffect(bundesland: Bundesland): List<HuntingSeason> {

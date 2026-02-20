@@ -53,6 +53,13 @@
     <string name="audio_display">AUDIO &amp; PANTALLA</string>
     <string name="enable_audio">Activar audio</string>
     <string name="show_hotspot">Mostrar punto caliente</string>
+    <string name="crosshair_settings">RETÍCULA</string>
+    <string name="enable_crosshair">Activar retícula</string>
+    <string name="crosshair_style">Estilo de retícula</string>
+    <string name="crosshair_simple">Simple</string>
+    <string name="crosshair_gap">Con separación</string>
+    <string name="crosshair_circle_dot">Círculo con punto</string>
+    <string name="crosshair_chevron">Galón</string>
     <string name="image_settings">AJUSTES DE IMAGEN</string>
     <string name="brightness">Brillo</string>
     <string name="contrast">Contraste</string>
@@ -68,6 +75,17 @@
     <string name="image_enhancement">MEJORA DE IMAGEN</string>
     <string name="enable_image_enhancement">Activar mejora de imagen</string>
     <string name="image_enhancement_desc">Mejora el contraste y la nitidez en tiempo real.</string>
+    <string name="show_hunting_assistant_home">Mostrar en la pantalla principal</string>
+    <string name="hunting_country">Perfil de país</string>
+    <string name="hunting_country_germany">Alemania</string>
+    <string name="hunting_country_france">Francia</string>
+    <string name="hunting_country_spain">España</string>
+    <string name="hunting_country_italy">Italia</string>
+    <string name="hunting_country_netherlands">Países Bajos</string>
+    <string name="hunting_country_poland">Polonia</string>
+    <string name="hunting_country_ukraine">Ucrania</string>
+    <string name="hunting_country_international">Internacional</string>
+    <string name="hunting_seasons_not_available_for_country">Las temporadas de caza no están disponibles actualmente para %1$s.</string>
 
     <!-- Thermal Settings -->
     <string name="camera_features">Funciones de cámara</string>
@@ -151,6 +169,7 @@
     <string name="feature_recording">Grabación</string>
     <string name="feature_recording_desc">Grabar videos con audio</string>
     <string name="welcome_outro">Puedes cambiar estos ajustes en cualquier momento a través del icono de engranaje.\n\n¡Disfruta de NoxVision!</string>
+    <string name="welcome_hunting_toggle_hint">Puedes cambiar esta opción en cualquier momento en Ajustes, en Funciones de la app.</string>
 
     <!-- Whats New Dialog -->
     <string name="whats_new_title">¡Novedades!</string>

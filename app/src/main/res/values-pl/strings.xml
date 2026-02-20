@@ -52,6 +52,13 @@
     <string name="audio_display">AUDIO &amp; WYŚWIETLANIE</string>
     <string name="enable_audio">Włącz audio</string>
     <string name="show_hotspot">Pokaż hotspot (najgorętszy punkt)</string>
+    <string name="crosshair_settings">CELOWNIK</string>
+    <string name="enable_crosshair">Włącz celownik</string>
+    <string name="crosshair_style">Styl celownika</string>
+    <string name="crosshair_simple">Prosty</string>
+    <string name="crosshair_gap">Z przerwą</string>
+    <string name="crosshair_circle_dot">Kółko z kropką</string>
+    <string name="crosshair_chevron">Szewron</string>
     <string name="image_settings">USTAWIENIA OBRAZU</string>
     <string name="brightness">Jasność</string>
     <string name="contrast">Kontrast</string>
@@ -67,6 +74,17 @@
     <string name="image_enhancement">POPRAWA OBRAZU</string>
     <string name="enable_image_enhancement">Włącz poprawę obrazu</string>
     <string name="image_enhancement_desc">Poprawia kontrast i ostrość obrazu termicznego w czasie rzeczywistym.</string>
+    <string name="show_hunting_assistant_home">Pokaż na ekranie głównym</string>
+    <string name="hunting_country">Profil kraju</string>
+    <string name="hunting_country_germany">Niemcy</string>
+    <string name="hunting_country_france">Francja</string>
+    <string name="hunting_country_spain">Hiszpania</string>
+    <string name="hunting_country_italy">Włochy</string>
+    <string name="hunting_country_netherlands">Niderlandy</string>
+    <string name="hunting_country_poland">Polska</string>
+    <string name="hunting_country_ukraine">Ukraina</string>
+    <string name="hunting_country_international">Międzynarodowy</string>
+    <string name="hunting_seasons_not_available_for_country">Sezony łowieckie są obecnie niedostępne dla %1$s.</string>
 
     <!-- Thermal Settings -->
     <string name="camera_features">Funkcje kamery</string>
@@ -150,6 +168,7 @@
     <string name="feature_recording">Nagrywanie</string>
     <string name="feature_recording_desc">Nagrywaj wideo z dźwiękiem</string>
     <string name="welcome_outro">Możesz później w dowolnym momencie zmienić te ustawienia przez ikonę zębatki.\n\nMiłego korzystania z NoxVision!</string>
+    <string name="welcome_hunting_toggle_hint">Tę opcję możesz w każdej chwili zmienić w Ustawieniach w sekcji Funkcje aplikacji.</string>
 
     <!-- Whats New Dialog -->
     <string name="whats_new_title">Co nowego!</string>

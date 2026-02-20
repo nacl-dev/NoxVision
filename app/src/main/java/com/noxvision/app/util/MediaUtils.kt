@@ -316,7 +316,7 @@ suspend fun downloadFile(baseUrl: String, filename: String, appContext: Context)
                         val buffer = ByteArray(8192)
                         var bytesRead: Int
                         var totalBytes = 0L
-                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                        while (inputStream.read(buffer).also { readCount -> bytesRead = readCount } != -1) {
                             outputStream.write(buffer, 0, bytesRead)
                             totalBytes += bytesRead
                         }

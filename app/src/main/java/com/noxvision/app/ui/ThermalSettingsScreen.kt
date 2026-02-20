@@ -1,6 +1,5 @@
 package com.noxvision.app.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -13,13 +12,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.noxvision.app.CameraCapabilities
 import com.noxvision.app.DeviceInfo
-import com.noxvision.app.EmissivityPresets
-import com.noxvision.app.ui.NightColors
+import com.noxvision.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +51,11 @@ fun ThermalSettingsScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text("Thermische Einstellungen", color = NightColors.onSurface, fontSize = 18.sp)
+                        Text(
+                            text = stringResource(R.string.thermal_settings),
+                            color = NightColors.onSurface,
+                            fontSize = 18.sp
+                        )
                         if (deviceInfo != null) {
                             Text(
                                 text = "${deviceInfo.deviceName} • ${deviceInfo.videoWidth}x${deviceInfo.videoHeight}",
@@ -64,7 +67,11 @@ fun ThermalSettingsScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onClose) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück", tint = NightColors.onSurface)
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                            tint = NightColors.onSurface
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -93,7 +100,7 @@ fun ThermalSettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = "Kamera-Features",
+                            text = stringResource(R.string.camera_features),
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
                             color = NightColors.onSurface
@@ -103,13 +110,13 @@ fun ThermalSettingsScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             if (capabilities.hasRadiometry) {
-                                Text("🌡️ Radiometrie", fontSize = 11.sp, color = NightColors.success)
+                                Text("🌡️ ${stringResource(R.string.radiometry)}", fontSize = 11.sp, color = NightColors.success)
                             }
                             if (capabilities.hasFocus) {
-                                Text("🔍 Fokus", fontSize = 11.sp, color = NightColors.success)
+                                Text("🔍 ${stringResource(R.string.focus)}", fontSize = 11.sp, color = NightColors.success)
                             }
                             if (capabilities.hasGps) {
-                                Text("📍 GPS", fontSize = 11.sp, color = NightColors.success)
+                                Text("📍 ${stringResource(R.string.gps)}", fontSize = 11.sp, color = NightColors.success)
                             }
                         }
                     }
@@ -132,11 +139,11 @@ fun ThermalSettingsScreen(
                         color = Color.White
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Kalibriere...")
+                    Text(stringResource(R.string.calibrating))
                 } else {
                     Icon(Icons.Filled.Refresh, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Shutter / NUC Kalibrierung")
+                    Text(stringResource(R.string.shutter_nuc))
                 }
             }
 
@@ -149,9 +156,12 @@ fun ThermalSettingsScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Emissivität: ${"%.2f".format(localEmissivity)}", color = NightColors.onSurface)
+                    Text(
+                        text = stringResource(R.string.emissivity, localEmissivity),
+                        color = NightColors.onSurface
+                    )
                     TextButton(onClick = { showEmissivityPresets = true }) {
-                        Text("Presets", color = NightColors.primary)
+                        Text(stringResource(R.string.presets), color = NightColors.primary)
                     }
                 }
                 Slider(
@@ -171,10 +181,10 @@ fun ThermalSettingsScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         listOf(
-                            "Haut" to 0.98f,
-                            "Holz" to 0.94f,
-                            "Stahl" to 0.80f,
-                            "Alu" to 0.30f
+                            stringResource(R.string.skin) to 0.98f,
+                            stringResource(R.string.wood) to 0.94f,
+                            stringResource(R.string.steel) to 0.80f,
+                            stringResource(R.string.aluminum) to 0.30f
                         ).forEach { (name, value) ->
                             FilterChip(
                                 selected = false,
@@ -192,7 +202,7 @@ fun ThermalSettingsScreen(
 
             // Distance
             Column {
-                Text("Entfernung: ${"%.1f".format(localDistance)} m", color = NightColors.onSurface)
+                Text(text = stringResource(R.string.distance, localDistance), color = NightColors.onSurface)
                 Slider(
                     value = localDistance,
                     onValueChange = { localDistance = it },
@@ -207,7 +217,7 @@ fun ThermalSettingsScreen(
 
             // Humidity
             Column {
-                Text("Luftfeuchtigkeit: ${"%.0f".format(localHumidity)} %", color = NightColors.onSurface)
+                Text(text = stringResource(R.string.humidity, localHumidity), color = NightColors.onSurface)
                 Slider(
                     value = localHumidity,
                     onValueChange = { localHumidity = it },
@@ -222,7 +232,10 @@ fun ThermalSettingsScreen(
 
             // Reflect Temperature
             Column {
-                Text("Reflexionstemperatur: ${"%.1f".format(localReflectTemp)} °C", color = NightColors.onSurface)
+                Text(
+                    text = stringResource(R.string.reflect_temperature, localReflectTemp),
+                    color = NightColors.onSurface
+                )
                 Slider(
                     value = localReflectTemp,
                     onValueChange = { localReflectTemp = it },
@@ -244,7 +257,7 @@ fun ThermalSettingsScreen(
             ) {
                 Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Einstellungen anwenden")
+                Text(stringResource(R.string.apply_settings))
             }
             
             Spacer(modifier = Modifier.height(32.dp))

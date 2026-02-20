@@ -20,15 +20,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.noxvision.app.HuntingAssistantCountry
 import com.noxvision.app.R
-import com.noxvision.app.hunting.calendar.HuntingSeasonData
 import com.noxvision.app.hunting.database.HuntingDatabase
 import com.noxvision.app.hunting.moon.MoonPhaseCalculator
 import com.noxvision.app.ui.NightColors
 import com.noxvision.app.ui.SettingsSectionHeader
-import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
 
 enum class HuntingScreen {
     HUB,
@@ -43,7 +40,8 @@ enum class HuntingScreen {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HuntingHubScreen(
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    selectedCountry: HuntingAssistantCountry
 ) {
     var currentScreen by rememberSaveable { mutableStateOf(HuntingScreen.HUB) }
     var selectedRecordId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -60,8 +58,6 @@ fun HuntingHubScreen(
         }
     }
 
-    val context = LocalContext.current
-
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = NightColors.background
@@ -69,6 +65,7 @@ fun HuntingHubScreen(
         when (currentScreen) {
             HuntingScreen.HUB -> HuntingHubContent(
                 onClose = onClose,
+                selectedCountry = selectedCountry,
                 onNavigate = { screen ->
                     currentScreen = screen
                 }
@@ -83,6 +80,7 @@ fun HuntingHubScreen(
             )
             HuntingScreen.ABSCHUSS_FORM -> AbschussFormScreen(
                 recordId = selectedRecordId,
+                selectedCountry = selectedCountry,
                 onBack = {
                     selectedRecordId = null
                     currentScreen = HuntingScreen.ABSCHUSS_LIST
@@ -112,13 +110,13 @@ fun HuntingHubScreen(
 @Composable
 private fun HuntingHubContent(
     onClose: () -> Unit,
+    selectedCountry: HuntingAssistantCountry,
     onNavigate: (HuntingScreen) -> Unit
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
 
     val moonInfo = remember { MoonPhaseCalculator.calculateMoonPhase() }
-    var recordCount by remember { mutableStateOf(0) }
+    var recordCount by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
         val db = HuntingDatabase.getDatabase(context)
@@ -170,8 +168,11 @@ private fun HuntingHubContent(
                 QuickInfoCard(
                     modifier = Modifier.weight(1f),
                     icon = moonInfo.phase.icon,
-                    title = moonInfo.phase.germanName,
-                    subtitle = moonInfo.activityPrediction.germanText
+                    title = stringResource(R.string.moon_phase),
+                    subtitle = stringResource(
+                        R.string.illumination,
+                        moonInfo.illuminationPercent.toInt().coerceIn(0, 100)
+                    )
                 )
 
                 // Records Count Card
@@ -237,7 +238,15 @@ private fun HuntingHubContent(
             HuntingFeatureCard(
                 icon = Icons.Filled.CalendarMonth,
                 title = stringResource(R.string.hunting_seasons),
-                subtitle = stringResource(R.string.hunting_seasons_subtitle),
+                subtitle = if (selectedCountry.supportsGermanSeasons) {
+                    stringResource(R.string.hunting_seasons_subtitle)
+                } else {
+                    stringResource(
+                        R.string.hunting_seasons_not_available_for_country,
+                        stringResource(selectedCountry.displayNameRes)
+                    )
+                },
+                enabled = selectedCountry.supportsGermanSeasons,
                 onClick = { onNavigate(HuntingScreen.CALENDAR) }
             )
 
@@ -296,12 +305,19 @@ private fun HuntingFeatureCard(
     icon: ImageVector,
     title: String,
     subtitle: String,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
-    Card(
-        modifier = Modifier
+    val cardModifier = if (enabled) {
+        Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+    } else {
+        Modifier.fillMaxWidth()
+    }
+
+    Card(
+        modifier = cardModifier,
         colors = CardDefaults.cardColors(containerColor = NightColors.surface),
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -321,7 +337,7 @@ private fun HuntingFeatureCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    color = NightColors.onSurface,
+                    color = if (enabled) NightColors.onSurface else NightColors.onBackground,
                     fontWeight = FontWeight.Medium,
                     fontSize = 16.sp
                 )
@@ -331,11 +347,13 @@ private fun HuntingFeatureCard(
                     fontSize = 12.sp
                 )
             }
-            Icon(
-                imageVector = Icons.Filled.ChevronRight,
-                contentDescription = null,
-                tint = NightColors.onBackground
-            )
+            if (enabled) {
+                Icon(
+                    imageVector = Icons.Filled.ChevronRight,
+                    contentDescription = null,
+                    tint = NightColors.onBackground
+                )
+            }
         }
     }
 }

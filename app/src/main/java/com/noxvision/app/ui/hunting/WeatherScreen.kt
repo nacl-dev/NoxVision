@@ -17,13 +17,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.noxvision.app.R
 import com.noxvision.app.hunting.database.entities.CachedWeather
 import com.noxvision.app.hunting.location.HuntingLocationManager
 import com.noxvision.app.hunting.moon.MoonPhaseCalculator
@@ -66,7 +67,7 @@ fun WeatherScreen(
                         lastUpdated = result?.timestamp
                         errorMessage = null
                     } else {
-                        errorMessage = "Position konnte nicht ermittelt werden"
+                        errorMessage = context.getString(R.string.position_error)
                     }
                 } catch (e: Exception) {
                     errorMessage = e.message
@@ -90,6 +91,7 @@ fun WeatherScreen(
                 val result = weatherCache.getWeather(location.latitude, location.longitude)
                 weather = result
                 lastUpdated = result?.timestamp
+                errorMessage = null
             }
             isLoading = false
         }
@@ -101,7 +103,7 @@ fun WeatherScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Wetter",
+                        text = stringResource(R.string.weather),
                         color = NightColors.onSurface
                     )
                 },
@@ -109,7 +111,7 @@ fun WeatherScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Zurueck",
+                            contentDescription = stringResource(R.string.back),
                             tint = NightColors.onSurface
                         )
                     }
@@ -125,6 +127,9 @@ fun WeatherScreen(
                                         val result = weatherCache.getWeather(location.latitude, location.longitude, forceRefresh = true)
                                         weather = result
                                         lastUpdated = result?.timestamp
+                                        errorMessage = null
+                                    } else {
+                                        errorMessage = context.getString(R.string.position_error)
                                     }
                                     isLoading = false
                                 }
@@ -143,7 +148,7 @@ fun WeatherScreen(
                         } else {
                             Icon(
                                 Icons.Filled.Refresh,
-                                contentDescription = "Aktualisieren",
+                                contentDescription = stringResource(R.string.refresh),
                                 tint = NightColors.onSurface
                             )
                         }
@@ -187,10 +192,18 @@ fun WeatherScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Keine Wetterdaten",
+                            text = stringResource(R.string.no_weather_data),
                             color = NightColors.onSurface,
                             fontWeight = FontWeight.Medium
                         )
+                        if (errorMessage != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = errorMessage ?: "",
+                                color = NightColors.error,
+                                fontSize = 12.sp
+                            )
+                        }
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(
                             onClick = {
@@ -198,7 +211,7 @@ fun WeatherScreen(
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = NightColors.primary)
                         ) {
-                            Text("Wetter abrufen")
+                            Text(stringResource(R.string.fetch_weather))
                         }
                     }
                 }
@@ -229,7 +242,10 @@ fun WeatherScreen(
                             fontWeight = FontWeight.Light
                         )
                         Text(
-                            text = "Gefuehlt ${WeatherIconHelper.formatTemperature(w.feelsLike)}",
+                            text = stringResource(
+                                R.string.feels_like,
+                                WeatherIconHelper.formatTemperature(w.feelsLike)
+                            ),
                             color = NightColors.onBackground,
                             fontSize = 14.sp
                         )
@@ -262,7 +278,7 @@ fun WeatherScreen(
                             modifier = Modifier.size(18.dp)
                         )
                     },
-                    title = "WIND"
+                    title = stringResource(R.string.wind)
                 )
 
                 Card(
@@ -293,7 +309,7 @@ fun WeatherScreen(
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "aus ${w.getWindDirectionName()}",
+                                text = stringResource(R.string.from_direction, w.getWindDirectionName()),
                                 color = NightColors.onBackground,
                                 fontSize = 14.sp
                             )
@@ -304,7 +320,10 @@ fun WeatherScreen(
                             )
                             if (w.windGust != null && w.windGust > w.windSpeed) {
                                 Text(
-                                    text = "Boeen: ${WeatherIconHelper.formatWindSpeed(w.windGust)}",
+                                    text = stringResource(
+                                        R.string.gusts,
+                                        WeatherIconHelper.formatWindSpeed(w.windGust)
+                                    ),
                                     color = NightColors.error,
                                     fontSize = 12.sp
                                 )
@@ -323,7 +342,7 @@ fun WeatherScreen(
                             modifier = Modifier.size(18.dp)
                         )
                     },
-                    title = "DETAILS"
+                    title = stringResource(R.string.details)
                 )
 
                 Card(
@@ -335,14 +354,14 @@ fun WeatherScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        WeatherDetailRow("Luftfeuchtigkeit", "${w.humidity}%")
-                        WeatherDetailRow("Luftdruck", "${w.pressure} hPa")
-                        WeatherDetailRow("Bewoelkung", "${w.cloudiness}%")
-                        WeatherDetailRow("Sichtweite", "${w.visibility / 1000} km")
+                        WeatherDetailRow(stringResource(R.string.air_humidity), "${w.humidity}%")
+                        WeatherDetailRow(stringResource(R.string.air_pressure), "${w.pressure} hPa")
+                        WeatherDetailRow(stringResource(R.string.cloud_cover), "${w.cloudiness}%")
+                        WeatherDetailRow(stringResource(R.string.visibility), "${w.visibility / 1000} km")
 
                         val timeFormat = SimpleDateFormat("HH:mm", Locale.GERMANY)
-                        WeatherDetailRow("Sonnenaufgang", timeFormat.format(Date(w.sunrise)))
-                        WeatherDetailRow("Sonnenuntergang", timeFormat.format(Date(w.sunset)))
+                        WeatherDetailRow(stringResource(R.string.sunrise), timeFormat.format(Date(w.sunrise)))
+                        WeatherDetailRow(stringResource(R.string.sunset), timeFormat.format(Date(w.sunset)))
                     }
                 }
 
@@ -356,7 +375,7 @@ fun WeatherScreen(
                             modifier = Modifier.size(18.dp)
                         )
                     },
-                    title = "MONDPHASE"
+                    title = stringResource(R.string.moon_phase)
                 )
 
                 Card(
@@ -383,7 +402,10 @@ fun WeatherScreen(
                                 fontSize = 16.sp
                             )
                             Text(
-                                text = "Beleuchtung: ${moonInfo.illuminationPercent.toInt()}%",
+                                text = stringResource(
+                                    R.string.illumination,
+                                    moonInfo.illuminationPercent.toInt()
+                                ),
                                 color = NightColors.onBackground,
                                 fontSize = 12.sp
                             )
@@ -400,7 +422,10 @@ fun WeatherScreen(
                 if (lastUpdated != null) {
                     val format = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.GERMANY)
                     Text(
-                        text = "Zuletzt aktualisiert: ${format.format(Date(lastUpdated!!))}",
+                        text = stringResource(
+                            R.string.last_updated,
+                            format.format(Date(lastUpdated!!))
+                        ),
                         color = NightColors.onBackground,
                         fontSize = 11.sp,
                         modifier = Modifier.padding(top = 8.dp)
@@ -408,7 +433,7 @@ fun WeatherScreen(
 
                     if (w.isExpired()) {
                         Text(
-                            text = "Daten sind veraltet - bitte aktualisieren",
+                            text = stringResource(R.string.data_outdated),
                             color = NightColors.error,
                             fontSize = 11.sp
                         )
@@ -457,10 +482,6 @@ private fun WindCompass(windDirection: Float) {
             center = center,
             style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f)
         )
-
-        // Draw cardinal directions
-        val directions = listOf("N", "O", "S", "W")
-        val angles = listOf(0f, 90f, 180f, 270f)
 
         // Draw direction markers
         for (i in 0 until 8) {

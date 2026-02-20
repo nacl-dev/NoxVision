@@ -74,6 +74,17 @@
     <string name="image_enhancement">BILDVERBESSERUNG</string>
     <string name="enable_image_enhancement">Bildverbesserung aktivieren</string>
     <string name="image_enhancement_desc">Verbessert Kontrast und Schärfe des Wärmebilds in Echtzeit.</string>
+    <string name="show_hunting_assistant_home">Auf Homescreen anzeigen</string>
+    <string name="hunting_country">Länderprofil</string>
+    <string name="hunting_country_germany">Deutschland</string>
+    <string name="hunting_country_france">Frankreich</string>
+    <string name="hunting_country_spain">Spanien</string>
+    <string name="hunting_country_italy">Italien</string>
+    <string name="hunting_country_netherlands">Niederlande</string>
+    <string name="hunting_country_poland">Polen</string>
+    <string name="hunting_country_ukraine">Ukraine</string>
+    <string name="hunting_country_international">International</string>
+    <string name="hunting_seasons_not_available_for_country">Jagdzeiten sind für %1$s derzeit nicht verfügbar.</string>
 
     <!-- Thermal Settings -->
     <string name="camera_features">Kamera-Features</string>
@@ -157,6 +168,7 @@
     <string name="feature_recording">Aufnahme</string>
     <string name="feature_recording_desc">Videos mit Ton aufzeichnen</string>
     <string name="welcome_outro">Sie können diese Einstellungen später jederzeit über das Zahnrad-Symbol ändern.\n\nViel Spaß mit NoxVision!</string>
+    <string name="welcome_hunting_toggle_hint">Du kannst diese Option jederzeit in den Einstellungen unter App-Features ein- oder ausschalten.</string>
 
     <!-- Whats New Dialog -->
     <string name="whats_new_title">Das ist neu!</string>

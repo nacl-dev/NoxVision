@@ -14,9 +14,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.noxvision.app.R
 import com.noxvision.app.hunting.database.HuntingDatabase
 import com.noxvision.app.hunting.database.entities.HuntRecord
 import com.noxvision.app.hunting.export.CsvExporter
@@ -49,7 +51,7 @@ fun AbschussListScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Jagdtagebuch",
+                        text = stringResource(R.string.hunting_diary),
                         color = NightColors.onSurface
                     )
                 },
@@ -57,7 +59,7 @@ fun AbschussListScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Zurueck",
+                            contentDescription = stringResource(R.string.back),
                             tint = NightColors.onSurface
                         )
                     }
@@ -68,7 +70,7 @@ fun AbschussListScreen(
                             IconButton(onClick = { showExportMenu = true }) {
                                 Icon(
                                     Icons.Filled.Share,
-                                    contentDescription = "Exportieren",
+                                    contentDescription = stringResource(R.string.export),
                                     tint = NightColors.onSurface
                                 )
                             }
@@ -77,16 +79,16 @@ fun AbschussListScreen(
                                 onDismissRequest = { showExportMenu = false }
                             ) {
                                 DropdownMenuItem(
-                                    text = { Text("Als CSV exportieren") },
+                                    text = { Text(stringResource(R.string.export_csv)) },
                                     onClick = {
                                         showExportMenu = false
                                         scope.launch {
                                             val exporter = CsvExporter(context)
                                             val result = exporter.exportRecords(records)
                                             exportMessage = if (result.isSuccess) {
-                                                "CSV gespeichert: ${result.getOrNull()}"
+                                                context.getString(R.string.csv_saved, result.getOrNull().orEmpty())
                                             } else {
-                                                "Fehler: ${result.exceptionOrNull()?.message}"
+                                                "${context.getString(R.string.error)}: ${result.exceptionOrNull()?.message.orEmpty()}"
                                             }
                                         }
                                     },
@@ -95,16 +97,16 @@ fun AbschussListScreen(
                                     }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Als PDF exportieren") },
+                                    text = { Text(stringResource(R.string.export_pdf)) },
                                     onClick = {
                                         showExportMenu = false
                                         scope.launch {
                                             val exporter = PdfExporter(context)
                                             val result = exporter.exportRecords(records)
                                             exportMessage = if (result.isSuccess) {
-                                                "PDF gespeichert: ${result.getOrNull()}"
+                                                context.getString(R.string.pdf_saved, result.getOrNull().orEmpty())
                                             } else {
-                                                "Fehler: ${result.exceptionOrNull()?.message}"
+                                                "${context.getString(R.string.error)}: ${result.exceptionOrNull()?.message.orEmpty()}"
                                             }
                                         }
                                     },
@@ -127,7 +129,7 @@ fun AbschussListScreen(
                 containerColor = NightColors.primary,
                 modifier = Modifier.padding(bottom = 32.dp)
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Neuer Eintrag")
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.new_entry))
             }
         },
         containerColor = NightColors.background
@@ -150,13 +152,13 @@ fun AbschussListScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Noch keine Eintraege",
+                        text = stringResource(R.string.no_entries),
                         color = NightColors.onBackground,
                         fontSize = 16.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Tippe auf + um einen Abschuss zu dokumentieren",
+                        text = stringResource(R.string.tap_to_add),
                         color = NightColors.onBackground,
                         fontSize = 12.sp
                     )
@@ -186,8 +188,8 @@ fun AbschussListScreen(
     showDeleteDialog?.let { recordId ->
         AlertDialog(
             onDismissRequest = { showDeleteDialog = null },
-            title = { Text("Eintrag loeschen?") },
-            text = { Text("Dieser Eintrag wird unwiderruflich geloescht.") },
+            title = { Text(stringResource(R.string.delete_entry)) },
+            text = { Text(stringResource(R.string.delete_entry_confirm)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -197,12 +199,12 @@ fun AbschussListScreen(
                         showDeleteDialog = null
                     }
                 ) {
-                    Text("Loeschen", color = NightColors.error)
+                    Text(stringResource(R.string.delete), color = NightColors.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = null }) {
-                    Text("Abbrechen")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -219,7 +221,7 @@ fun AbschussListScreen(
             modifier = Modifier.padding(16.dp),
             action = {
                 TextButton(onClick = { exportMessage = null }) {
-                    Text("OK")
+                    Text(stringResource(R.string.ok))
                 }
             }
         ) {
@@ -234,7 +236,7 @@ private fun HuntRecordCard(
     onClick: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val dateFormat = remember { SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.GERMANY) }
+    val dateFormat = remember { SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()) }
 
     Card(
         modifier = Modifier
@@ -281,7 +283,7 @@ private fun HuntRecordCard(
             IconButton(onClick = onDelete) {
                 Icon(
                     Icons.Filled.Delete,
-                    contentDescription = "Loeschen",
+                    contentDescription = stringResource(R.string.delete),
                     tint = NightColors.error
                 )
             }

@@ -2,12 +2,13 @@ package com.noxvision.app.hunting.maps
 
 import android.content.Context
 import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.ITileSource
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import java.io.File
 
-class OfflineMapManager(private val context: Context) {
+class OfflineMapManager(context: Context) {
 
     init {
         // Initialize OSMDroid configuration
@@ -22,9 +23,9 @@ class OfflineMapManager(private val context: Context) {
         Configuration.getInstance().osmdroidTileCache = tileCache
     }
 
-    fun getTileSource() = TileSourceFactory.MAPNIK
+    fun getTileSource(): ITileSource = TileSourceFactory.MAPNIK
 
-    fun getOfflineTileSource() = TileSourceFactory.MAPNIK
+    fun getOfflineTileSource(): ITileSource = TileSourceFactory.MAPNIK
 
     fun calculateBoundingBox(centerLat: Double, centerLon: Double, radiusKm: Double): BoundingBox {
         // Approximate degrees per km at given latitude

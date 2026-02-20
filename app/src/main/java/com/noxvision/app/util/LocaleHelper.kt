@@ -1,6 +1,5 @@
 package com.noxvision.app.util
 
-import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 

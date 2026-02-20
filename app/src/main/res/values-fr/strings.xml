@@ -53,6 +53,13 @@
     <string name="audio_display">AUDIO &amp; AFFICHAGE</string>
     <string name="enable_audio">Activer l\'audio</string>
     <string name="show_hotspot">Afficher le point chaud</string>
+    <string name="crosshair_settings">RÉTICULE</string>
+    <string name="enable_crosshair">Activer le réticule</string>
+    <string name="crosshair_style">Style de réticule</string>
+    <string name="crosshair_simple">Simple</string>
+    <string name="crosshair_gap">Avec espace</string>
+    <string name="crosshair_circle_dot">Cercle avec point</string>
+    <string name="crosshair_chevron">Chevron</string>
     <string name="image_settings">PARAMÈTRES D\'IMAGE</string>
     <string name="brightness">Luminosité</string>
     <string name="contrast">Contraste</string>
@@ -68,6 +75,17 @@
     <string name="image_enhancement">AMÉLIORATION D\'IMAGE</string>
     <string name="enable_image_enhancement">Activer l\'amélioration</string>
     <string name="image_enhancement_desc">Améliore le contraste et la netteté en temps réel.</string>
+    <string name="show_hunting_assistant_home">Afficher sur l\'écran d\'accueil</string>
+    <string name="hunting_country">Profil pays</string>
+    <string name="hunting_country_germany">Allemagne</string>
+    <string name="hunting_country_france">France</string>
+    <string name="hunting_country_spain">Espagne</string>
+    <string name="hunting_country_italy">Italie</string>
+    <string name="hunting_country_netherlands">Pays-Bas</string>
+    <string name="hunting_country_poland">Pologne</string>
+    <string name="hunting_country_ukraine">Ukraine</string>
+    <string name="hunting_country_international">International</string>
+    <string name="hunting_seasons_not_available_for_country">Les saisons de chasse ne sont actuellement pas disponibles pour %1$s.</string>
 
     <!-- Thermal Settings -->
     <string name="camera_features">Fonctionnalités caméra</string>
@@ -151,6 +169,7 @@
     <string name="feature_recording">Enregistrement</string>
     <string name="feature_recording_desc">Enregistrer des vidéos avec audio</string>
     <string name="welcome_outro">Vous pouvez modifier ces paramètres à tout moment via l\'icône d\'engrenage.\n\nProfitez de NoxVision!</string>
+    <string name="welcome_hunting_toggle_hint">Vous pouvez modifier cette option à tout moment dans les paramètres, section fonctionnalités de l\'application.</string>
 
     <!-- Whats New Dialog -->
     <string name="whats_new_title">Nouveautés!</string>

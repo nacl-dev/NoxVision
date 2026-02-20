@@ -1,8 +1,10 @@
 package com.noxvision.app.ui.hunting
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.view.MotionEvent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -24,15 +26,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
+import com.noxvision.app.R
+import com.noxvision.app.HuntingAssistantCountry
 import com.noxvision.app.hunting.calendar.HuntingSeasonData
 import com.noxvision.app.hunting.database.HuntingDatabase
 import com.noxvision.app.hunting.database.entities.HuntRecord
@@ -51,6 +57,7 @@ import org.osmdroid.views.overlay.Marker
 @Composable
 fun AbschussFormScreen(
     recordId: Long?,
+    selectedCountry: HuntingAssistantCountry = HuntingAssistantCountry.GERMANY,
     onBack: () -> Unit,
     onSaved: () -> Unit
 ) {
@@ -65,6 +72,8 @@ fun AbschussFormScreen(
     var latitude by remember { mutableStateOf<Double?>(null) }
     var longitude by remember { mutableStateOf<Double?>(null) }
     var bundesland by remember { mutableStateOf(HuntingSeasonData.Bundesland.BAYERN) }
+    var existingRegion by remember { mutableStateOf<String?>(null) }
+    val showGermanStateSelector = selectedCountry.supportsGermanSeasons
     var isLoading by remember { mutableStateOf(false) }
     var photoUri by remember { mutableStateOf<Uri?>(null) }
 
@@ -79,13 +88,16 @@ fun AbschussFormScreen(
                 notes = it.notes ?: ""
                 latitude = it.latitude
                 longitude = it.longitude
-                it.bundesland?.let { bl ->
-                    HuntingSeasonData.Bundesland.entries.find { b -> b.displayName == bl }?.let { found ->
-                        bundesland = found
+                existingRegion = it.bundesland
+                if (showGermanStateSelector) {
+                    it.bundesland?.let { bl ->
+                        HuntingSeasonData.Bundesland.entries.find { b -> b.displayName == bl }?.let { found ->
+                            bundesland = found
+                        }
                     }
                 }
                 it.thermalImagePath?.let { path ->
-                    photoUri = Uri.parse(path)
+                    photoUri = path.toUri()
                 }
             }
         }
@@ -97,7 +109,7 @@ fun AbschussFormScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = if (recordId == null) "Neuer Abschuss" else "Abschuss bearbeiten",
+                        text = if (recordId == null) stringResource(R.string.new_kill) else stringResource(R.string.edit_kill),
                         color = NightColors.onSurface
                     )
                 },
@@ -105,7 +117,7 @@ fun AbschussFormScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Zurueck",
+                            contentDescription = stringResource(R.string.back),
                             tint = NightColors.onSurface
                         )
                     }
@@ -149,7 +161,8 @@ fun AbschussFormScreen(
                     longitude = lon
                 },
                 bundesland = bundesland,
-                onBundeslandChange = { bundesland = it }
+                onBundeslandChange = { bundesland = it },
+                showBundeslandSelector = showGermanStateSelector
             )
 
             HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 4.dp))
@@ -187,7 +200,7 @@ fun AbschussFormScreen(
                             thermalImagePath = photoUri?.toString(),
                             moonPhase = moonInfo.phase.germanName,
                             weatherSnapshot = null,
-                            bundesland = bundesland.displayName
+                            bundesland = if (showGermanStateSelector) bundesland.displayName else existingRegion
                         )
 
                         if (recordId != null) {
@@ -214,7 +227,7 @@ fun AbschussFormScreen(
                 } else {
                     Icon(Icons.Filled.Save, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Speichern")
+                    Text(stringResource(R.string.save))
                 }
             }
 
@@ -246,7 +259,7 @@ private fun WildlifeSection(
                 modifier = Modifier.size(18.dp)
             )
         },
-        title = "WILD"
+        title = stringResource(R.string.wildlife)
     )
 
     ExposedDropdownMenuBox(
@@ -257,7 +270,7 @@ private fun WildlifeSection(
             value = wildlifeType,
             onValueChange = {},
             readOnly = true,
-            label = { Text("Wildart") },
+            label = { Text(stringResource(R.string.wildlife_type)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = wildlifeTypeExpanded) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -286,10 +299,10 @@ private fun WildlifeSection(
             onExpandedChange = { genderExpanded = it }
         ) {
             OutlinedTextField(
-                value = gender ?: "Nicht angegeben",
+                value = gender ?: stringResource(R.string.not_specified),
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Geschlecht/Alter") },
+                label = { Text(stringResource(R.string.gender_age)) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = genderExpanded) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -316,7 +329,7 @@ private fun WildlifeSection(
     OutlinedTextField(
         value = estimatedWeight,
         onValueChange = { if (it.all { c -> c.isDigit() }) onEstimatedWeightChange(it) },
-        label = { Text("Geschaetztes Gewicht (kg)") },
+        label = { Text(stringResource(R.string.estimated_weight)) },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier.fillMaxWidth(),
         colors = huntingTextFieldColors()
@@ -324,13 +337,15 @@ private fun WildlifeSection(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("ClickableViewAccessibility")
 @Composable
 private fun LocationSection(
     latitude: Double?,
     longitude: Double?,
     onLocationChange: (Double?, Double?) -> Unit,
     bundesland: HuntingSeasonData.Bundesland,
-    onBundeslandChange: (HuntingSeasonData.Bundesland) -> Unit
+    onBundeslandChange: (HuntingSeasonData.Bundesland) -> Unit,
+    showBundeslandSelector: Boolean
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -381,6 +396,9 @@ private fun LocationSection(
             // Allow parent scroll only if not dragging
             map.setOnTouchListener { v, event ->
                 v.parent.requestDisallowInterceptTouchEvent(true)
+                if (event.actionMasked == MotionEvent.ACTION_UP) {
+                    v.performClick()
+                }
                 false
             }
 
@@ -391,7 +409,7 @@ private fun LocationSection(
                 marker = Marker(map)
                 marker.id = "location_marker"
                 marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                marker.title = "Abschussort"
+                marker.title = context.getString(R.string.position)
                 marker.isDraggable = true
 
                 marker.setOnMarkerDragListener(object : Marker.OnMarkerDragListener {
@@ -427,7 +445,7 @@ private fun LocationSection(
                 modifier = Modifier.size(18.dp)
             )
         },
-        title = "POSITION"
+        title = stringResource(R.string.position)
     )
 
     if (latitude != null && longitude != null) {
@@ -452,6 +470,9 @@ private fun LocationSection(
                         // Disable parent scroll when touching map
                         setOnTouchListener { v, event ->
                             v.parent.requestDisallowInterceptTouchEvent(true)
+                            if (event.actionMasked == MotionEvent.ACTION_UP) {
+                                v.performClick()
+                            }
                             false
                         }
 
@@ -476,14 +497,14 @@ private fun LocationSection(
             ) {
                 Icon(
                     Icons.Filled.Delete,
-                    contentDescription = "Position löschen",
+                    contentDescription = stringResource(R.string.delete),
                     tint = NightColors.error
                 )
             }
         }
 
         Text(
-            text = String.format("Lat: %.5f, Lon: %.5f", latitude, longitude),
+            text = HuntingLocationManager.formatCoordinates(latitude, longitude),
             color = NightColors.onBackground,
             fontSize = 12.sp,
             modifier = Modifier.padding(start = 4.dp)
@@ -519,37 +540,39 @@ private fun LocationSection(
                 Icon(Icons.Filled.MyLocation, contentDescription = null)
             }
             Spacer(modifier = Modifier.width(8.dp))
-            Text("GPS Position erfassen")
+            Text(stringResource(R.string.capture_gps))
         }
     }
 
-    ExposedDropdownMenuBox(
-        expanded = bundeslandExpanded,
-        onExpandedChange = { bundeslandExpanded = it }
-    ) {
-        OutlinedTextField(
-            value = bundesland.displayName,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text("Bundesland") },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = bundeslandExpanded) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true),
-            colors = huntingTextFieldColors()
-        )
-        ExposedDropdownMenu(
+    if (showBundeslandSelector) {
+        ExposedDropdownMenuBox(
             expanded = bundeslandExpanded,
-            onDismissRequest = { bundeslandExpanded = false }
+            onExpandedChange = { bundeslandExpanded = it }
         ) {
-            HuntingSeasonData.Bundesland.entries.forEach { bl ->
-                DropdownMenuItem(
-                    text = { Text(bl.displayName) },
-                    onClick = {
-                        onBundeslandChange(bl)
-                        bundeslandExpanded = false
-                    }
-                )
+            OutlinedTextField(
+                value = bundesland.displayName,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(R.string.bundesland)) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = bundeslandExpanded) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true),
+                colors = huntingTextFieldColors()
+            )
+            ExposedDropdownMenu(
+                expanded = bundeslandExpanded,
+                onDismissRequest = { bundeslandExpanded = false }
+            ) {
+                HuntingSeasonData.Bundesland.entries.forEach { bl ->
+                    DropdownMenuItem(
+                        text = { Text(bl.displayName) },
+                        onClick = {
+                            onBundeslandChange(bl)
+                            bundeslandExpanded = false
+                        }
+                    )
+                }
             }
         }
     }
@@ -576,7 +599,7 @@ private fun PhotoSection(
                 modifier = Modifier.size(18.dp)
             )
         },
-        title = "FOTO"
+        title = stringResource(R.string.photo_section)
     )
 
     if (photoUri != null) {
@@ -590,7 +613,7 @@ private fun PhotoSection(
         ) {
             AsyncImage(
                 model = photoUri,
-                contentDescription = "Foto",
+                contentDescription = stringResource(R.string.photo),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
@@ -600,7 +623,7 @@ private fun PhotoSection(
             ) {
                 Icon(
                     Icons.Filled.Close,
-                    contentDescription = "Foto entfernen",
+                    contentDescription = stringResource(R.string.remove_photo),
                     tint = NightColors.error
                 )
             }
@@ -627,7 +650,7 @@ private fun PhotoSection(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Foto hinzufuegen",
+                    text = stringResource(R.string.add_photo),
                     color = NightColors.onBackground,
                     fontSize = 12.sp
                 )
@@ -650,13 +673,13 @@ private fun NotesSection(
                 modifier = Modifier.size(18.dp)
             )
         },
-        title = "NOTIZEN"
+        title = stringResource(R.string.notes)
     )
 
     OutlinedTextField(
         value = notes,
         onValueChange = onNotesChange,
-        label = { Text("Zusaetzliche Notizen") },
+        label = { Text(stringResource(R.string.additional_notes)) },
         modifier = Modifier
             .fillMaxWidth()
             .height(120.dp),

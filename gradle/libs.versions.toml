@@ -21,6 +21,8 @@ okhttp = "4.12.0"
 coilCompose = "2.5.0"
 tensorflowLite = "2.14.0"
 tensorflowLiteSupport = "0.4.4"
+libvlc = "3.3.5"
+json = "20210307"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -51,6 +53,8 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coilCompose" }
 tensorflow-lite = { group = "org.tensorflow", name = "tensorflow-lite", version.ref = "tensorflowLite" }
 tensorflow-lite-support = { group = "org.tensorflow", name = "tensorflow-lite-support", version.ref = "tensorflowLiteSupport" }
+libvlc = { group = "org.videolan.android", name = "libvlc-all", version.ref = "libvlc" }
+json = { group = "org.json", name = "json", version.ref = "json" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

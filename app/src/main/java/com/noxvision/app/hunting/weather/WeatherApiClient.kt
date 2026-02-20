@@ -3,7 +3,6 @@ package com.noxvision.app.hunting.weather
 import com.noxvision.app.hunting.database.entities.CachedWeather
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.net.HttpURLConnection
 import java.net.URL

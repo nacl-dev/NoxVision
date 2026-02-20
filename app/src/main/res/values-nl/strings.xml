@@ -52,6 +52,13 @@
     <string name="audio_display">AUDIO &amp; WEERGAVE</string>
     <string name="enable_audio">Audio inschakelen</string>
     <string name="show_hotspot">Hotspot tonen (heetste punt)</string>
+    <string name="crosshair_settings">DRAADKRUIS</string>
+    <string name="enable_crosshair">Richtkruis inschakelen</string>
+    <string name="crosshair_style">Stijl van richtkruis</string>
+    <string name="crosshair_simple">Eenvoudig</string>
+    <string name="crosshair_gap">Met opening</string>
+    <string name="crosshair_circle_dot">Cirkel met punt</string>
+    <string name="crosshair_chevron">Chevron</string>
     <string name="image_settings">BEELDINSTELLINGEN</string>
     <string name="brightness">Helderheid</string>
     <string name="contrast">Contrast</string>
@@ -67,6 +74,17 @@
     <string name="image_enhancement">BEELDVERBETERING</string>
     <string name="enable_image_enhancement">Beeldverbetering inschakelen</string>
     <string name="image_enhancement_desc">Verbetert contrast en scherpte van het thermisch beeld in realtime.</string>
+    <string name="show_hunting_assistant_home">Op startscherm tonen</string>
+    <string name="hunting_country">Landprofiel</string>
+    <string name="hunting_country_germany">Duitsland</string>
+    <string name="hunting_country_france">Frankrijk</string>
+    <string name="hunting_country_spain">Spanje</string>
+    <string name="hunting_country_italy">Italië</string>
+    <string name="hunting_country_netherlands">Nederland</string>
+    <string name="hunting_country_poland">Polen</string>
+    <string name="hunting_country_ukraine">Oekraïne</string>
+    <string name="hunting_country_international">Internationaal</string>
+    <string name="hunting_seasons_not_available_for_country">Jachtseizoenen zijn momenteel niet beschikbaar voor %1$s.</string>
 
     <!-- Thermal Settings -->
     <string name="camera_features">Camera-functies</string>
@@ -150,6 +168,7 @@
     <string name="feature_recording">Opname</string>
     <string name="feature_recording_desc">Video’s met geluid opnemen</string>
     <string name="welcome_outro">U kunt deze instellingen later altijd wijzigen via het tandwiel-icoon.\n\nVeel plezier met NoxVision!</string>
+    <string name="welcome_hunting_toggle_hint">Je kunt deze optie op elk moment wijzigen in Instellingen onder App-functies.</string>
 
     <!-- Whats New Dialog -->
     <string name="whats_new_title">Nieuw!</string>

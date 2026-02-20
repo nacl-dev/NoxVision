@@ -52,6 +52,13 @@
     <string name="audio_display">АУДІО &amp; ВІДОБРАЖЕННЯ</string>
     <string name="enable_audio">Увімкнути аудіо</string>
     <string name="show_hotspot">Показувати hotspot (найгарячішу точку)</string>
+    <string name="crosshair_settings">ПРИЦІЛ</string>
+    <string name="enable_crosshair">Увімкнути приціл</string>
+    <string name="crosshair_style">Стиль прицілу</string>
+    <string name="crosshair_simple">Простий</string>
+    <string name="crosshair_gap">З проміжком</string>
+    <string name="crosshair_circle_dot">Коло з точкою</string>
+    <string name="crosshair_chevron">Шеврон</string>
     <string name="image_settings">НАЛАШТУВАННЯ ЗОБРАЖЕННЯ</string>
     <string name="brightness">Яскравість</string>
     <string name="contrast">Контраст</string>
@@ -67,6 +74,17 @@
     <string name="image_enhancement">ПОКРАЩЕННЯ ЗОБРАЖЕННЯ</string>
     <string name="enable_image_enhancement">Увімкнути покращення зображення</string>
     <string name="image_enhancement_desc">Покращує контраст і різкість тепловізійного зображення в реальному часі.</string>
+    <string name="show_hunting_assistant_home">Показувати на головному екрані</string>
+    <string name="hunting_country">Профіль країни</string>
+    <string name="hunting_country_germany">Німеччина</string>
+    <string name="hunting_country_france">Франція</string>
+    <string name="hunting_country_spain">Іспанія</string>
+    <string name="hunting_country_italy">Італія</string>
+    <string name="hunting_country_netherlands">Нідерланди</string>
+    <string name="hunting_country_poland">Польща</string>
+    <string name="hunting_country_ukraine">Україна</string>
+    <string name="hunting_country_international">Міжнародний</string>
+    <string name="hunting_seasons_not_available_for_country">Сезони полювання наразі недоступні для %1$s.</string>
 
     <!-- Thermal Settings -->
     <string name="camera_features">Функції камери</string>
@@ -150,6 +168,7 @@
     <string name="feature_recording">Запис</string>
     <string name="feature_recording_desc">Запис відео зі звуком</string>
     <string name="welcome_outro">Ви можете змінити ці налаштування пізніше будь‑коли через значок шестерні.\n\nПриємного користування NoxVision!</string>
+    <string name="welcome_hunting_toggle_hint">Цю опцію можна будь-коли змінити в Налаштуваннях у розділі Функції застосунку.</string>
 
     <!-- Whats New Dialog -->
     <string name="whats_new_title">Що нового!</string>
