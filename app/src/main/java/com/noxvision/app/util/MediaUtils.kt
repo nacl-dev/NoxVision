@@ -16,6 +16,11 @@ import com.noxvision.app.data.CameraFile
 import com.noxvision.app.data.PhoneFolder
 import com.noxvision.app.data.PhoneMediaFile
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -27,6 +32,7 @@ import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicInteger
 
 private const val FOLDER_GUIDE_CAMERA = "GuideCamera"
 
@@ -52,6 +58,53 @@ fun buildDownloadUrls(baseUrl: String, filename: String): List<String> {
 
 fun buildPrimaryDownloadUrl(baseUrl: String, filename: String): String {
     return buildDownloadUrls(baseUrl, filename).first()
+}
+
+suspend fun checkUrlConnection(urlString: String): Boolean {
+    return withContext(Dispatchers.IO) {
+        try {
+            val url = URL(urlString)
+            val conn = url.openConnection() as HttpURLConnection
+            conn.connectTimeout = 5000
+            conn.readTimeout = 5000
+            conn.requestMethod = "GET"
+            val code = conn.responseCode
+            conn.disconnect()
+            code == 200
+        } catch (e: Exception) {
+            false
+        }
+    }
+}
+
+suspend fun findWorkingUrl(
+    urls: List<String>,
+    checkUrl: suspend (String) -> Boolean = { checkUrlConnection(it) }
+): String? = coroutineScope {
+    val resultChannel = Channel<String>(Channel.UNLIMITED)
+    val failures = AtomicInteger(0)
+
+    if (urls.isEmpty()) return@coroutineScope null
+
+    urls.forEach { url ->
+        launch {
+            if (checkUrl(url)) {
+                resultChannel.trySend(url)
+            } else {
+                if (failures.incrementAndGet() == urls.size) {
+                    resultChannel.close()
+                }
+            }
+        }
+    }
+
+    try {
+        val winner = resultChannel.receive()
+        coroutineContext.cancelChildren()
+        winner
+    } catch (e: ClosedReceiveChannelException) {
+        null
+    }
 }
 
 private fun createMediaContentValues(filename: String, mimeType: String): ContentValues {
@@ -114,42 +167,48 @@ suspend fun downloadVideoToCache(baseUrl: String, filename: String, context: Con
         val safeFilename = sanitizeFilename(filename)
         val cacheFile = File(context.cacheDir, "video_preview_$safeFilename")
 
-        for (downloadUrl in urlsToTry) {
-            try {
-                AppLogger.log("Cache-Download versuche: $downloadUrl", AppLogger.LogType.INFO)
-                val url = URL(downloadUrl)
-                val conn = url.openConnection() as HttpURLConnection
-                conn.connectTimeout = 5000
-                conn.readTimeout = 60000
-                conn.requestMethod = "GET"
-
-                val responseCode = conn.responseCode
-                if (responseCode == 200) {
-                    AppLogger.log("Cache-Download URL OK: $downloadUrl", AppLogger.LogType.SUCCESS)
-                    conn.inputStream.use { input ->
-                        cacheFile.outputStream().use { output ->
-                            val buffer = ByteArray(8192)
-                            var bytesRead: Int
-                            var totalBytes = 0L
-                            while (input.read(buffer).also { bytesRead = it } != -1) {
-                                output.write(buffer, 0, bytesRead)
-                                totalBytes += bytesRead
-                            }
-                            AppLogger.log("Cache-Download OK: ${totalBytes / 1024}KB", AppLogger.LogType.SUCCESS)
-                        }
-                    }
-                    conn.disconnect()
-                    return@withContext cacheFile
-                } else {
-                    AppLogger.log("HTTP $responseCode für $downloadUrl", AppLogger.LogType.INFO)
-                    conn.disconnect()
-                }
-            } catch (e: Exception) {
-                AppLogger.log("Cache-Download Fehler: ${e.message}", AppLogger.LogType.INFO)
-            }
+        AppLogger.log("Suche schnellste Cache-Download URL...", AppLogger.LogType.INFO)
+        val workingUrl = findWorkingUrl(urlsToTry) ?: run {
+            AppLogger.log("Alle Cache-Download URLs fehlgeschlagen!", AppLogger.LogType.ERROR)
+            return@withContext null
         }
-        AppLogger.log("Alle Cache-Download URLs fehlgeschlagen!", AppLogger.LogType.ERROR)
-        null
+
+        try {
+            AppLogger.log("Cache-Download versuche: $workingUrl", AppLogger.LogType.INFO)
+            val url = URL(workingUrl)
+            val conn = url.openConnection() as HttpURLConnection
+            conn.connectTimeout = 5000
+            conn.readTimeout = 60000
+            conn.requestMethod = "GET"
+
+            val responseCode = conn.responseCode
+            if (responseCode == 200) {
+                AppLogger.log("Cache-Download URL OK: $workingUrl", AppLogger.LogType.SUCCESS)
+                conn.inputStream.use { input ->
+                    cacheFile.outputStream().use { output ->
+                        val buffer = ByteArray(8192)
+                        var bytesRead: Int
+                        var totalBytes = 0L
+                        while (input.read(buffer).also { bytesRead = it } != -1) {
+                            output.write(buffer, 0, bytesRead)
+                            totalBytes += bytesRead
+                        }
+                        AppLogger.log("Cache-Download OK: ${totalBytes / 1024}KB", AppLogger.LogType.SUCCESS)
+                    }
+                }
+                conn.disconnect()
+                return@withContext cacheFile
+            } else {
+                AppLogger.log("HTTP $responseCode für $workingUrl", AppLogger.LogType.INFO)
+                conn.disconnect()
+            }
+        } catch (e: Exception) {
+            AppLogger.log("Cache-Download Fehler: ${e.message}", AppLogger.LogType.INFO)
+        }
+
+        // If we reached here, the chosen URL failed during download.
+        // We could fallback, but for now we return null as per optimized design.
+        return@withContext null
     }
 }
 
@@ -217,66 +276,65 @@ suspend fun downloadFile(baseUrl: String, filename: String, appContext: Context)
         // Let's reuse buildDownloadUrls for consistency and simplicity.
         val urlsToTry = buildDownloadUrls(baseUrl, filename)
 
-        var lastError: Exception? = null
-
-        for (downloadUrl in urlsToTry) {
-            try {
-                AppLogger.log("Versuche: $downloadUrl", AppLogger.LogType.INFO)
-                val url = URL(downloadUrl)
-                val conn = url.openConnection() as HttpURLConnection
-                conn.connectTimeout = 5000
-                conn.readTimeout = 30000
-                conn.requestMethod = "GET"
-
-                val responseCode = conn.responseCode
-                if (responseCode == 200) {
-                    AppLogger.log("Korrekte URL: $downloadUrl", AppLogger.LogType.SUCCESS)
-                    val inputStream = conn.inputStream
-
-                    val safeFilename = sanitizeFilename(filename)
-                    val mimeType = if (safeFilename.endsWith(".mp4")) "video/mp4" else "image/jpeg"
-                    val contentValues = createMediaContentValues(safeFilename, mimeType)
-
-                    val uri = if (safeFilename.endsWith(".mp4")) {
-                        appContext.contentResolver.insert(
-                            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                            contentValues
-                        )
-                    } else {
-                        appContext.contentResolver.insert(
-                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                            contentValues
-                        )
-                    }
-
-                    uri?.let {
-                        appContext.contentResolver.openOutputStream(it)?.use { outputStream ->
-                            val buffer = ByteArray(8192)
-                            var bytesRead: Int
-                            var totalBytes = 0L
-                            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                                outputStream.write(buffer, 0, bytesRead)
-                                totalBytes += bytesRead
-                            }
-                            AppLogger.log("Download OK: ${totalBytes / 1024}KB", AppLogger.LogType.SUCCESS)
-                        }
-                    }
-
-                    conn.disconnect()
-                    return@withContext
-                } else {
-                    AppLogger.log("HTTP $responseCode", AppLogger.LogType.INFO)
-                    conn.disconnect()
-                    lastError = Exception("HTTP $responseCode")
-                }
-            } catch (e: Exception) {
-                AppLogger.log("${e.message}", AppLogger.LogType.INFO)
-                lastError = e
-            }
+        AppLogger.log("Suche schnellste Download-URL...", AppLogger.LogType.INFO)
+        val workingUrl = findWorkingUrl(urlsToTry) ?: run {
+             AppLogger.log("Alle URLs fehlgeschlagen!", AppLogger.LogType.ERROR)
+             throw Exception("Download fehlgeschlagen")
         }
 
-        AppLogger.log("Alle URLs fehlgeschlagen!", AppLogger.LogType.ERROR)
-        throw lastError ?: Exception("Download fehlgeschlagen")
+        try {
+            AppLogger.log("Versuche Download: $workingUrl", AppLogger.LogType.INFO)
+            val url = URL(workingUrl)
+            val conn = url.openConnection() as HttpURLConnection
+            conn.connectTimeout = 5000
+            conn.readTimeout = 30000
+            conn.requestMethod = "GET"
+
+            val responseCode = conn.responseCode
+            if (responseCode == 200) {
+                AppLogger.log("Korrekte URL: $workingUrl", AppLogger.LogType.SUCCESS)
+                val inputStream = conn.inputStream
+
+                val safeFilename = sanitizeFilename(filename)
+                val mimeType = if (safeFilename.endsWith(".mp4")) "video/mp4" else "image/jpeg"
+                val contentValues = createMediaContentValues(safeFilename, mimeType)
+
+                val uri = if (safeFilename.endsWith(".mp4")) {
+                    appContext.contentResolver.insert(
+                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                        contentValues
+                    )
+                } else {
+                    appContext.contentResolver.insert(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        contentValues
+                    )
+                }
+
+                uri?.let {
+                    appContext.contentResolver.openOutputStream(it)?.use { outputStream ->
+                        val buffer = ByteArray(8192)
+                        var bytesRead: Int
+                        var totalBytes = 0L
+                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                            outputStream.write(buffer, 0, bytesRead)
+                            totalBytes += bytesRead
+                        }
+                        AppLogger.log("Download OK: ${totalBytes / 1024}KB", AppLogger.LogType.SUCCESS)
+                    }
+                }
+
+                conn.disconnect()
+                return@withContext
+            } else {
+                AppLogger.log("HTTP $responseCode", AppLogger.LogType.INFO)
+                conn.disconnect()
+                throw Exception("HTTP $responseCode")
+            }
+        } catch (e: Exception) {
+            AppLogger.log("${e.message}", AppLogger.LogType.INFO)
+            throw e
+        }
     }
 }
 
