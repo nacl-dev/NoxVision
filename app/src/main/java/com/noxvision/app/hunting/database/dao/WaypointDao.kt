@@ -4,7 +4,9 @@ import androidx.room.*
 import com.noxvision.app.hunting.database.entities.Waypoint
 import com.noxvision.app.hunting.database.entities.WaypointType
 import kotlinx.coroutines.flow.Flow
+import kotlin.jvm.JvmSuppressWildcards
 
+@JvmSuppressWildcards
 @Dao
 interface WaypointDao {
     @Query("SELECT * FROM waypoints ORDER BY timestamp DESC")
@@ -26,14 +28,14 @@ interface WaypointDao {
     suspend fun insert(waypoint: Waypoint): Long
 
     @Update
-    suspend fun update(waypoint: Waypoint)
+    suspend fun update(waypoint: Waypoint): Int
 
     @Delete
-    suspend fun delete(waypoint: Waypoint)
+    suspend fun delete(waypoint: Waypoint): Int
 
     @Query("DELETE FROM waypoints WHERE id = :id")
-    suspend fun deleteById(id: Long)
+    suspend fun deleteById(id: Long): Int
 
     @Query("DELETE FROM waypoints WHERE huntRecordId = :huntRecordId")
-    suspend fun deleteAllForHunt(huntRecordId: Long)
+    suspend fun deleteAllForHunt(huntRecordId: Long): Int
 }

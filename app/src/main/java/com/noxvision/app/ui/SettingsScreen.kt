@@ -72,8 +72,7 @@ fun SettingsScreen(
     onWifiSsidChange: (String) -> Unit,
     onWifiPasswordChange: (String) -> Unit,
     onHttpPortChange: (Int) -> Unit,
-    onAutoConnectChange: (Boolean) -> Unit,
-    onShowFeatureBounties: () -> Unit
+    onAutoConnectChange: (Boolean) -> Unit
 ) {
     var currentPage by remember { mutableStateOf(SettingsPage.MAIN) }
 
@@ -130,7 +129,6 @@ fun SettingsScreen(
                 onShowLog = { showLogDialog = true },
                 onShowAbout = { showAboutDialog = true },
                 onShowWhatsNew = { showWhatsNewDialog = true },
-                onShowFeatureBounties = onShowFeatureBounties,
                 onShowLanguage = { showLanguageDialog = true }
             )
             SettingsPage.CONNECTION -> ConnectionSettingsPage(
@@ -213,7 +211,6 @@ private fun MainSettingsPage(
     onShowLog: () -> Unit,
     onShowAbout: () -> Unit,
     onShowWhatsNew: () -> Unit,
-    onShowFeatureBounties: () -> Unit,
     onShowLanguage: () -> Unit
 ) {
     Column(
@@ -304,18 +301,7 @@ private fun MainSettingsPage(
             onClick = onShowAbout
         )
 
-        SettingsActionItem(
-            icon = Icons.Filled.Star,
-            title = "Feature Bounties",
-            onClick = onShowFeatureBounties
-        )
-
         Spacer(modifier = Modifier.height(32.dp))
-
-        // Community Bounties - temporarily hidden during test phase
-        // HorizontalDivider(...)
-        // SettingsSectionHeader(...) COMMUNITY
-        // Button(...) Feature Bounties / Support
     }
 }
 

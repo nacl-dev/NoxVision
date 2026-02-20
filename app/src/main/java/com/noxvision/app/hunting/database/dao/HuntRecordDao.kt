@@ -3,7 +3,9 @@ package com.noxvision.app.hunting.database.dao
 import androidx.room.*
 import com.noxvision.app.hunting.database.entities.HuntRecord
 import kotlinx.coroutines.flow.Flow
+import kotlin.jvm.JvmSuppressWildcards
 
+@JvmSuppressWildcards
 @Dao
 interface HuntRecordDao {
     @Query("SELECT * FROM hunt_records ORDER BY timestamp DESC")
@@ -28,13 +30,13 @@ interface HuntRecordDao {
     suspend fun insert(record: HuntRecord): Long
 
     @Update
-    suspend fun update(record: HuntRecord)
+    suspend fun update(record: HuntRecord): Int
 
     @Delete
-    suspend fun delete(record: HuntRecord)
+    suspend fun delete(record: HuntRecord): Int
 
     @Query("DELETE FROM hunt_records WHERE id = :id")
-    suspend fun deleteById(id: Long)
+    suspend fun deleteById(id: Long): Int
 
     @Query("SELECT COUNT(*) FROM hunt_records")
     suspend fun getCount(): Int

@@ -87,9 +87,6 @@ import com.noxvision.app.CrosshairStyle
 import com.noxvision.app.MainActivity
 import com.noxvision.app.getCapabilities
 import com.noxvision.app.R
-import com.noxvision.app.billing.BillingManager
-import com.noxvision.app.billing.FeatureBountyRepository
-import com.noxvision.app.billing.FeatureBountyScreen
 import com.noxvision.app.detection.DetectedObject
 import com.noxvision.app.detection.KNOWN_OBJECTS
 import com.noxvision.app.detection.ThermalObjectDetector
@@ -152,9 +149,6 @@ fun VideoStreamScreen() {
     var showWelcomeDialog by rememberSaveable { mutableStateOf(false) }
     var showWhatsNewDialog by rememberSaveable { mutableStateOf(false) }
 
-    // Feature Bounties
-    var showFeatureBountiesDialog by rememberSaveable { mutableStateOf(false) }
-
     // Hunting Hub
     var showHuntingHub by rememberSaveable { mutableStateOf(false) }
     var huntingAssistantHomeEnabled by remember {
@@ -162,16 +156,6 @@ fun VideoStreamScreen() {
     }
     var huntingAssistantCountry by remember {
         mutableStateOf(CameraSettings.getHuntingAssistantCountry(context))
-    }
-
-    val featureRepository = remember { FeatureBountyRepository(context) }
-
-    // Create BillingManager with callback to repo
-    val billingManager = remember {
-        BillingManager(context) { productId ->
-            val amount = productId.replace("credits_", "").toIntOrNull() ?: 0
-            if (amount > 0) featureRepository.addCredits(amount)
-        }
     }
 
     LaunchedEffect(Unit) {
@@ -1350,24 +1334,7 @@ fun VideoStreamScreen() {
                     },
                     onAutoConnectChange = { enabled ->
                         CameraSettings.setAutoConnectEnabled(context, enabled)
-                    },
-                    onShowFeatureBounties = {
-                        showSettingsDialog = false
-                        showFeatureBountiesDialog = true
                     }
-                )
-            }
-        }
-
-        if (showFeatureBountiesDialog) {
-            Dialog(
-                onDismissRequest = { showFeatureBountiesDialog = false },
-                properties = DialogProperties(usePlatformDefaultWidth = false)
-            ) {
-                FeatureBountyScreen(
-                    billingManager = billingManager,
-                    repository = featureRepository,
-                    onClose = { showFeatureBountiesDialog = false }
                 )
             }
         }
