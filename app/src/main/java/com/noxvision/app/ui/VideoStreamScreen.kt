@@ -674,9 +674,20 @@ fun VideoStreamScreen() {
 
                 surfaceView?.let { view ->
                     try {
-                        if (reusableBitmap == null || reusableBitmap?.width != view.width || reusableBitmap?.height != view.height) {
+                        if (view.width <= 0 || view.height <= 0) {
+                            AppLogger.log("Frame Capture übersprungen: ungültige Größe ${view.width}x${view.height}", AppLogger.LogType.WARN)
+                            return@let
+                        }
+
+                        if (
+                            reusableBitmap == null ||
+                            reusableBitmap?.isRecycled == true ||
+                            reusableBitmap?.width != view.width ||
+                            reusableBitmap?.height != view.height
+                        ) {
+                            val replacementBitmap = createBitmap(view.width, view.height)
                             reusableBitmap?.recycle()
-                            reusableBitmap = createBitmap(view.width, view.height)
+                            reusableBitmap = replacementBitmap
                         }
                         val bitmap = reusableBitmap!!
 
