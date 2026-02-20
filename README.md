@@ -16,24 +16,24 @@ It helps with livestreaming, hunting workflows, and field documentation.
 
 ## New Here?
 
-If you landed here from Google Play testing: you do not need coding knowledge.
-Just follow the steps below.
+You do not need technical knowledge to test NoxVision.
 
-## Join The Closed Alpha Test
+### Start Here (2 Minutes)
 
-- Tester group: `https://groups.google.com/g/noxvision-closed-testers`
-- Opt-in page: `https://play.google.com/apps/testing/com.noxvision.app`
-- Install page: `https://play.google.com/store/apps/details?id=com.noxvision.app`
-- Feedback: `https://github.com/nacl-dev/NoxVision/issues`
+1. **Join the tester group**  
+   [Open Google Group](https://groups.google.com/g/noxvision-closed-testers)
+2. **Activate test access** (same Google account)  
+   [Open Play Opt-in](https://play.google.com/apps/testing/com.noxvision.app)
+3. **Install from Play Store**  
+   [Open Play Store](https://play.google.com/store/apps/details?id=com.noxvision.app)
+4. **Send feedback**  
+   [Report issue on GitHub](https://github.com/nacl-dev/NoxVision/issues)
 
-Steps:
+### Quick Links
 
-1. Join the Google Group.
-2. Open the opt-in link with the same Google account.
-3. Install the app from the Play Store link.
-4. Share feedback and bugs on GitHub Issues.
-
-Full tester guide and invitation template: `docs/closed-alpha-test.md`.
+- Tester Guide: [docs/closed-alpha-test.md](docs/closed-alpha-test.md)
+- Privacy Policy: [PRIVACY_POLICY.md](PRIVACY_POLICY.md)
+- App Issues: [GitHub Issues](https://github.com/nacl-dev/NoxVision/issues)
 
 ## Features
 
@@ -70,10 +70,11 @@ Guide Sensmart models are detected automatically:
 
 ## Feedback And Support
 
-- Report bugs and ideas: `https://github.com/nacl-dev/NoxVision/issues`
-- Privacy policy: `PRIVACY_POLICY.md`
+- Report bugs and ideas: [GitHub Issues](https://github.com/nacl-dev/NoxVision/issues)
+- Privacy policy: [PRIVACY_POLICY.md](PRIVACY_POLICY.md)
 
-## For Developers
+<details>
+<summary><strong>For Developers (Build from Source)</strong></summary>
 
 ### Requirements
 
@@ -120,6 +121,7 @@ JAVA_HOME=/opt/android-studio/jbr PATH=/opt/android-studio/jbr/bin:$PATH ./gradl
 5. Promote to production when approved.
 
 Do not use debug APKs as an official end-user channel.
+</details>
 
 ## Contributing
 
