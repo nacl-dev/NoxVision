@@ -15,12 +15,12 @@ import androidx.core.graphics.createBitmap
 import com.noxvision.app.data.CameraFile
 import com.noxvision.app.data.PhoneFolder
 import com.noxvision.app.data.PhoneMediaFile
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -113,15 +113,18 @@ suspend fun saveVideoToGallery(context: Context, file: File) {
     }
 }
 
-private suspend fun connectToBestUrl(urls: List<String>): Pair<HttpURLConnection, String>? {
+private suspend fun connectToBestUrl(urls: List<String>): Pair<HttpURLConnection, String>? = supervisorScope {
+    if (urls.isEmpty()) return@supervisorScope null
+
     val deferred = CompletableDeferred<Pair<HttpURLConnection, String>?>()
-    val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     val failures = AtomicInteger(0)
 
     urls.forEach { urlStr ->
-        scope.launch {
+        launch(Dispatchers.IO) {
             var conn: HttpURLConnection? = null
             try {
+                AppLogger.log("Cache-Download versuche: $urlStr", AppLogger.LogType.INFO)
+
                 if (deferred.isCompleted) return@launch
 
                 val url = URL(urlStr)
@@ -129,6 +132,11 @@ private suspend fun connectToBestUrl(urls: List<String>): Pair<HttpURLConnection
                 conn.connectTimeout = 5000
                 conn.readTimeout = 60000
                 conn.requestMethod = "GET"
+
+                if (deferred.isCompleted) {
+                    conn.disconnect()
+                    return@launch
+                }
 
                 val code = conn.responseCode
 
@@ -144,6 +152,7 @@ private suspend fun connectToBestUrl(urls: List<String>): Pair<HttpURLConnection
                         conn.disconnect()
                     }
                 } else {
+                    AppLogger.log("HTTP $code für $urlStr", AppLogger.LogType.INFO)
                     conn.disconnect()
                     if (failures.incrementAndGet() == urls.size) {
                         deferred.complete(null)
@@ -151,6 +160,10 @@ private suspend fun connectToBestUrl(urls: List<String>): Pair<HttpURLConnection
                 }
             } catch (e: Exception) {
                 conn?.disconnect()
+                if (e is CancellationException) throw e
+
+                AppLogger.log("Cache-Download Fehler: ${e.message}", AppLogger.LogType.INFO)
+
                 if (failures.incrementAndGet() == urls.size) {
                     deferred.complete(null)
                 }
@@ -158,9 +171,13 @@ private suspend fun connectToBestUrl(urls: List<String>): Pair<HttpURLConnection
         }
     }
 
-    val result = deferred.await()
-    scope.cancel()
-    return result
+    try {
+        val result = deferred.await()
+        coroutineContext.cancelChildren()
+        return@supervisorScope result
+    } catch (e: Exception) {
+        throw e
+    }
 }
 
 suspend fun downloadVideoToCache(baseUrl: String, filename: String, context: Context): File? {
