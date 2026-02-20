@@ -13,39 +13,51 @@ Open-source Android app for Guide thermal cameras with RTSP livestream, on-devic
   <img src="docs/preview.gif" alt="NoxVision Demo" width="320">
 </p>
 
-## Current Status
+## Distribution Status
 
-- App version: `1.3.0` (`versionCode 4`)
+- Current app version: `1.3.0` (`versionCode 4`)
 - Min SDK: `24`
 - Target/Compile SDK: `35`
 - ABI: `arm64-v8a`
 - Native libraries are 16 KB page-size compatible (required by Google Play for Android 15+ updates).
+- Google Play rollout is in progress. Future end-user installs should happen via Google Play.
+- GitHub build artifacts are intended for development and troubleshooting only.
+
+## Closed Alpha Test (Google Play)
+
+- Tester group: `https://groups.google.com/g/noxvision-closed-testers`
+- Opt-in page: `https://play.google.com/apps/testing/com.noxvision.app`
+- Install page: `https://play.google.com/store/apps/details?id=com.noxvision.app`
+- Feedback: `https://github.com/nacl-dev/NoxVision/issues`
+
+Testers should first join the Google Group, then open the opt-in link with the same Google account, then install via Play Store.
+Full guide and copy/paste invite text: `docs/closed-alpha-test.md`.
 
 ## Features
 
 - Live RTSP thermal stream via LibVLC
-- AI object detection (thermal model, on-device)
+- On-device object detection
 - Thermal controls: emissivity, distance, humidity, reflected temperature, NUC/shutter
 - Camera settings: brightness, contrast, image enhancement, audio toggle
-- Media capture: screenshot + video + integrated gallery
+- Media capture: screenshot, video recording, integrated gallery
 - Auto Wi-Fi connection for Guide hotspot workflow
 - Hunting Assistant:
-  - shot documentation and journal
-  - weather view (OpenWeather API)
-  - hunting seasons calendar
-  - map with offline tile cache + waypoints
-  - tracking/Nachsuche tools with compass support
+  - Shot documentation and journal
+  - Weather view (OpenWeather API)
+  - Hunting seasons calendar
+  - Offline map with waypoints
+  - Tracking tools with compass support
 - Multi-language UI (`de`, `en`, `fr`, `es`, `it`, `nl`, `pl`, `uk`)
 
 ## Supported Cameras
 
 Guide Sensmart models are detected by series/profile at runtime.
 
-- TE-Series
-- C-Series
-- D-Series
-- B-Series
-- PS-Series
+- TE series
+- C series
+- D series
+- B series
+- PS series
 
 Connection defaults (adjustable in settings):
 
@@ -57,13 +69,13 @@ Connection defaults (adjustable in settings):
 
 ### Requirements
 
-- JDK 17+ (Android Studio JBR is fine)
-- Android SDK (API 35 installed)
+- JDK 17+ (Android Studio JBR works)
+- Android SDK with API 35 installed
 - Gradle Wrapper (`./gradlew`)
 
 ### Local Configuration
 
-Create/edit `local.properties`:
+Create or edit `local.properties`:
 
 ```properties
 sdk.dir=/path/to/Android/Sdk
@@ -78,52 +90,44 @@ UPLOAD_KEY_ALIAS=upload
 UPLOAD_KEY_PASSWORD=...
 ```
 
-Notes:
+Security notes:
 
-- `local.properties` and `keystore/*.jks` are intentionally ignored by git.
-- Do not commit API keys or keystores.
+- `local.properties` and `keystore/*.jks` are ignored by git.
+- Never commit API keys or signing files.
 
-### Commands
+### Build Commands
 
 ```bash
-# debug apk
+# debug APK for local testing
 JAVA_HOME=/opt/android-studio/jbr PATH=/opt/android-studio/jbr/bin:$PATH ./gradlew :app:assembleDebug
 
-# release aab (Play Store)
+# release AAB for Google Play
 JAVA_HOME=/opt/android-studio/jbr PATH=/opt/android-studio/jbr/bin:$PATH ./gradlew :app:bundleRelease
 ```
 
 Artifacts:
 
 - Debug APK: `app/build/outputs/apk/debug/`
-- Release AAB: `app/build/outputs/bundle/release/NoxVision-v1.3.0-release.aab`
+- Release AAB: `app/build/outputs/bundle/release/`
 
-## Play Store Release Notes
+## Release Workflow
 
-- Upload the generated `.aab` from `app/build/outputs/bundle/release/`.
-- Keep upload keystore + passwords backed up securely.
-- If an API key was exposed during testing, rotate it before production rollout.
+1. Bump `versionCode` and `versionName` in `app/build.gradle.kts`.
+2. Build AAB with `:app:bundleRelease`.
+3. Upload AAB to Play Console test track.
+4. Add release notes and policy declarations.
+5. Promote from testing track to production when approved.
+
+Do not publish a debug APK as an official user distribution channel. Use Play tracks or a signed release artifact for external users.
 
 ## Troubleshooting
 
-- "No weather data": verify `OPENWEATHER_API_KEY` is set in `local.properties`, then rebuild/reinstall.
-- Fish shell variable syntax differs from bash:
+- If weather shows "No weather data", verify `OPENWEATHER_API_KEY` in `local.properties`, then rebuild and reinstall.
+- Fish shell syntax to check injected key length:
 
 ```fish
 set v (sed -n 's/.*OPENWEATHER_API_KEY = "\\(.*\\)";.*/\\1/p' app/build/generated/source/buildConfig/debug/com/noxvision/app/BuildConfig.java)
 echo (string length -- "$v")
-```
-
-## Project Structure
-
-```text
-app/src/main/java/com/noxvision/app/
-├── ui/                 # livestream/settings/hunting screens and dialogs
-├── hunting/            # weather, maps, exports, calendar, location
-├── detection/          # thermal object detection
-├── billing/            # in-app purchase components
-├── network/            # Wi-Fi auto connect
-└── util/               # logging, locale, media helpers
 ```
 
 ## Contributing

@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Temperature measurement display overlay
 - Custom color palette support
 
+### Changed
+- Documentation updated for Google Play rollout and closed-alpha testing links.
+- Contribution guide updated to Play-first release/testing workflow.
+
 ## [1.3.0] - 2026-02-20
 
 ### Added
