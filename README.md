@@ -2,279 +2,134 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Android](https://img.shields.io/badge/Android-24%2B-green.svg)](https://developer.android.com)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.0-blue.svg)](https://kotlinlang.org)
-[![Version](https://img.shields.io/badge/Version-1.3-blue.svg)](../../releases)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-blue.svg)](https://kotlinlang.org)
+[![Version](https://img.shields.io/badge/Version-1.3.0-blue.svg)](../../releases)
 
-**Open Source Android App for Guide Thermal Cameras with AI Object Detection**
+Open-source Android app for Guide thermal cameras with RTSP livestream, on-device object detection, and hunting workflow tools.
 
-A powerful alternative to the official Guide app, supporting multiple Guide Sensmart thermal camera models including the [Guide TE211M](https://de.guideoutdoor.com/produkt/wärmebild-monokulare/te-serie/te211m) Thermal Monocular.
-
----
-
-## 📺 Demo
+## Demo
 
 <p align="center">
-  <img src="docs/preview.gif" alt="NoxVision Demo" width="300">
+  <img src="docs/preview.gif" alt="NoxVision Demo" width="320">
 </p>
 
----
+## Current Status
 
-## ✨ Features
+- App version: `1.3.0` (`versionCode 4`)
+- Min SDK: `24`
+- Target/Compile SDK: `35`
+- ABI: `arm64-v8a`
+- Native libraries are 16 KB page-size compatible (required by Google Play for Android 15+ updates).
 
-### Core Features
-- 🎥 **Live Thermal Video Stream** via RTSP (LibVLC)
-- 🤖 **YOLO Object Detection** with TensorFlow Lite
-- 🎨 **Multiple Palettes**: Whitehot, Blackhot, Bluehot, Greenhot, Ironred, and more
-- 📸 **Screenshot & Video Recording** with gallery storage
-- 📁 **Integrated Gallery** for captured media
-- 📶 **Auto-WiFi Connect** to camera
-- ⚡ **Real-time Overlay** with bounding boxes and labels
-- 🌙 **Dark Theme** optimized for night use
+## Features
 
-### 🆕 Thermal Measurement (v1.2)
-- 🌡️ **Emissivity Control** (0.01-1.0) with material presets
-- 📏 **Distance Compensation** for accurate temperature readings
-- 💧 **Humidity Settings** for atmospheric correction
-- ♨️ **Reflected Temperature** adjustment
-- 🔄 **Shutter/NUC Calibration** button
-- 📱 **Automatic Camera Detection** - identifies model and enables features
-- 🔌 **REST API Integration** for professional thermal settings
+- Live RTSP thermal stream via LibVLC
+- AI object detection (thermal model, on-device)
+- Thermal controls: emissivity, distance, humidity, reflected temperature, NUC/shutter
+- Camera settings: brightness, contrast, image enhancement, audio toggle
+- Media capture: screenshot + video + integrated gallery
+- Auto Wi-Fi connection for Guide hotspot workflow
+- Hunting Assistant:
+  - shot documentation and journal
+  - weather view (OpenWeather API)
+  - hunting seasons calendar
+  - map with offline tile cache + waypoints
+  - tracking/Nachsuche tools with compass support
+- Multi-language UI (`de`, `en`, `fr`, `es`, `it`, `nl`, `pl`, `uk`)
 
-### 🆕 New in v1.3
-- 📊 **System Log Viewer** - Real-time diagnostics with color-coded entries
-- ⚙️ **Advanced Camera Settings** - Brightness, Contrast, Image Enhancement
-- 🎵 **Audio Control** - Enable/disable camera microphone
-- 📄 **Multi-Page Settings** - Organized settings with navigation
-- 💎 **Feature Bounties** - Support development via in-app purchases
-- 🎉 **What's New Dialog** - Version update announcements
-- 👋 **Welcome Screen** - First-run introduction for new users
+## Supported Cameras
 
-## 📱 Supported Devices
+Guide Sensmart models are detected by series/profile at runtime.
 
-### Thermal Cameras
+- TE-Series
+- C-Series
+- D-Series
+- B-Series
+- PS-Series
 
-| Series | Models | Features |
-|--------|--------|----------|
-| **TE-Series** | TE211M, TE-Mini | Radiometry ✓ |
-| **C-Series** | C640, C400, C800 | Focus ✓, GPS ✓, Radiometry ✓, Audio ✓ |
-| **D-Series** | D400, D384, D192, D160 | Focus ✓, Radiometry ✓ |
-| **B-Series** | B320, B256, B160 | Radiometry ✓ |
-| **PS-Series** | PS600, PS400 | Radiometry ✓ |
+Connection defaults (adjustable in settings):
 
-> **Note**: Features are automatically detected based on the connected camera model.
+- Camera IP: `192.168.42.1`
+- RTSP: `rtsp://192.168.42.1:8554/video`
+- HTTP API: `http://192.168.42.1`
 
-### Android
-- **Minimum**: Android 7.0 (API 24)
-- **Target**: Android 15 (API 35)
-- **Architecture**: arm64-v8a
+## Build From Source
 
-## 🔧 Camera Connection
+### Requirements
 
-The app automatically connects to the camera via WiFi:
+- JDK 17+ (Android Studio JBR is fine)
+- Android SDK (API 35 installed)
+- Gradle Wrapper (`./gradlew`)
 
-| Parameter | Default Value | Description |
-|-----------|---------------|-------------|
-| **SSID** | `TE Mini-XXXX` | Camera's WiFi hotspot |
-| **Password** | `12345678` | Default password for all Guide cameras |
-| **IP** | `192.168.42.1` | Fixed IP of camera in hotspot mode |
-| **RTSP** | `rtsp://192.168.42.1:8554/video` | Video stream URL |
-| **HTTP API** | `http://192.168.42.1` | Camera control |
+### Local Configuration
 
-> **Note**: The IP can be changed in Settings if your camera uses a different address.
+Create/edit `local.properties`:
 
-## 📥 Installation
+```properties
+sdk.dir=/path/to/Android/Sdk
 
-### Option 1: APK Download (Recommended)
-1. Download the latest APK from [Releases](../../releases)
-2. Install on your Android device
-3. Allow installation from unknown sources if prompted
+# required for in-app weather
+OPENWEATHER_API_KEY=your_openweather_key
 
-### Option 2: Build from Source
+# optional: required for signed Play Store release builds
+UPLOAD_STORE_FILE=keystore/upload-keystore.jks
+UPLOAD_STORE_PASSWORD=...
+UPLOAD_KEY_ALIAS=upload
+UPLOAD_KEY_PASSWORD=...
+```
 
-**Prerequisites:**
-- JDK 17 or higher
-- Android SDK (API 35)
-- Git
+Notes:
+
+- `local.properties` and `keystore/*.jks` are intentionally ignored by git.
+- Do not commit API keys or keystores.
+
+### Commands
 
 ```bash
-# Clone repository
-git clone https://github.com/nacl-dev/NoxVision.git
-cd NoxVision
+# debug apk
+JAVA_HOME=/opt/android-studio/jbr PATH=/opt/android-studio/jbr/bin:$PATH ./gradlew :app:assembleDebug
 
-# Set SDK path (if not auto-detected)
-echo "sdk.dir=/path/to/Android/Sdk" > local.properties
-
-# Build debug APK
-./gradlew assembleDebug
-
-# APK location:
-# app/build/outputs/apk/debug/NoxVision-v1.3-debug.apk
+# release aab (Play Store)
+JAVA_HOME=/opt/android-studio/jbr PATH=/opt/android-studio/jbr/bin:$PATH ./gradlew :app:bundleRelease
 ```
 
-## 🎯 Usage
+Artifacts:
 
-1. **Turn on camera** and enable WiFi hotspot
-2. **Launch app** - automatically connects to camera
-3. **Live stream** displays with object detection
-4. **Controls**:
-   - 📷 Take screenshot
-   - 🎬 Record video
-   - 🎨 Change palette
-   - 📁 Open gallery
+- Debug APK: `app/build/outputs/apk/debug/`
+- Release AAB: `app/build/outputs/bundle/release/NoxVision-v1.3.0-release.aab`
 
-### 🌡️ Thermal Settings
+## Play Store Release Notes
 
-1. Open **Settings** ⚙️
-2. Navigate to **"Thermische Einstellungen"**
-3. Adjust:
-   - **Emissivity** - Match the material you're measuring
-   - **Distance** - Set the distance to your target
-   - **Humidity** - Current ambient humidity
-   - **Reflected Temperature** - Ambient temperature
-4. Tap **"An Kamera senden"** to apply
+- Upload the generated `.aab` from `app/build/outputs/bundle/release/`.
+- Keep upload keystore + passwords backed up securely.
+- If an API key was exposed during testing, rotate it before production rollout.
 
-### 📊 System Log (v1.3)
+## Troubleshooting
 
-Monitor app activity and troubleshoot issues:
-1. Open **Settings** ⚙️
-2. Tap **"System Log"**
-3. View real-time logs with color-coded entries (Info, Success, Error)
+- "No weather data": verify `OPENWEATHER_API_KEY` is set in `local.properties`, then rebuild/reinstall.
+- Fish shell variable syntax differs from bash:
 
-## 🧠 Object Detection
-
-The app uses a trained TensorFlow Lite model for thermal detection:
-
-| File | Description |
-|------|-------------|
-| `detect.tflite` | TFLite model (YOLO-based) |
-| `labelmap.txt` | Class labels (person, vehicle, etc.) |
-
-The model is specifically trained for thermal images and detects people and vehicles in thermal imagery.
-
-## 🛠️ Development
-
-### Project Structure
-```
-app/src/main/
-├── java/com/noxvision/app/
-│   ├── MainActivity.kt           # Main app entry point
-│   ├── CameraApiClient.kt        # REST API client
-│   ├── CameraSettings.kt         # Settings persistence
-│   ├── DeviceInfo.kt             # Camera model detection
-│   ├── WhatsNewData.kt           # Version changelog
-│   ├── ui/
-│   │   ├── VideoStreamScreen.kt      # Main livestream UI
-│   │   ├── SettingsScreen.kt         # Multi-page settings
-│   │   ├── ThermalSettingsScreen.kt  # Thermal measurement UI
-│   │   ├── SettingsComponents.kt     # Reusable components
-│   │   ├── theme/                    # Compose Theme (Material 3)
-│   │   ├── components/               # Custom UI components
-│   │   └── dialogs/                  # Dialog screens
-│   │       ├── LogDialog.kt          # System log viewer
-│   │       ├── AboutDialog.kt        # App information
-│   │       ├── WelcomeDialog.kt      # First-run welcome
-│   │       ├── WhatsNewDialog.kt     # Version updates
-│   │       ├── GalleryDialog.kt      # Media browser
-│   │       └── PreviewDialog.kt      # Media preview
-│   ├── billing/                  # In-app purchases
-│   │   ├── BillingManager.kt
-│   │   ├── FeatureBountyRepository.kt
-│   │   └── FeatureBountyScreen.kt
-│   ├── detection/
-│   │   └── ThermalObjectDetector.kt  # TFLite YOLO detector
-│   ├── network/
-│   │   └── WiFiAutoConnect.kt        # Auto WiFi connection
-│   ├── util/
-│   │   ├── AppLogger.kt              # Logging utility
-│   │   └── MediaUtils.kt             # Media capture/download
-│   └── data/
-│       └── MediaModels.kt            # Data classes
-├── assets/
-│   ├── detect.tflite             # AI model (YOLOv8)
-│   └── labelmap.txt              # Class labels
-└── res/
-    ├── drawable/                 # Palette images
-    └── values/                   # Strings, Colors
+```fish
+set v (sed -n 's/.*OPENWEATHER_API_KEY = "\\(.*\\)";.*/\\1/p' app/build/generated/source/buildConfig/debug/com/noxvision/app/BuildConfig.java)
+echo (string length -- "$v")
 ```
 
-### Tech Stack
-- **Language**: Kotlin 2.0
-- **UI**: Jetpack Compose
-- **Video**: LibVLC
-- **AI**: TensorFlow Lite
-- **HTTP**: OkHttp / HttpURLConnection
-- **Images**: Coil
+## Project Structure
 
-### Build Variants
-```bash
-# Debug (for testing)
-./gradlew assembleDebug
-
-# Release (for distribution)
-./gradlew assembleRelease
+```text
+app/src/main/java/com/noxvision/app/
+├── ui/                 # livestream/settings/hunting screens and dialogs
+├── hunting/            # weather, maps, exports, calendar, location
+├── detection/          # thermal object detection
+├── billing/            # in-app purchase components
+├── network/            # Wi-Fi auto connect
+└── util/               # logging, locale, media helpers
 ```
 
-## 🤝 Contributing
+## Contributing
 
-Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+See `CONTRIBUTING.md`.
 
-### Branches
-- `main` - Stable version
-- `beta` - Development & new features
+## License
 
-## 📋 Roadmap
-
-### Completed
-- [x] Settings screen for camera IP
-- [x] Support for additional camera models ✅ **v1.2**
-- [x] Thermal measurement settings ✅ **v1.2**
-- [x] Export to video formats
-- [x] System logging & diagnostics ✅ **v1.3**
-- [x] Advanced camera settings (brightness, contrast) ✅ **v1.3**
-- [x] Multi-page settings navigation ✅ **v1.3**
-- [x] In-app purchase system ✅ **v1.3**
-
-### In Progress
-- [ ] Temperature measurement display on live view
-- [ ] Improved AI model with higher accuracy
-
-### Planned
-- [ ] **Optimized Wildlife AI Model** - Training for deer, boar, fox, rabbit detection
-- [ ] **Distance Estimation** - Approximate distance to detected animals
-- [ ] **Hunt Mode** - Minimal UI, reduced brightness, one-hand operation
-- [ ] **Silent Alerts** - Vibration feedback instead of sounds
-- [ ] **Quick Record** - Hardware button mapping for instant recording
-- [ ] **Battery Optimization** - Extended runtime for long sits
-- [ ] **Offline Maps** - Mark hunting grounds and wildlife trails
-- [ ] **Moon Phase Display** - Hunting conditions at a glance
-- [ ] **Shot Documentation** - Log shots with timestamp and location
-- [ ] **Tracking Mode** - Support for blood trailing after a shot
-- [ ] **Custom Palettes** - User-defined color schemes for better contrast
-
-## ❓ FAQ
-
-**Q: Why this app instead of the official Guide app?**
-> The official app has performance issues and missing features. This open-source alternative offers better performance, AI detection, and professional thermal settings.
-
-**Q: Does the app work with other thermal cameras?**
-> Yes! NoxVision supports the full Guide Sensmart lineup including C-Series, D-Series, B-Series, TE-Series, and PS-Series cameras.
-
-**Q: What is emissivity and why does it matter?**
-> Emissivity is how well a surface emits thermal radiation. Different materials have different values (human skin ≈ 0.95, polished metal ≈ 0.3). Setting it correctly improves temperature accuracy.
-
-**Q: Do I need Android Studio?**
-> No! You can build the APK with VS Code and Gradle. See Installation above.
-
-## 📄 License
-
-[MIT License](LICENSE) - You can freely use, modify, and distribute the app.
-
-## 🙏 Credits
-
-- [Guide Sensmart](https://de.guideoutdoor.com) for the hardware
-- [LibVLC](https://www.videolan.org/vlc/libvlc.html) for video streaming
-- [TensorFlow Lite](https://www.tensorflow.org/lite) for AI inference
-
----
-
-**⭐ If you like this project, give it a star!**
+MIT (`LICENSE`).

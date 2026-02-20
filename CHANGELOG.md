@@ -12,6 +12,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Temperature measurement display overlay
 - Custom color palette support
 
+## [1.3.0] - 2026-02-20
+
+### Added
+- 🧭 Hunting Assistant hub with:
+  - Abschuss-Dokumentation (Einträge, CSV/PDF Export)
+  - Wetteransicht mit Cache
+  - Jagdzeiten-Kalender
+  - Offline-Karten und Wegpunkte
+  - Nachsuche-Ansicht mit Kompassunterstützung
+- 👋 Onboarding/Welcome-Dialog for first app start
+- 📊 System Log Viewer with color-coded entries
+
+### Changed
+- 🏷️ App version bumped to `1.3.0` (`versionCode 4`)
+- 📦 Play-Store release workflow improved with optional upload-key signing via `local.properties`/env vars
+- 📚 README and build/release docs updated to match the current project layout
+
+### Fixed
+- ✅ 16 KB page-size compatibility for arm64 native libraries (Android 15+/Play requirement)
+- 🖼️ Launcher mipmap resources corrected to valid PNG format for release builds
+- 🌤️ Weather API error handling now reports missing/invalid API key and HTTP errors in app logs
+
 ## [1.2.0] - 2026-01-25
 
 ### Added
