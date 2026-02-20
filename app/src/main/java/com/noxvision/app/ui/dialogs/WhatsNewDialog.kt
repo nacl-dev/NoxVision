@@ -22,12 +22,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.noxvision.app.R
 import com.noxvision.app.WhatsNewRepository
 import com.noxvision.app.ui.NightColors
 import com.noxvision.app.ui.components.WhatsNewItem
@@ -62,7 +64,7 @@ fun WhatsNewDialog(onDismiss: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Das ist neu!",
+                        text = stringResource(R.string.whats_new_title),
                         style = MaterialTheme.typography.headlineMedium,
                         color = NightColors.onSurface,
                         fontWeight = FontWeight.Bold
@@ -88,7 +90,7 @@ fun WhatsNewDialog(onDismiss: () -> Unit) {
                     colors = ButtonDefaults.buttonColors(containerColor = NightColors.primary),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Verstanden")
+                    Text(stringResource(R.string.understood))
                 }
             }
         }
