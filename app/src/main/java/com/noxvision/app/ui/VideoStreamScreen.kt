@@ -30,6 +30,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PhotoLibrary
@@ -102,6 +103,7 @@ import com.noxvision.app.util.createVideoFile
 import com.noxvision.app.util.formatDuration
 import com.noxvision.app.util.saveVideoToGallery
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -122,6 +124,7 @@ fun VideoStreamScreen() {
 
     var isPlaying by remember { mutableStateOf(false) }
     var isRecording by remember { mutableStateOf(false) }
+    var connectionJob by remember { mutableStateOf<Job?>(null) }
     var statusText by remember { mutableStateOf("") }
     var bufferPercent by remember { mutableFloatStateOf(0f) }
     var surfaceView by remember { mutableStateOf<SurfaceView?>(null) }
@@ -732,6 +735,10 @@ fun VideoStreamScreen() {
 
     // Connection Logic Helpers
     val disconnectCamera: () -> Unit = {
+        connectionJob?.cancel()
+        connectionJob = null
+        isConnecting = false
+
         scope.launch {
             if (isRecording) {
                 stopRecordingViaVlc()
@@ -748,52 +755,60 @@ fun VideoStreamScreen() {
 
     val connectCamera: () -> Unit = {
         isConnecting = true
-        scope.launch {
-            val connected = withContext(Dispatchers.IO) {
-                (context as? MainActivity)?.wifiAutoConnect?.connectToCamera()
-                    ?: false
-            }
+        connectionJob?.cancel()
 
-            if (connected || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                statusText = context.getString(R.string.connecting)
-                try {
-                    val media = Media(libVLC, rtspUrl.toUri())
-                    media.addOption(":network-caching=300")
-                    media.addOption(":rtsp-tcp")
-                    mediaPlayer.media = media
-                    media.release()
-                    mediaPlayer.play()
-                    isPlaying = true
-
-                    scope.launch {
-                        try {
-                            val info = apiClient.getDeviceInfo()
-                            if (info != null) {
-                                deviceInfo = info
-                                cameraCapabilities = info.getCapabilities()
-                                CameraSettings.saveDeviceInfo(context, info)
-                                AppLogger.log("Kamera erkannt: ${info.deviceName}", AppLogger.LogType.SUCCESS)
-                            }
-                        } catch (e: Exception) {
-                            AppLogger.log("Device-Info nicht verfugbar", AppLogger.LogType.INFO)
-                        }
-                    }
-                } catch (e: Exception) {
-                    statusText = context.getString(R.string.error)
-                    isConnecting = false
-                    AppLogger.log(
-                        "Stream Error: ${e.message}",
-                        AppLogger.LogType.ERROR
-                    )
+        connectionJob = scope.launch {
+            try {
+                val connected = withContext(Dispatchers.IO) {
+                    (context as? MainActivity)?.wifiAutoConnect?.connectToCamera()
+                        ?: false
                 }
-            } else {
-                statusText = context.getString(R.string.wifi_connection_failed)
-                isConnecting = false
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.wifi_connection_failed),
-                    Toast.LENGTH_LONG
-                ).show()
+
+                if (connected || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    statusText = context.getString(R.string.connecting)
+                    try {
+                        val media = Media(libVLC, rtspUrl.toUri())
+                        media.addOption(":network-caching=300")
+                        media.addOption(":rtsp-tcp")
+                        mediaPlayer.media = media
+                        media.release()
+                        mediaPlayer.play()
+                        isPlaying = true
+
+                        scope.launch {
+                            try {
+                                val info = apiClient.getDeviceInfo()
+                                if (info != null) {
+                                    deviceInfo = info
+                                    cameraCapabilities = info.getCapabilities()
+                                    CameraSettings.saveDeviceInfo(context, info)
+                                    AppLogger.log("Kamera erkannt: ${info.deviceName}", AppLogger.LogType.SUCCESS)
+                                }
+                            } catch (e: Exception) {
+                                AppLogger.log("Device-Info nicht verfugbar", AppLogger.LogType.INFO)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        statusText = context.getString(R.string.error)
+                        isConnecting = false
+                        AppLogger.log(
+                            "Stream Error: ${e.message}",
+                            AppLogger.LogType.ERROR
+                        )
+                    }
+                } else {
+                    statusText = context.getString(R.string.wifi_connection_failed)
+                    isConnecting = false
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.wifi_connection_failed),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            } finally {
+                if (!isActive) {
+                    isConnecting = false
+                }
             }
         }
     }
@@ -1161,17 +1176,28 @@ fun VideoStreamScreen() {
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     DarkButton(
-                        text = if (isPlaying) stringResource(R.string.disconnect) else stringResource(R.string.connect),
-                        icon = if (isPlaying) Icons.Filled.Stop else Icons.Filled.PlayArrow,
+                        text = when {
+                            isConnecting -> stringResource(R.string.cancel)
+                            isPlaying -> stringResource(R.string.disconnect)
+                            else -> stringResource(R.string.connect)
+                        },
+                        icon = when {
+                            isConnecting -> Icons.Filled.Close
+                            isPlaying -> Icons.Filled.Stop
+                            else -> Icons.Filled.PlayArrow
+                        },
                         onClick = {
-                            if (isPlaying) {
+                            if (isConnecting) {
+                                disconnectCamera()
+                            } else if (isPlaying) {
                                 disconnectCamera()
                             } else {
                                 connectCamera()
                             }
                         },
-                        enabled = !isConnecting,
-                        modifier = Modifier.weight(1f)
+                        enabled = true,
+                        modifier = Modifier.weight(1f),
+                        isRecording = isConnecting
                     )
 
                     DarkButton(
