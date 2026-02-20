@@ -11,11 +11,11 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.HelpOutline
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
@@ -90,7 +90,7 @@ fun FeatureBountyScreen(
                     ) {
                         IconButton(onClick = onClose) {
                             Icon(
-                                imageVector = Icons.Default.ArrowBack,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back",
                                 tint = NightColors.onBackground
                             )
@@ -103,7 +103,7 @@ fun FeatureBountyScreen(
                         )
                         IconButton(onClick = { showFaqDialog = true }) {
                             Icon(
-                                imageVector = Icons.Default.HelpOutline,
+                                imageVector = Icons.AutoMirrored.Filled.HelpOutline,
                                 contentDescription = "FAQ",
                                 tint = Color.Gray
                             )
@@ -490,7 +490,7 @@ fun FeatureBountyFaqDialog(onDismiss: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = NightColors.onSurface)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = NightColors.onSurface)
                     }
                 }
                 
@@ -584,7 +584,7 @@ fun TransactionHistoryDialog(
                 ) {
                     IconButton(onClick = onDismiss) {
                         Icon(
-                            Icons.Default.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
                             tint = NightColors.onBackground
                         )

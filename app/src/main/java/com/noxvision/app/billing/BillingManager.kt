@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class BillingManager(
-    private val context: Context,
+    context: Context,
     private val onPurchaseConsumed: (String) -> Unit // Callback when a consumable is bought and consumed
 ) : PurchasesUpdatedListener {
 
@@ -25,7 +25,11 @@ class BillingManager(
 
     private val _billingClient = BillingClient.newBuilder(context)
         .setListener(this)
-        .enablePendingPurchases()
+        .enablePendingPurchases(
+            PendingPurchasesParams.newBuilder()
+                .enableOneTimeProducts()
+                .build()
+        )
         .build()
 
     private val _productDetails = MutableStateFlow<List<ProductDetails>>(emptyList())

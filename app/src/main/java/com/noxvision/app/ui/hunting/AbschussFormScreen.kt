@@ -14,6 +14,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,6 +31,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
 import com.noxvision.app.hunting.calendar.HuntingSeasonData
 import com.noxvision.app.hunting.database.HuntingDatabase
@@ -102,7 +104,7 @@ fun AbschussFormScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            Icons.Filled.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Zurueck",
                             tint = NightColors.onSurface
                         )
@@ -259,7 +261,7 @@ private fun WildlifeSection(
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = wildlifeTypeExpanded) },
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor(),
+                .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true),
             colors = huntingTextFieldColors()
         )
         ExposedDropdownMenu(
@@ -291,7 +293,7 @@ private fun WildlifeSection(
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = genderExpanded) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor(),
+                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true),
                 colors = huntingTextFieldColors()
             )
             ExposedDropdownMenu(
@@ -458,9 +460,7 @@ private fun LocationSection(
                 },
                 update = { map ->
                     // Initial update handled by LaunchedEffect
-                    if (latitude != null && longitude != null) {
-                        map.controller.setCenter(GeoPoint(latitude, longitude))
-                    }
+                    map.controller.setCenter(GeoPoint(latitude, longitude))
                 }
             )
 
@@ -535,7 +535,7 @@ private fun LocationSection(
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = bundeslandExpanded) },
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor(),
+                .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true),
             colors = huntingTextFieldColors()
         )
         ExposedDropdownMenu(
@@ -644,7 +644,7 @@ private fun NotesSection(
     SettingsSectionHeader(
         icon = {
             Icon(
-                Icons.Filled.Notes,
+                Icons.AutoMirrored.Filled.Notes,
                 contentDescription = null,
                 tint = NightColors.primary,
                 modifier = Modifier.size(18.dp)

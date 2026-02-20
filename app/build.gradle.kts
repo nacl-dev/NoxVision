@@ -94,16 +94,16 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     // AppCompat for per-app language preferences
-    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation(libs.androidx.appcompat)
 
     // LibVLC und andere
-    implementation("androidx.compose.material:material-icons-extended:1.7.6")
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation("org.videolan.android:libvlc-all:3.3.5")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation(libs.okhttp)
+    implementation(libs.coil.compose)
 
-    implementation("org.tensorflow:tensorflow-lite:2.14.0")
-    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
+    implementation(libs.tensorflow.lite)
+    implementation(libs.tensorflow.lite.support)
     implementation(libs.billing.ktx)
 
     // Room Database
