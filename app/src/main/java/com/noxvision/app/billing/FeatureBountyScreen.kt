@@ -32,6 +32,9 @@ import com.noxvision.app.ui.NightColors
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import java.util.Date
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
@@ -47,9 +50,11 @@ fun FeatureBountyScreen(
 ) {
     val userCredits by repository.userCredits.collectAsState()
     val bounties by repository.bounties.collectAsState()
+    val transactions by repository.transactions.collectAsState()
     var showBuyCreditsDialog by remember { mutableStateOf(false) }
     var showDonateDialog by remember { mutableStateOf<FeatureBounty?>(null) }
     var showFaqDialog by remember { mutableStateOf(false) }
+    var showHistoryDialog by remember { mutableStateOf(false) }
     var selectedStatus by remember { mutableStateOf(BountyStatus.ACTIVE) }
 
     val filteredBounties = remember(bounties, selectedStatus) {
@@ -143,7 +148,7 @@ fun FeatureBountyScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Button(
-                                onClick = { /* TODO: View Activity */ },
+                                onClick = { showHistoryDialog = true },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0xFF424242)
                                 ),
@@ -257,6 +262,13 @@ fun FeatureBountyScreen(
         if (showFaqDialog) {
             FeatureBountyFaqDialog(onDismiss = { showFaqDialog = false })
         }
+
+        if (showHistoryDialog) {
+            TransactionHistoryDialog(
+                transactions = transactions,
+                onDismiss = { showHistoryDialog = false }
+            )
+        }
     }
 }
 
@@ -287,7 +299,7 @@ fun BountyCard(bounty: FeatureBounty, onDonateClick: () -> Unit, primaryColor: C
             if (isActive) {
                 Spacer(Modifier.height(12.dp))
                 LinearProgressIndicator(
-                    progress = progress,
+                    progress = { progress },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(8.dp)
@@ -548,6 +560,104 @@ fun FeatureBountyFaqDialog(onDismiss: () -> Unit) {
                 
                 Spacer(Modifier.height(32.dp))
             }
+        }
+    }
+}
+
+@Composable
+fun TransactionHistoryDialog(
+    transactions: List<CreditTransaction>,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = NightColors.surface
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = NightColors.onBackground
+                        )
+                    }
+                    Text(
+                        text = "Activity History",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = NightColors.onBackground
+                    )
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                if (transactions.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("No transactions found.", color = Color.Gray)
+                    }
+                } else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(transactions) { transaction ->
+                            TransactionItem(transaction)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TransactionItem(transaction: CreditTransaction) {
+    val dateString = remember(transaction.timestamp) {
+        val date = Date(transaction.timestamp)
+        SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US).format(date)
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = transaction.description,
+                    color = NightColors.onBackground,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+                Text(
+                    text = dateString,
+                    color = Color.Gray,
+                    fontSize = 12.sp
+                )
+            }
+
+            val amountText = if (transaction.amount > 0) "+${transaction.amount}" else "${transaction.amount}"
+            val amountColor = if (transaction.amount > 0) Color(0xFF43A047) else Color(0xFFE53935)
+
+            Text(
+                text = amountText,
+                color = amountColor,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
         }
     }
 }
