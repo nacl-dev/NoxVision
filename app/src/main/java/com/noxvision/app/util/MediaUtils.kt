@@ -37,14 +37,22 @@ import java.util.concurrent.atomic.AtomicInteger
 private const val FOLDER_GUIDE_CAMERA = "GuideCamera"
 
 fun sanitizeFilename(name: String): String {
-    return File(name).name.replace(Regex("[^a-zA-Z0-9._-]"), "_")
+    // Strip directory path (support both forward and backward slashes)
+    val simpleName = name.substringAfterLast('/').substringAfterLast('\\')
+    // Replace invalid characters
+    val sanitized = simpleName.replace(Regex("[^a-zA-Z0-9._-]"), "_")
+    // Prevent parent directory reference
+    return if (sanitized == "..") "__" else sanitized
 }
 
 fun buildDownloadUrls(baseUrl: String, filename: String): List<String> {
+    // Extract simple filename to prevent path traversal
+    val safeName = filename.substringAfterLast('/').substringAfterLast('\\')
+
     val encodedFilename = try {
-        URLEncoder.encode(filename, "UTF-8").replace("+", "%20")
+        URLEncoder.encode(safeName, "UTF-8").replace("+", "%20")
     } catch (e: Exception) {
-        filename
+        safeName
     }
 
     return listOf(
