@@ -50,6 +50,8 @@ class ThermalObjectDetector(context: Context) {
     private var floatBuffer: FloatBuffer? = null
     private val intValues = IntArray(inputSize * inputSize)
     private val floatValues = FloatArray(inputSize * inputSize * 3)
+    private val anchorMaxScores = FloatArray(numAnchors)
+    private val anchorMaxClassIndices = IntArray(numAnchors)
     private var outputArray: Array<Array<FloatArray>>? = null
     private var enhancedBitmap: Bitmap? = null
     private var enhancedCanvas: Canvas? = null
@@ -180,20 +182,31 @@ class ThermalObjectDetector(context: Context) {
 
             val allDetections = mutableListOf<DetectedObject>()
 
-            for (i in 0 until numAnchors) {
-                var maxScore = 0f
-                var maxClassIndex = -1
+            // Optimized: Inverted loop for better cache locality and fewer array lookups
+            // Reset max arrays
+            anchorMaxScores.fill(0f)
+            anchorMaxClassIndices.fill(-1)
 
-                for (c in 0 until numClasses) {
-                    val score = currentOutput[0][4 + c][i]
-                    if (score > maxScore) {
-                        maxScore = score
-                        maxClassIndex = c
+            val outputChannels = currentOutput[0]
+
+            // Find max class for each anchor
+            for (c in 0 until numClasses) {
+                val classProps = outputChannels[4 + c]
+                for (i in 0 until numAnchors) {
+                    val score = classProps[i]
+                    if (score > anchorMaxScores[i]) {
+                        anchorMaxScores[i] = score
+                        anchorMaxClassIndices[i] = c
                     }
                 }
+            }
 
+            // Collect detections
+            for (i in 0 until numAnchors) {
+                val maxScore = anchorMaxScores[i]
                 if (maxScore < minConfidenceThreshold) continue
 
+                val maxClassIndex = anchorMaxClassIndices[i]
                 if (maxClassIndex != -1) {
                     val rawLabel = labels[maxClassIndex]
 
@@ -206,10 +219,10 @@ class ThermalObjectDetector(context: Context) {
                     }
 
                     if (maxScore >= minConf) {
-                        val cx = currentOutput[0][0][i] / inputSize.toFloat()
-                        val cy = currentOutput[0][1][i] / inputSize.toFloat()
-                        val w = currentOutput[0][2][i] / inputSize.toFloat()
-                        val h = currentOutput[0][3][i] / inputSize.toFloat()
+                        val cx = outputChannels[0][i] / inputSize.toFloat()
+                        val cy = outputChannels[1][i] / inputSize.toFloat()
+                        val w = outputChannels[2][i] / inputSize.toFloat()
+                        val h = outputChannels[3][i] / inputSize.toFloat()
 
                         val x1 = (cx - w / 2) * bitmap.width
                         val y1 = (cy - h / 2) * bitmap.height
