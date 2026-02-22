@@ -144,6 +144,7 @@ fun VideoStreamScreen() {
     var zoomLevel by remember { mutableFloatStateOf(10f) }
     var audioEnabled by rememberSaveable { mutableStateOf(true) }
     var selectedPalette by rememberSaveable { mutableStateOf("whitehot") }
+    var loadingPaletteId by remember { mutableStateOf<String?>(null) }
     var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
     var showGalleryDialog by rememberSaveable { mutableStateOf(false) }
     var galleryRefreshKey by rememberSaveable { mutableIntStateOf(0) }
@@ -1151,10 +1152,18 @@ fun VideoStreamScreen() {
                             imageRes = imageRes,
                             name = name,
                             isSelected = selectedPalette == id,
+                            isLoading = loadingPaletteId == id,
                             onClick = {
-                                scope.launch {
-                                    val success = setPalette(id)
-                                    if (success) selectedPalette = id
+                                if (loadingPaletteId == null) {
+                                    scope.launch {
+                                        loadingPaletteId = id
+                                        try {
+                                            val success = setPalette(id)
+                                            if (success) selectedPalette = id
+                                        } finally {
+                                            loadingPaletteId = null
+                                        }
+                                    }
                                 }
                             },
                             modifier = Modifier.width(65.dp)

@@ -21,11 +21,13 @@ import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.VideoFile
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
@@ -48,13 +50,15 @@ fun PaletteButton(
     name: String,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isLoading: Boolean = false
 ) {
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .selectable(
                 selected = isSelected,
+                enabled = !isLoading,
                 onClick = onClick,
                 role = Role.RadioButton
             )
@@ -67,15 +71,25 @@ fun PaletteButton(
             .padding(6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painter = painterResource(id = imageRes),
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(30.dp)
-                .clip(RoundedCornerShape(4.dp)),
-            contentScale = ContentScale.Fit
-        )
+        Box(contentAlignment = Alignment.Center) {
+            Image(
+                painter = painterResource(id = imageRes),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(30.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .alpha(if (isLoading) 0.5f else 1f),
+                contentScale = ContentScale.Fit
+            )
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    strokeWidth = 2.dp,
+                    color = NightColors.primary
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = name,
