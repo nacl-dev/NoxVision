@@ -53,13 +53,10 @@ class ThermalObjectDetector(context: Context) {
     private val anchorMaxScores = FloatArray(numAnchors)
     private val anchorMaxClassIndices = IntArray(numAnchors)
     private var outputArray: Array<Array<FloatArray>>? = null
-    private var enhancedBitmap: Bitmap? = null
-    private var enhancedCanvas: Canvas? = null
+    // Optimization: Removed intermediate enhancedBitmap/Canvas to save memory and draw calls
     private var scaledBitmap: Bitmap? = null
     private var scaledCanvas: Canvas? = null
 
-    // Cached objects to avoid allocation in enhanceThermalImage
-    private val scalePaint = Paint().apply { isFilterBitmap = true }
     private val inputRect = Rect(0, 0, inputSize, inputSize)
     private val enhancementColorMatrix = android.graphics.ColorMatrix().apply {
         val contrast = 1.3f
@@ -77,6 +74,7 @@ class ThermalObjectDetector(context: Context) {
 
     private val enhancementPaint = Paint().apply {
         colorFilter = android.graphics.ColorMatrixColorFilter(enhancementColorMatrix)
+        isFilterBitmap = true // Combine scaling and filtering
     }
 
     init {
@@ -149,22 +147,15 @@ class ThermalObjectDetector(context: Context) {
         try {
             val startTime = System.currentTimeMillis()
 
-            // 1. Enhance
-            if (enhancedBitmap == null || enhancedBitmap?.width != bitmap.width || enhancedBitmap?.height != bitmap.height) {
-                enhancedBitmap?.recycle()
-                enhancedBitmap = createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
-                enhancedCanvas = Canvas(enhancedBitmap!!)
-            }
-            val currentEnhanced = enhancedBitmap!!
-            enhanceThermalImage(bitmap, enhancedCanvas!!)
-
-            // 2. Scale
+            // Optimized: Combine enhancement and scaling into a single step
             if (scaledBitmap == null) {
                 scaledBitmap = createBitmap(inputSize, inputSize, Bitmap.Config.ARGB_8888)
                 scaledCanvas = Canvas(scaledBitmap!!)
             }
             val currentScaled = scaledBitmap!!
-            scaledCanvas!!.drawBitmap(currentEnhanced, null, inputRect, scalePaint)
+
+            // Draw source bitmap directly to scaled canvas with enhancement paint (scaling + color filter)
+            scaledCanvas!!.drawBitmap(bitmap, null, inputRect, enhancementPaint)
 
             // 3. Convert to Float Buffer
             if (imgData == null) {
@@ -314,10 +305,6 @@ class ThermalObjectDetector(context: Context) {
         return if (unionArea > 0) intersectArea / unionArea else 0f
     }
 
-    private fun enhanceThermalImage(src: Bitmap, canvas: Canvas) {
-        canvas.drawBitmap(src, 0f, 0f, enhancementPaint)
-    }
-
     private fun estimateDistance(label: String, bbox: RectF): Float? {
         val objInfo = KNOWN_OBJECTS[label] ?: return null
         val objectHeightPx = bbox.height()
@@ -331,9 +318,7 @@ class ThermalObjectDetector(context: Context) {
             interpreter?.close()
             interpreter = null
             outputArray = null
-            enhancedBitmap?.recycle()
-            enhancedBitmap = null
-            enhancedCanvas = null
+            // enhancedBitmap cleanup removed
             scaledBitmap?.recycle()
             scaledBitmap = null
             scaledCanvas = null
