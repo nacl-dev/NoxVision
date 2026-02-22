@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -24,7 +26,8 @@ fun DarkButton(
     onClick: () -> Unit,
     enabled: Boolean,
     modifier: Modifier = Modifier,
-    isRecording: Boolean = false
+    isRecording: Boolean = false,
+    isLoading: Boolean = false
 ) {
     Button(
         onClick = onClick,
@@ -46,11 +49,19 @@ fun DarkButton(
         ),
         shape = RoundedCornerShape(12.dp)
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp)
-        )
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                strokeWidth = 2.dp,
+                color = LocalContentColor.current
+            )
+        } else {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+        }
         if (text.isNotEmpty()) {
             Spacer(modifier = Modifier.width(8.dp))
             Text(
