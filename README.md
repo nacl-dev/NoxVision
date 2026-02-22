@@ -1,6 +1,4 @@
 <div align="center">
-  <img src="docs/preview.gif" alt="NoxVision Demo" width="320" style="border-radius: 12px; margin-bottom: 20px;">
-
   # 🦉 NoxVision
 
   **The ultimate Android companion app for Guide™ thermal cameras.**  
@@ -11,6 +9,20 @@
   [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF.svg?style=flat-square&logo=kotlin)](https://kotlinlang.org)
   [![Version](https://img.shields.io/badge/Version-1.3.0-blue.svg?style=flat-square)](../../releases)
 </div>
+
+---
+
+## 🚀 Get Started
+
+No technical knowledge is required to test NoxVision. Start in just 2 minutes!
+
+1. 👥 **Join the Tester Group** → [Open Google Group](https://groups.google.com/g/noxvision-closed-testers)
+2. ✅ **Activate Test Access** → [Open Play Opt-in](https://play.google.com/apps/testing/com.noxvision.app) *(Use the same Google account)*
+3. 📥 **Install the App** → [Open Play Store](https://play.google.com/store/apps/details?id=com.noxvision.app)
+4. 💬 **Send Feedback** → [Report an Issue on GitHub](https://github.com/nacl-dev/NoxVision/issues)
+
+> **Quick Links:**  
+> 📖 [Tester Guide](docs/closed-alpha-test.md) • 🔒 [Privacy Policy](PRIVACY_POLICY.md) • 🐛 [Issue Tracker](https://github.com/nacl-dev/NoxVision/issues)
 
 ---
 
@@ -41,19 +53,10 @@ NoxVision transforms your smartphone into a powerful command center for your the
 NoxVision automatically detects and connects to **Guide Sensmart** models:
 - **TE Series** | **C Series** | **D Series** | **B Series** | **PS Series**
 
----
-
-## 🚀 Get Started
-
-No technical knowledge is required to test NoxVision. Start in just 2 minutes!
-
-1. 👥 **Join the Tester Group** → [Open Google Group](https://groups.google.com/g/noxvision-closed-testers)
-2. ✅ **Activate Test Access** → [Open Play Opt-in](https://play.google.com/apps/testing/com.noxvision.app) *(Use the same Google account)*
-3. 📥 **Install the App** → [Open Play Store](https://play.google.com/store/apps/details?id=com.noxvision.app)
-4. 💬 **Send Feedback** → [Report an Issue on GitHub](https://github.com/nacl-dev/NoxVision/issues)
-
-> **Quick Links:**  
-> 📖 [Tester Guide](docs/closed-alpha-test.md) • 🔒 [Privacy Policy](PRIVACY_POLICY.md) • 🐛 [Issue Tracker](https://github.com/nacl-dev/NoxVision/issues)
+<div align="center">
+  <br>
+  <img src="docs/preview.gif" alt="NoxVision Demo" width="320" style="border-radius: 12px; margin-bottom: 20px;">
+</div>
 
 ---
 
