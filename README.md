@@ -1,14 +1,16 @@
-<div align="center">
-  # 🦉 NoxVision
+<h1 align="center">🦉 NoxVision</h1>
 
-  **The ultimate Android companion app for Guide™ thermal cameras.**  
-  *Livestreaming, intelligent hunting workflows, and seamless field documentation.*
+<p align="center">
+  <strong>The ultimate Android companion app for Guide™ thermal cameras.</strong><br>
+  <em>Livestreaming, intelligent hunting workflows, and seamless field documentation.</em>
+</p>
 
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
-  [![Android](https://img.shields.io/badge/Android-24%2B-3DDC84.svg?style=flat-square&logo=android)](https://developer.android.com)
-  [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF.svg?style=flat-square&logo=kotlin)](https://kotlinlang.org)
-  [![Version](https://img.shields.io/badge/Version-1.3.0-blue.svg?style=flat-square)](../../releases)
-</div>
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="License: MIT"></a>
+  <a href="https://developer.android.com"><img src="https://img.shields.io/badge/Android-24%2B-3DDC84.svg?style=flat-square&logo=android" alt="Android"></a>
+  <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-2.2.10-7F52FF.svg?style=flat-square&logo=kotlin" alt="Kotlin"></a>
+  <a href="../../releases"><img src="https://img.shields.io/badge/Version-1.3.0-blue.svg?style=flat-square" alt="Version"></a>
+</p>
 
 ---
 
