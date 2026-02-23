@@ -3,9 +3,11 @@ package com.noxvision.app.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
 import android.view.PixelCopy
+import android.view.Surface
 import android.view.SurfaceView
 import android.view.ViewGroup
 import android.widget.Toast
@@ -107,8 +109,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.videolan.libvlc.LibVLC
+import kotlin.coroutines.resume
 import org.videolan.libvlc.Media
 import org.videolan.libvlc.MediaPlayer
 import java.io.File
@@ -653,32 +657,35 @@ fun VideoStreamScreen() {
     // AI Object Detection
     LaunchedEffect(objectDetectionEnabled, isPlaying) {
         if (objectDetectionEnabled && isPlaying) {
-            while (isActive && objectDetectionEnabled && isPlaying) {
-                delay(1500)
+            var cachedBitmap: Bitmap? = null
+            try {
+                while (isActive && objectDetectionEnabled && isPlaying) {
+                    delay(1500)
 
-                surfaceView?.let { view ->
-                    try {
-                        val bitmap = createBitmap(view.width, view.height)
-                        PixelCopy.request(
-                            view.holder.surface,
-                            bitmap,
-                            { copyResult ->
-                                if (copyResult == PixelCopy.SUCCESS) {
-                                    scope.launch(Dispatchers.Default) {
-                                        val objects = detector.detectObjects(bitmap)
-                                        withContext(Dispatchers.Main) {
-                                            detectedObjects = objects
-                                        }
-                                        bitmap.recycle()
-                                    }
+                    surfaceView?.let { view ->
+                        try {
+                            if (view.width > 0 && view.height > 0) {
+                                if (cachedBitmap == null || cachedBitmap?.width != view.width || cachedBitmap?.height != view.height) {
+                                    cachedBitmap?.recycle()
+                                    cachedBitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
                                 }
-                            },
-                            Handler(Looper.getMainLooper())
-                        )
-                    } catch (e: Exception) {
-                        AppLogger.log("Frame Capture Error: ${e.message}", AppLogger.LogType.ERROR)
+                                val bitmap = cachedBitmap!!
+
+                                val result = pixelCopy(view.holder.surface, bitmap)
+                                if (result == PixelCopy.SUCCESS) {
+                                    val objects = withContext(Dispatchers.Default) {
+                                        detector.detectObjects(bitmap)
+                                    }
+                                    detectedObjects = objects
+                                }
+                            }
+                        } catch (e: Exception) {
+                            AppLogger.log("Frame Capture Error: ${e.message}", AppLogger.LogType.ERROR)
+                        }
                     }
                 }
+            } finally {
+                cachedBitmap?.recycle()
             }
         } else {
             detectedObjects = emptyList()
@@ -1505,6 +1512,25 @@ fun VideoStreamScreen() {
                     }
                 )
             }
+        }
+    }
+}
+
+private suspend fun pixelCopy(surface: Surface, bitmap: Bitmap): Int = suspendCancellableCoroutine { cont ->
+    try {
+        PixelCopy.request(
+            surface,
+            bitmap,
+            { result ->
+                if (cont.isActive) {
+                    cont.resume(result)
+                }
+            },
+            Handler(Looper.getMainLooper())
+        )
+    } catch (e: Exception) {
+        if (cont.isActive) {
+            cont.resume(PixelCopy.ERROR_UNKNOWN)
         }
     }
 }
