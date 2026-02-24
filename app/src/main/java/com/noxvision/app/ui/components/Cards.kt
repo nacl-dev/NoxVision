@@ -31,15 +31,19 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.noxvision.app.R
 import com.noxvision.app.data.CameraFile
 import com.noxvision.app.data.PhoneMediaFile
 import com.noxvision.app.ui.NightColors
@@ -53,6 +57,7 @@ fun PaletteButton(
     modifier: Modifier = Modifier,
     isLoading: Boolean = false
 ) {
+    val loadingText = stringResource(R.string.loading)
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
@@ -62,6 +67,11 @@ fun PaletteButton(
                 onClick = onClick,
                 role = Role.RadioButton
             )
+            .semantics {
+                if (isLoading) {
+                    stateDescription = loadingText
+                }
+            }
             .background(NightColors.surface)
             .border(
                 width = 1.dp,
@@ -112,7 +122,7 @@ fun FileCard(
             .fillMaxWidth()
             .aspectRatio(1f)
             .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick, role = Role.Button),
         colors = CardDefaults.cardColors(
             containerColor = NightColors.primaryDim
         )
@@ -164,7 +174,7 @@ fun PhoneFileCard(file: PhoneMediaFile, onClick: () -> Unit) {
             .fillMaxWidth()
             .aspectRatio(1f)
             .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick, role = Role.Button),
         colors = CardDefaults.cardColors(containerColor = NightColors.primaryDim)
     ) {
         Box(
