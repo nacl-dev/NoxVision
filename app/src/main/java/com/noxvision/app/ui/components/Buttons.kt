@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,11 +25,12 @@ fun DarkButton(
     onClick: () -> Unit,
     enabled: Boolean,
     modifier: Modifier = Modifier,
-    isRecording: Boolean = false
+    isRecording: Boolean = false,
+    isLoading: Boolean = false
 ) {
     Button(
         onClick = onClick,
-        enabled = enabled,
+        enabled = enabled && !isLoading,
         modifier = modifier.height(48.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isRecording) {
@@ -41,16 +43,24 @@ fun DarkButton(
             contentColor = if (enabled) NightColors.onSurface else NightColors.onBackground.copy(
                 alpha = 0.4f
             ),
-            disabledContainerColor = NightColors.surface,
-            disabledContentColor = NightColors.onBackground.copy(alpha = 0.3f)
+            disabledContainerColor = if (isLoading) NightColors.primaryDim else NightColors.surface,
+            disabledContentColor = if (isLoading) NightColors.onSurface else NightColors.onBackground.copy(alpha = 0.3f)
         ),
         shape = RoundedCornerShape(12.dp)
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp)
-        )
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = NightColors.onSurface,
+                strokeWidth = 2.dp
+            )
+        } else {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+        }
         if (text.isNotEmpty()) {
             Spacer(modifier = Modifier.width(8.dp))
             Text(

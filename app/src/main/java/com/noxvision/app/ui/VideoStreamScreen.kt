@@ -211,6 +211,7 @@ fun VideoStreamScreen() {
     // Thermal settings dialog
     var showThermalSettingsDialog by rememberSaveable { mutableStateOf(false) }
     var isShutterInProgress by remember { mutableStateOf(false) }
+    var isTakingPhoto by remember { mutableStateOf(false) }
 
     // Lifecycle state
     var wasPlayingBeforeStop by remember { mutableStateOf(false) }
@@ -1249,18 +1250,24 @@ fun VideoStreamScreen() {
                         onClick = {
                             scope.launch {
                                 surfaceView?.let { view ->
-                                    captureScreenshot(context, view)
-                                    galleryRefreshKey++
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(R.string.photo_saved),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    try {
+                                        isTakingPhoto = true
+                                        captureScreenshot(context, view)
+                                        galleryRefreshKey++
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(R.string.photo_saved),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } finally {
+                                        isTakingPhoto = false
+                                    }
                                 }
                             }
                         },
                         enabled = isPlaying && !isRecording,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        isLoading = isTakingPhoto
                     )
                 }
 

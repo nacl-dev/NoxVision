@@ -21,8 +21,11 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -426,19 +429,29 @@ suspend fun fetchPhoneMedia(context: Context, folder: PhoneFolder): List<PhoneMe
     }
 }
 
-fun captureScreenshot(context: Context, view: SurfaceView) {
+suspend fun captureScreenshot(context: Context, view: SurfaceView) {
     try {
         val bitmap = createBitmap(view.width, view.height)
-        PixelCopy.request(
-            view.holder.surface,
-            bitmap,
-            { copyResult ->
-                if (copyResult == PixelCopy.SUCCESS) {
-                    saveBitmapToGallery(context, bitmap)
-                }
-            },
-            Handler(Looper.getMainLooper())
-        )
+        val result = suspendCancellableCoroutine<Int> { cont ->
+            try {
+                PixelCopy.request(
+                    view.holder.surface,
+                    bitmap,
+                    { copyResult ->
+                        cont.resume(copyResult)
+                    },
+                    Handler(Looper.getMainLooper())
+                )
+            } catch (e: Exception) {
+                cont.resumeWithException(e)
+            }
+        }
+
+        if (result == PixelCopy.SUCCESS) {
+            withContext(Dispatchers.IO) {
+                saveBitmapToGallery(context, bitmap)
+            }
+        }
     } catch (_: Exception) {
     }
 }
