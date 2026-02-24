@@ -10,6 +10,7 @@
     <!--
        ENFORCE HTTPS for external APIs to prevent MITM attacks.
        Even if the code tries to use HTTP, the system will block it.
+       The entry for 'openweathermap.org' with includeSubdomains="true" covers 'api.openweathermap.org'.
     -->
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">openweathermap.org</domain>
