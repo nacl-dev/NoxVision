@@ -11,16 +11,17 @@
     <!--
        ENFORCE HTTPS for external APIs to prevent MITM attacks.
        Even if the code tries to use HTTP, the system will block it.
+       The entry for 'openweathermap.org' with includeSubdomains="true" covers 'api.openweathermap.org'.
     -->
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">openweathermap.org</domain>
-        <domain includeSubdomains="true">api.openweathermap.org</domain>
     </domain-config>
 
     <!--
        Allow cleartext traffic by default to support custom camera IPs (user-defined).
-       While not ideal, this is necessary because we cannot whitelist dynamic private IPs.
-       However, we now block cleartext for known external domains.
+       While not ideal, this is necessary because we cannot whitelist dynamic private IPs (e.g. 192.168.x.x)
+       in this XML configuration, and users may configure their cameras on arbitrary local addresses.
+       However, we now explicitly block cleartext for known external domains like OpenWeatherMap.
     -->
     <base-config cleartextTrafficPermitted="true" />
 </network-security-config>
