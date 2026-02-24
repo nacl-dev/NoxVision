@@ -2,7 +2,6 @@
 <network-security-config>
     <!--
        Explicitly allow cleartext traffic for the camera's default IP.
-       This is redundant with the permissive base-config below but documents intent.
     -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">192.168.42.1</domain>
@@ -18,10 +17,9 @@
     </domain-config>
 
     <!--
-       Allow cleartext traffic by default to support custom camera IPs (user-defined).
-       While not ideal, this is necessary because we cannot whitelist dynamic private IPs (e.g. 192.168.x.x)
-       in this XML configuration, and users may configure their cameras on arbitrary local addresses.
-       However, we now explicitly block cleartext for known external domains like OpenWeatherMap.
+       Disable cleartext traffic by default; only explicitly whitelisted domains
+       (such as the local camera IP above) may use cleartext HTTP.
+       This enforces HTTPS for external/public hosts by default.
     -->
-    <base-config cleartextTrafficPermitted="true" />
+    <base-config cleartextTrafficPermitted="false" />
 </network-security-config>
