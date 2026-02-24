@@ -14,8 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,14 +32,17 @@ fun DarkButton(
     isRecording: Boolean = false,
     isLoading: Boolean = false
 ) {
+    val loadingDescription = stringResource(R.string.loading)
     Button(
         onClick = onClick,
         enabled = enabled && !isLoading,
         modifier = modifier
             .height(48.dp)
-            .then(
-                if (isLoading) Modifier.semantics { stateDescription = stringResource(R.string.loading) } else Modifier
-            ),
+            .semantics {
+                if (isLoading) {
+                    contentDescription = loadingDescription
+                }
+            },
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isRecording) {
                 NightColors.recording
