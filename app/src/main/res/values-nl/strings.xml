@@ -122,6 +122,7 @@
     <string name="permissions_required">Machtigingen vereist</string>
     <string name="wifi_connection_failed">WiFi-verbinding mislukt</string>
     <string name="photo_saved">Foto opgeslagen</string>
+    <string name="photo_save_failed">Foto opslaan mislukt</string>
     <string name="video_saved">Video opgeslagen (%1$d KB)</string>
     <string name="video_too_small">Video te klein/leeg</string>
 

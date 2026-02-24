@@ -122,6 +122,7 @@
     <string name="permissions_required">Потрібні дозволи</string>
     <string name="wifi_connection_failed">Не вдалося підключитися до WiFi</string>
     <string name="photo_saved">Фото збережено</string>
+    <string name="photo_save_failed">Не вдалося зберегти фото</string>
     <string name="video_saved">Відео збережено (%1$d KB)</string>
     <string name="video_too_small">Відео занадто мале/порожнє</string>
 

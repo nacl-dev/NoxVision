@@ -1259,6 +1259,13 @@ fun VideoStreamScreen() {
                                             context.getString(R.string.photo_saved),
                                             Toast.LENGTH_SHORT
                                         ).show()
+                                    } catch (e: Exception) {
+                                        AppLogger.log("Screenshot failed: ${e.message}", AppLogger.LogType.ERROR)
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(R.string.photo_save_failed),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     } finally {
                                         isTakingPhoto = false
                                     }

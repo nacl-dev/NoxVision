@@ -122,6 +122,7 @@
     <string name="permissions_required">Autorizzazioni necessarie</string>
     <string name="wifi_connection_failed">Connessione WiFi non riuscita</string>
     <string name="photo_saved">Foto salvata</string>
+    <string name="photo_save_failed">Impossibile salvare la foto</string>
     <string name="video_saved">Video salvato (%1$d KB)</string>
     <string name="video_too_small">Video troppo piccolo/vuoto</string>
 
