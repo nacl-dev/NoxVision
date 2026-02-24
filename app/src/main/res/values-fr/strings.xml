@@ -123,6 +123,7 @@
     <string name="permissions_required">Autorisations requises</string>
     <string name="wifi_connection_failed">Échec connexion WiFi</string>
     <string name="photo_saved">Photo enregistrée</string>
+    <string name="photo_save_failed">Impossible d\'enregistrer la photo</string>
     <string name="video_saved">Vidéo enregistrée (%1$d KB)</string>
     <string name="video_too_small">Vidéo trop petite/vide</string>
 

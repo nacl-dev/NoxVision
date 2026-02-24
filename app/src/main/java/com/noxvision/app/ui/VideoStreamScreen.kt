@@ -1207,7 +1207,7 @@ fun VideoStreamScreen() {
                         },
                         enabled = true,
                         modifier = Modifier.weight(1f),
-                        isRecording = isConnecting
+                        isRecording = false
                     )
 
                     DarkButton(
@@ -1260,10 +1260,10 @@ fun VideoStreamScreen() {
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     } catch (e: Exception) {
-                                        AppLogger.log("Screenshot Fehler: ${e.message}", AppLogger.LogType.ERROR)
+                                        AppLogger.log("Screenshot failed: ${e.message}", AppLogger.LogType.ERROR)
                                         Toast.makeText(
                                             context,
-                                            "Fehler beim Speichern",
+                                            context.getString(R.string.photo_save_failed),
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     } finally {
