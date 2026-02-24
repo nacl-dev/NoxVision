@@ -666,6 +666,7 @@ fun VideoStreamScreen() {
                     surfaceView?.let { view ->
                         try {
                             if (view.width > 0 && view.height > 0) {
+<<<<<<< HEAD
                                 if (cachedBitmap == null || cachedBitmap.width != view.width || cachedBitmap.height != view.height) {
                                     cachedBitmap?.recycle()
                                     cachedBitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
