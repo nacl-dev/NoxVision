@@ -1207,7 +1207,7 @@ fun VideoStreamScreen() {
                         },
                         enabled = true,
                         modifier = Modifier.weight(1f),
-                        isRecording = isConnecting
+                        isRecording = false
                     )
 
                     DarkButton(
