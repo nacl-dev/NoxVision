@@ -106,6 +106,7 @@ import com.noxvision.app.util.formatDuration
 import com.noxvision.app.util.saveVideoToGallery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -671,7 +672,10 @@ fun VideoStreamScreen() {
                                 }
                                 val bitmap = cachedBitmap!!
 
-                                val result = pixelCopy(view.holder.surface, bitmap)
+                                // Prevent cancellation during pixel copy to avoid recycling the bitmap while it's being written to
+                                val result = withContext(NonCancellable) {
+                                    pixelCopy(view.holder.surface, bitmap)
+                                }
                                 if (result == PixelCopy.SUCCESS) {
                                     val objects = withContext(Dispatchers.Default) {
                                         detector.detectObjects(bitmap)
@@ -1517,7 +1521,6 @@ fun VideoStreamScreen() {
 }
 
 private suspend fun pixelCopy(surface: Surface, bitmap: Bitmap): Int = suspendCancellableCoroutine { cont ->
-    cont.invokeOnCancellation { /* PixelCopy.request has no cancellation API; resume on a cancelled continuation is a safe no-op */ }
     try {
         PixelCopy.request(
             surface,
