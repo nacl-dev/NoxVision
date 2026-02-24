@@ -430,8 +430,8 @@ suspend fun fetchPhoneMedia(context: Context, folder: PhoneFolder): List<PhoneMe
 }
 
 suspend fun captureScreenshot(context: Context, view: SurfaceView) {
+    val bitmap = createBitmap(view.width, view.height)
     try {
-        val bitmap = createBitmap(view.width, view.height)
         val result = suspendCancellableCoroutine<Int> { cont ->
             try {
                 PixelCopy.request(
@@ -451,8 +451,11 @@ suspend fun captureScreenshot(context: Context, view: SurfaceView) {
             withContext(Dispatchers.IO) {
                 saveBitmapToGallery(context, bitmap)
             }
+        } else {
+            throw RuntimeException("PixelCopy failed with result: $result")
         }
-    } catch (_: Exception) {
+    } finally {
+        bitmap.recycle()
     }
 }
 
