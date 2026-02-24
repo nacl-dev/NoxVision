@@ -50,13 +50,13 @@ class WeatherIconHelperTest {
     @Test
     fun formatTemperature_Values() {
         // Use String.format to match the implementation's locale dependency
-        val expectedPositive = String.format("%.1f\u00B0C", 20.5)
+        val expectedPositive = String.format(java.util.Locale.GERMANY, "%.1f\u00B0C", 20.5)
         assertEquals(expectedPositive, WeatherIconHelper.formatTemperature(20.5))
 
-        val expectedZero = String.format("%.1f\u00B0C", 0.0)
+        val expectedZero = String.format(java.util.Locale.GERMANY, "%.1f\u00B0C", 0.0)
         assertEquals(expectedZero, WeatherIconHelper.formatTemperature(0.0))
 
-        val expectedNegative = String.format("%.1f\u00B0C", -5.23)
+        val expectedNegative = String.format(java.util.Locale.GERMANY, "%.1f\u00B0C", -5.23)
         // Note: formatTemperature implementation uses %.1f, so it rounds/truncates
         assertEquals(expectedNegative, WeatherIconHelper.formatTemperature(-5.23))
     }
@@ -64,11 +64,11 @@ class WeatherIconHelperTest {
     @Test
     fun formatWindSpeed_Conversion() {
         // 10 m/s = 36 km/h
-        val expected36 = String.format("%.1f km/h", 36.0)
+        val expected36 = String.format(java.util.Locale.GERMANY, "%.1f km/h", 36.0)
         assertEquals(expected36, WeatherIconHelper.formatWindSpeed(10.0))
 
         // 0 m/s = 0 km/h
-        val expected0 = String.format("%.1f km/h", 0.0)
+        val expected0 = String.format(java.util.Locale.GERMANY, "%.1f km/h", 0.0)
         assertEquals(expected0, WeatherIconHelper.formatWindSpeed(0.0))
     }
 
