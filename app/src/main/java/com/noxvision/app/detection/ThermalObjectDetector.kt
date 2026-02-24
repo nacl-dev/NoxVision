@@ -253,19 +253,8 @@ class ThermalObjectDetector(context: Context) {
 
         bitmap.getPixels(intValues, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
 
-        var pixel = 0
-        var floatIdx = 0
-        val inv255 = 1.0f / 255.0f
-
-        // Flattened loop for performance
         val totalPixels = inputSize * inputSize
-        for (i in 0 until totalPixels) {
-            val value = intValues[pixel++]
-            // Use multiplication instead of division for performance
-            floatValues[floatIdx++] = ((value shr 16 and 0xFF) * inv255)
-            floatValues[floatIdx++] = ((value shr 8 and 0xFF) * inv255)
-            floatValues[floatIdx++] = ((value and 0xFF) * inv255)
-        }
+        convertPixelsToFloatBuffer(intValues, floatValues, totalPixels)
 
         floatBuffer?.put(floatValues)
     }
@@ -323,6 +312,29 @@ class ThermalObjectDetector(context: Context) {
             scaledBitmap = null
             scaledCanvas = null
         } catch (_: Exception) {
+        }
+    }
+
+    companion object {
+        private val floatLookup = FloatArray(256) { it / 255.0f }
+
+        @JvmStatic
+        internal fun convertPixelsToFloatBuffer(
+            intValues: IntArray,
+            floatValues: FloatArray,
+            totalPixels: Int
+        ) {
+            var pixel = 0
+            var floatIdx = 0
+
+            // Flattened loop for performance
+            for (i in 0 until totalPixels) {
+                val value = intValues[pixel++]
+                // Use lookup table to avoid float conversion and multiplication
+                floatValues[floatIdx++] = floatLookup[(value shr 16) and 0xFF]
+                floatValues[floatIdx++] = floatLookup[(value shr 8) and 0xFF]
+                floatValues[floatIdx++] = floatLookup[value and 0xFF]
+            }
         }
     }
 }
