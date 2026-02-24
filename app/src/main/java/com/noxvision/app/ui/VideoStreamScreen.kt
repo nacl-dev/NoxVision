@@ -666,7 +666,8 @@ fun VideoStreamScreen() {
                     surfaceView?.let { view ->
                         try {
                             if (view.width > 0 && view.height > 0) {
-                                if (cachedBitmap == null || cachedBitmap!!.width != view.width || cachedBitmap!!.height != view.height) {
+<<<<<<< HEAD
+                                if (cachedBitmap == null || cachedBitmap.width != view.width || cachedBitmap.height != view.height) {
                                     cachedBitmap?.recycle()
                                     cachedBitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
                                 }
@@ -676,7 +677,6 @@ fun VideoStreamScreen() {
                                 val result = withContext(NonCancellable) {
                                     pixelCopy(view.holder.surface, bitmap)
                                 }
-
                                 if (result == PixelCopy.SUCCESS) {
                                     val objects = withContext(Dispatchers.Default) {
                                         detector.detectObjects(bitmap)
@@ -1526,17 +1526,11 @@ private suspend fun pixelCopy(surface: Surface, bitmap: Bitmap): Int = suspendCa
         PixelCopy.request(
             surface,
             bitmap,
-            { result ->
-                if (cont.isActive) {
-                    cont.resume(result)
-                }
-            },
+            { result -> cont.resume(result) },
             Handler(Looper.getMainLooper())
         )
     } catch (e: Exception) {
-        if (cont.isActive) {
-            cont.resume(PixelCopy.ERROR_UNKNOWN)
-        }
+        cont.resume(PixelCopy.ERROR_UNKNOWN)
     }
 }
 
