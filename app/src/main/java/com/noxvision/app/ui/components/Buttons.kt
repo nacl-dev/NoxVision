@@ -7,14 +7,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.noxvision.app.R
 import com.noxvision.app.ui.NightColors
 
 @Composable
@@ -24,12 +29,22 @@ fun DarkButton(
     onClick: () -> Unit,
     enabled: Boolean,
     modifier: Modifier = Modifier,
-    isRecording: Boolean = false
+    isRecording: Boolean = false,
+    isLoading: Boolean = false,
+    contentDescription: String? = null
 ) {
+    val loadingDescription = stringResource(R.string.loading)
+
     Button(
         onClick = onClick,
-        enabled = enabled,
-        modifier = modifier.height(48.dp),
+        enabled = enabled && !isLoading,
+        modifier = modifier
+            .height(48.dp)
+            .semantics {
+                if (isLoading) {
+                    stateDescription = loadingDescription
+                }
+            },
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isRecording) {
                 NightColors.recording
@@ -46,11 +61,19 @@ fun DarkButton(
         ),
         shape = RoundedCornerShape(12.dp)
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp)
-        )
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                strokeWidth = 2.dp,
+                color = NightColors.onSurface.copy(alpha = 0.7f)
+            )
+        } else {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                modifier = Modifier.size(20.dp)
+            )
+        }
         if (text.isNotEmpty()) {
             Spacer(modifier = Modifier.width(8.dp))
             Text(

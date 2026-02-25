@@ -21,7 +21,10 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.File
@@ -426,33 +429,52 @@ suspend fun fetchPhoneMedia(context: Context, folder: PhoneFolder): List<PhoneMe
     }
 }
 
-fun captureScreenshot(context: Context, view: SurfaceView) {
-    try {
+suspend fun captureScreenshot(context: Context, view: SurfaceView): Boolean {
+    return try {
         val bitmap = createBitmap(view.width, view.height)
-        PixelCopy.request(
-            view.holder.surface,
-            bitmap,
-            { copyResult ->
-                if (copyResult == PixelCopy.SUCCESS) {
-                    saveBitmapToGallery(context, bitmap)
+        val copyResult = suspendCancellableCoroutine<Int> { cont ->
+            try {
+                PixelCopy.request(
+                    view.holder.surface,
+                    bitmap,
+                    { result ->
+                        if (cont.isActive) {
+                            cont.resume(result)
+                        }
+                    },
+                    Handler(Looper.getMainLooper())
+                )
+            } catch (e: Exception) {
+                if (cont.isActive) {
+                    cont.resumeWithException(e)
                 }
-            },
-            Handler(Looper.getMainLooper())
-        )
+            }
+        }
+
+        if (copyResult == PixelCopy.SUCCESS) {
+            saveBitmapToGallery(context, bitmap)
+            true
+        } else {
+            false
+        }
     } catch (_: Exception) {
+        false
     }
 }
 
-fun saveBitmapToGallery(context: Context, bitmap: Bitmap) {
-    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    val filename = "IMG_$timestamp.jpg"
+suspend fun saveBitmapToGallery(context: Context, bitmap: Bitmap) {
+    withContext(Dispatchers.IO) {
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+        val filename = "IMG_$timestamp.jpg"
 
-    val contentValues = createMediaContentValues(filename, "image/jpeg")
+        val contentValues = createMediaContentValues(filename, "image/jpeg")
 
-    val uri = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-    uri?.let {
-        context.contentResolver.openOutputStream(it)?.use { outputStream ->
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 95, outputStream)
+        val uri =
+            context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+        uri?.let {
+            context.contentResolver.openOutputStream(it)?.use { outputStream ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 95, outputStream)
+            }
         }
     }
 }
