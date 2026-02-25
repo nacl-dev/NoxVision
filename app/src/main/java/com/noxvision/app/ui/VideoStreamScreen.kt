@@ -3,6 +3,7 @@ package com.noxvision.app.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
 import android.view.PixelCopy
@@ -104,12 +105,16 @@ import com.noxvision.app.util.formatDuration
 import com.noxvision.app.util.saveVideoToGallery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.videolan.libvlc.LibVLC
 import org.videolan.libvlc.Media
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import org.videolan.libvlc.MediaPlayer
 import java.io.File
 import java.io.OutputStreamWriter
@@ -653,32 +658,60 @@ fun VideoStreamScreen() {
     // AI Object Detection
     LaunchedEffect(objectDetectionEnabled, isPlaying) {
         if (objectDetectionEnabled && isPlaying) {
-            while (isActive && objectDetectionEnabled && isPlaying) {
-                delay(1500)
+            var cachedBitmap: Bitmap? = null
+            val mainHandler = Handler(Looper.getMainLooper())
 
-                surfaceView?.let { view ->
-                    try {
-                        val bitmap = createBitmap(view.width, view.height)
-                        PixelCopy.request(
-                            view.holder.surface,
-                            bitmap,
-                            { copyResult ->
-                                if (copyResult == PixelCopy.SUCCESS) {
-                                    scope.launch(Dispatchers.Default) {
-                                        val objects = detector.detectObjects(bitmap)
-                                        withContext(Dispatchers.Main) {
-                                            detectedObjects = objects
+            try {
+                while (isActive && objectDetectionEnabled && isPlaying) {
+                    delay(1500)
+
+                    surfaceView?.let { view ->
+                        // Re-use cached bitmap or create new if size changed
+                        if (cachedBitmap == null || cachedBitmap?.width != view.width || cachedBitmap?.height != view.height) {
+                            cachedBitmap?.recycle()
+                            cachedBitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+                        }
+
+                        val bitmap = cachedBitmap!!
+
+                        try {
+                            // Use suspendCancellableCoroutine inside NonCancellable context to ensure copy completes
+                            // before detection logic proceeds or cleanup happens, preventing race conditions with recycle()
+                            val copyResult = withContext(NonCancellable) {
+                                suspendCancellableCoroutine<Int> { cont ->
+                                    try {
+                                        PixelCopy.request(
+                                            view.holder.surface,
+                                            bitmap,
+                                            { result ->
+                                                if (cont.isActive) {
+                                                    cont.resume(result)
+                                                }
+                                            },
+                                            mainHandler
+                                        )
+                                    } catch (e: Exception) {
+                                        if (cont.isActive) {
+                                            cont.resumeWithException(e)
                                         }
-                                        bitmap.recycle()
                                     }
                                 }
-                            },
-                            Handler(Looper.getMainLooper())
-                        )
-                    } catch (e: Exception) {
-                        AppLogger.log("Frame Capture Error: ${e.message}", AppLogger.LogType.ERROR)
+                            }
+
+                            if (copyResult == PixelCopy.SUCCESS) {
+                                val objects = withContext(Dispatchers.Default) {
+                                    detector.detectObjects(bitmap)
+                                }
+                                detectedObjects = objects
+                            }
+                        } catch (e: Exception) {
+                            AppLogger.log("Frame Capture Error: ${e.message}", AppLogger.LogType.ERROR)
+                        }
                     }
                 }
+            } finally {
+                // Ensure bitmap is recycled when detection stops
+                cachedBitmap?.recycle()
             }
         } else {
             detectedObjects = emptyList()
