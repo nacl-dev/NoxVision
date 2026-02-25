@@ -6,9 +6,11 @@ import androidx.core.content.edit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import com.noxvision.app.util.IntegrityManager
+import com.noxvision.app.util.KeyStoreIntegrityManager
+import com.noxvision.app.util.LegacyIntegrityManager
 import org.json.JSONArray
 import org.json.JSONObject
-import java.security.MessageDigest
 import java.util.UUID
 
 enum class BountyStatus {
@@ -36,12 +38,14 @@ data class FeatureBounty(
     val status: BountyStatus = BountyStatus.ACTIVE
 )
 
-class FeatureBountyRepository(private val prefs: SharedPreferences) {
-    constructor(context: Context) : this(context.getSharedPreferences("feature_bounties_prefs", Context.MODE_PRIVATE))
-
-    // Hardcoded salt for basic integrity check.
-    // In a real production app, consider KeyStore or backend validation.
-    private val securitySalt = "noxvision_bounty_salt_v1"
+class FeatureBountyRepository(
+    private val prefs: SharedPreferences,
+    private val integrityManager: IntegrityManager = KeyStoreIntegrityManager()
+) {
+    constructor(context: Context) : this(
+        context.getSharedPreferences("feature_bounties_prefs", Context.MODE_PRIVATE),
+        KeyStoreIntegrityManager()
+    )
 
     // User's available credits
     private val _userCredits = MutableStateFlow(loadSecureInt("user_credits", 0))
@@ -56,15 +60,6 @@ class FeatureBountyRepository(private val prefs: SharedPreferences) {
     val bounties = _bounties.asStateFlow()
 
     /**
-     * Compute SHA-256 checksum for value + salt.
-     */
-    private fun computeChecksum(value: Int): String {
-        val input = "$value$securitySalt"
-        val bytes = MessageDigest.getInstance("SHA-256").digest(input.toByteArray())
-        return bytes.joinToString("") { "%02x".format(it) }
-    }
-
-    /**
      * Load an integer securely.
      * If checksum is missing (migration), trust value and save checksum.
      * If checksum is invalid (tampering), reset to 0 and save checksum.
@@ -76,30 +71,39 @@ class FeatureBountyRepository(private val prefs: SharedPreferences) {
 
         if (storedChecksum == null) {
             // Migration: Trust current value
-            val newChecksum = computeChecksum(value)
+            val newChecksum = integrityManager.computeChecksum(value)
             prefs.edit { putString(checksumKey, newChecksum) }
             return value
         }
 
-        val expectedChecksum = computeChecksum(value)
-        if (storedChecksum != expectedChecksum) {
-            // Tampering detected! Reset to 0.
-            val zeroChecksum = computeChecksum(0)
-            prefs.edit {
-                putInt(key, 0)
-                putString(checksumKey, zeroChecksum)
-            }
-            return 0
+        val expectedChecksum = integrityManager.computeChecksum(value)
+        if (storedChecksum == expectedChecksum) {
+            return value
         }
 
-        return value
+        // Try legacy checksum for migration
+        val legacyChecksum = LegacyIntegrityManager().computeChecksum(value)
+        if (storedChecksum == legacyChecksum) {
+            // Migrate to secure checksum
+            val newChecksum = integrityManager.computeChecksum(value)
+            prefs.edit { putString(checksumKey, newChecksum) }
+            return value
+        }
+
+        // Tampering detected! Reset to 0.
+        val zeroChecksum = integrityManager.computeChecksum(0)
+        prefs.edit {
+            putInt(key, 0)
+            putString(checksumKey, zeroChecksum)
+        }
+        return 0
     }
 
     /**
      * Save an integer securely with checksum.
      */
     private fun saveSecureInt(key: String, value: Int) {
-        val checksum = computeChecksum(value)
+        val checksum = integrityManager.computeChecksum(value)
         prefs.edit {
             putInt(key, value)
             putString("${key}_checksum", checksum)

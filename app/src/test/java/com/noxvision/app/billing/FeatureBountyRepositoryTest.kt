@@ -1,6 +1,8 @@
 package com.noxvision.app.billing
 
 import android.content.SharedPreferences
+import com.noxvision.app.util.LegacyIntegrityManager
+import com.noxvision.app.util.TestIntegrityManager
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -10,7 +12,7 @@ class FeatureBountyRepositoryTest {
     @Test
     fun testTransactionPersistence() {
         val fakePrefs = FakeSharedPreferences()
-        val repository = FeatureBountyRepository(fakePrefs)
+        val repository = FeatureBountyRepository(fakePrefs, TestIntegrityManager())
 
         // Initial state
         assertTrue(repository.transactions.value.isEmpty())
@@ -30,7 +32,7 @@ class FeatureBountyRepositoryTest {
         assertEquals(transaction, repository.transactions.value[0])
 
         // Verify persistence (reloading)
-        val repo2 = FeatureBountyRepository(fakePrefs)
+        val repo2 = FeatureBountyRepository(fakePrefs, TestIntegrityManager())
         assertEquals(1, repo2.transactions.value.size)
         val loadedTransaction = repo2.transactions.value[0]
         assertEquals(transaction.id, loadedTransaction.id)
@@ -43,7 +45,7 @@ class FeatureBountyRepositoryTest {
     @Test
     fun testAddCredits() {
         val fakePrefs = FakeSharedPreferences()
-        val repository = FeatureBountyRepository(fakePrefs)
+        val repository = FeatureBountyRepository(fakePrefs, TestIntegrityManager())
 
         repository.addCredits(500)
 
@@ -58,7 +60,7 @@ class FeatureBountyRepositoryTest {
     @Test
     fun testDonateToBounty() {
         val fakePrefs = FakeSharedPreferences()
-        val repository = FeatureBountyRepository(fakePrefs)
+        val repository = FeatureBountyRepository(fakePrefs, TestIntegrityManager())
 
         // Setup initial credits
         repository.addCredits(1000)
@@ -80,6 +82,29 @@ class FeatureBountyRepositoryTest {
         assertEquals(-200, donationTransaction.amount)
         assertEquals(TransactionType.DONATION, donationTransaction.type)
         assertEquals("Donated to $bountyTitle", donationTransaction.description)
+    }
+
+    @Test
+    fun testMigration() {
+        val fakePrefs = FakeSharedPreferences()
+
+        // Setup legacy data manually using LegacyIntegrityManager
+        val legacyManager = LegacyIntegrityManager()
+        val value = 100
+        val key = "user_credits"
+        fakePrefs.put(key, value)
+        fakePrefs.put("${key}_checksum", legacyManager.computeChecksum(value))
+
+        // Initialize repo with TestIntegrityManager (simulating new secure manager)
+        val testManager = TestIntegrityManager()
+        val repository = FeatureBountyRepository(fakePrefs, testManager)
+
+        // Verify value is loaded (migration successful)
+        assertEquals(value, repository.userCredits.value)
+
+        // Verify checksum is updated in prefs to the new format
+        val updatedChecksum = fakePrefs.getString("${key}_checksum", null)
+        assertEquals(testManager.computeChecksum(value), updatedChecksum)
     }
 }
 
