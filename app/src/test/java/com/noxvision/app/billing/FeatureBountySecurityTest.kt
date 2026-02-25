@@ -1,6 +1,7 @@
 package com.noxvision.app.billing
 
 import android.content.SharedPreferences
+import com.noxvision.app.util.LegacyIntegrityManager
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.security.MessageDigest
@@ -18,7 +19,9 @@ class FeatureBountySecurityTest {
     @Test
     fun testSecureSaveAndLoad() {
         val fakePrefs = FakeSharedPreferencesSecurity()
-        val repo = FeatureBountyRepository(fakePrefs)
+        // Use LegacyIntegrityManager to match the test's expectation of SHA-256 + Salt
+        val integrityManager = LegacyIntegrityManager()
+        val repo = FeatureBountyRepository(fakePrefs, integrityManager)
 
         repo.addCredits(100)
         assertEquals(100, repo.userCredits.value)
@@ -31,7 +34,7 @@ class FeatureBountySecurityTest {
         assertEquals(computeChecksum(100), savedChecksum)
 
         // Reload repo
-        val repo2 = FeatureBountyRepository(fakePrefs)
+        val repo2 = FeatureBountyRepository(fakePrefs, integrityManager)
         assertEquals(100, repo2.userCredits.value)
     }
 
@@ -42,7 +45,8 @@ class FeatureBountySecurityTest {
         fakePrefs.put("user_credits", 500)
 
         // Load repo
-        val repo = FeatureBountyRepository(fakePrefs)
+        val integrityManager = LegacyIntegrityManager()
+        val repo = FeatureBountyRepository(fakePrefs, integrityManager)
 
         // Should trust the value
         assertEquals(500, repo.userCredits.value)
@@ -55,7 +59,8 @@ class FeatureBountySecurityTest {
     @Test
     fun testTampering_ResetToZero() {
         val fakePrefs = FakeSharedPreferencesSecurity()
-        val repo = FeatureBountyRepository(fakePrefs)
+        val integrityManager = LegacyIntegrityManager()
+        val repo = FeatureBountyRepository(fakePrefs, integrityManager)
 
         repo.addCredits(100)
 
@@ -64,7 +69,7 @@ class FeatureBountySecurityTest {
         // Checksum remains for 100
 
         // Reload repo
-        val repo2 = FeatureBountyRepository(fakePrefs)
+        val repo2 = FeatureBountyRepository(fakePrefs, integrityManager)
 
         // Should detect tampering and reset to 0
         assertEquals(0, repo2.userCredits.value)
