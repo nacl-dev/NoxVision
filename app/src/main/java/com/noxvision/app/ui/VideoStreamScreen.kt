@@ -153,6 +153,7 @@ fun VideoStreamScreen() {
     var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
     var showGalleryDialog by rememberSaveable { mutableStateOf(false) }
     var galleryRefreshKey by rememberSaveable { mutableIntStateOf(0) }
+    var isPhotoLoading by remember { mutableStateOf(false) }
 
     // First Run / Whats New
     var showWelcomeDialog by rememberSaveable { mutableStateOf(false) }
@@ -1280,20 +1281,30 @@ fun VideoStreamScreen() {
                         text = stringResource(R.string.photo),
                         icon = Icons.Filled.Camera,
                         onClick = {
-                            scope.launch {
-                                surfaceView?.let { view ->
-                                    captureScreenshot(context, view)
-                                    galleryRefreshKey++
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(R.string.photo_saved),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                            if (!isPhotoLoading) {
+                                scope.launch {
+                                    isPhotoLoading = true
+                                    try {
+                                        val view = surfaceView
+                                        if (view != null) {
+                                            if (captureScreenshot(context, view)) {
+                                                galleryRefreshKey++
+                                                Toast.makeText(
+                                                    context,
+                                                    context.getString(R.string.photo_saved),
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }
+                                    } finally {
+                                        isPhotoLoading = false
+                                    }
                                 }
                             }
                         },
                         enabled = isPlaying && !isRecording,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        isLoading = isPhotoLoading
                     )
                 }
 

@@ -21,6 +21,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -33,6 +34,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 private const val FOLDER_GUIDE_CAMERA = "GuideCamera"
 
@@ -426,20 +429,53 @@ suspend fun fetchPhoneMedia(context: Context, folder: PhoneFolder): List<PhoneMe
     }
 }
 
-fun captureScreenshot(context: Context, view: SurfaceView) {
-    try {
-        val bitmap = createBitmap(view.width, view.height)
-        PixelCopy.request(
-            view.holder.surface,
-            bitmap,
-            { copyResult ->
-                if (copyResult == PixelCopy.SUCCESS) {
-                    saveBitmapToGallery(context, bitmap)
-                }
-            },
-            Handler(Looper.getMainLooper())
-        )
-    } catch (_: Exception) {
+suspend fun captureScreenshot(context: Context, view: SurfaceView): Boolean {
+    // We create the bitmap here
+    val bitmap = try {
+        createBitmap(view.width, view.height)
+    } catch (e: Exception) {
+        AppLogger.log("Bitmap creation failed: ${e.message}", AppLogger.LogType.ERROR)
+        return false
+    }
+
+    // Suspend until pixel copy is done. This must be done on main thread handler.
+    // PixelCopy is async but requires a handler for the listener.
+    val pixelCopySuccess = try {
+        suspendCancellableCoroutine<Boolean> { cont ->
+            try {
+                PixelCopy.request(
+                    view.holder.surface,
+                    bitmap,
+                    { copyResult ->
+                        if (cont.isActive) {
+                             cont.resume(copyResult == PixelCopy.SUCCESS)
+                        }
+                    },
+                    Handler(Looper.getMainLooper())
+                )
+            } catch (e: Exception) {
+                if (cont.isActive) cont.resumeWithException(e)
+            }
+        }
+    } catch (e: Exception) {
+        AppLogger.log("PixelCopy exception: ${e.message}", AppLogger.LogType.ERROR)
+        false
+    }
+
+    return if (pixelCopySuccess) {
+        // Offload saving to IO thread
+        try {
+            withContext(Dispatchers.IO) {
+                saveBitmapToGallery(context, bitmap)
+            }
+            true
+        } catch (e: Exception) {
+            AppLogger.log("Saving to gallery failed: ${e.message}", AppLogger.LogType.ERROR)
+            false
+        }
+    } else {
+        AppLogger.log("PixelCopy failed", AppLogger.LogType.ERROR)
+        false
     }
 }
 
