@@ -154,6 +154,8 @@ fun VideoStreamScreen() {
     var showGalleryDialog by rememberSaveable { mutableStateOf(false) }
     var galleryRefreshKey by rememberSaveable { mutableIntStateOf(0) }
 
+    var isPhotoLoading by remember { mutableStateOf(false) }
+
     // First Run / Whats New
     var showWelcomeDialog by rememberSaveable { mutableStateOf(false) }
     var showWhatsNewDialog by rememberSaveable { mutableStateOf(false) }
@@ -1280,19 +1282,33 @@ fun VideoStreamScreen() {
                         text = stringResource(R.string.photo),
                         icon = Icons.Filled.Camera,
                         onClick = {
+                            if (isPhotoLoading) return@DarkButton
                             scope.launch {
-                                surfaceView?.let { view ->
-                                    captureScreenshot(context, view)
-                                    galleryRefreshKey++
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(R.string.photo_saved),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                isPhotoLoading = true
+                                try {
+                                    surfaceView?.let { view ->
+                                        val success = captureScreenshot(context, view)
+                                        if (success) {
+                                            galleryRefreshKey++
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.photo_saved),
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else {
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.error),
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                                } finally {
+                                    isPhotoLoading = false
                                 }
                             }
                         },
-                        enabled = isPlaying && !isRecording,
+                        enabled = isPlaying && !isRecording && !isPhotoLoading,
                         modifier = Modifier.weight(1f)
                     )
                 }

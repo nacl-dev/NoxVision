@@ -4,3 +4,6 @@
 ## 2025-02-24 - Async PixelCopy Race Condition
 **Learning:** `PixelCopy.request` is asynchronous and non-cancellable. If wrapped in a `suspendCancellableCoroutine` that gets cancelled, the `finally` block might recycle the bitmap while `PixelCopy` is still writing to it, causing a native crash.
 **Action:** Always wrap `PixelCopy` calls (or similar non-cancellable async operations) in `withContext(NonCancellable)` to ensure they complete before resource cleanup (recycling) occurs.
+## 2025-02-24 - Async Screenshot Capture
+**Learning:** `PixelCopy` operations combined with `Bitmap.compress` and file IO on the main thread cause visible UI freeze.
+**Action:** Use `suspendCancellableCoroutine` to bridge `PixelCopy` callback, and `withContext(Dispatchers.IO)` for the heavy IO/compression. Always rethrow `CancellationException`.
