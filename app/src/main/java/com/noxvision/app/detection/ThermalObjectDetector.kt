@@ -52,7 +52,11 @@ class ThermalObjectDetector(context: Context) {
     private val floatValues = FloatArray(inputSize * inputSize * 3)
     private val anchorMaxScores = FloatArray(numAnchors)
     private val anchorMaxClassIndices = IntArray(numAnchors)
-    private var outputArray: Array<Array<FloatArray>>? = null
+
+    // Optimization: Use flattened FloatArray and FloatBuffer instead of jagged array
+    private var outputFlatArray: FloatArray? = null
+    private var outputBuffer: FloatBuffer? = null
+
     // Optimization: Removed intermediate enhancedBitmap/Canvas to save memory and draw calls
     private var scaledBitmap: Bitmap? = null
     private var scaledCanvas: Canvas? = null
@@ -99,7 +103,12 @@ class ThermalObjectDetector(context: Context) {
 
                 val numClasses = labels.size
                 val numElements = 4 + numClasses
-                outputArray = Array(1) { Array(numElements) { FloatArray(numAnchors) } }
+
+                // Initialize flat array and buffer
+                val totalOutputSize = 1 * numElements * numAnchors
+                val flatArray = FloatArray(totalOutputSize)
+                outputFlatArray = flatArray
+                outputBuffer = FloatBuffer.wrap(flatArray)
 
                 isInitialized = true
                 AppLogger.log("Thermal detector (YOLOv8) ready", AppLogger.LogType.SUCCESS)
@@ -167,9 +176,12 @@ class ThermalObjectDetector(context: Context) {
             val numClasses = labels.size
             // numAnchors is class property
 
-            val currentOutput = outputArray ?: return emptyList()
+            val currentBuffer = outputBuffer ?: return emptyList()
+            val currentFlatArray = outputFlatArray ?: return emptyList()
 
-            interpreter?.run(imgData, currentOutput)
+            // Important: Rewind buffer before inference
+            currentBuffer.rewind()
+            interpreter?.run(imgData, currentBuffer)
 
             val allDetections = mutableListOf<DetectedObject>()
 
@@ -178,13 +190,17 @@ class ThermalObjectDetector(context: Context) {
             anchorMaxScores.fill(0f)
             anchorMaxClassIndices.fill(-1)
 
-            val outputChannels = currentOutput[0]
+            // Using flat array access logic
+            // Shape was [1, numElements, numAnchors]
+            // Flattened: element_index * numAnchors + anchor_index
 
             // Find max class for each anchor
             for (c in 0 until numClasses) {
-                val classProps = outputChannels[4 + c]
+                // Class scores start at index 4 (0:cx, 1:cy, 2:w, 3:h)
+                val offset = (4 + c) * numAnchors
+
                 for (i in 0 until numAnchors) {
-                    val score = classProps[i]
+                    val score = currentFlatArray[offset + i]
                     if (score > anchorMaxScores[i]) {
                         anchorMaxScores[i] = score
                         anchorMaxClassIndices[i] = c
@@ -210,10 +226,11 @@ class ThermalObjectDetector(context: Context) {
                     }
 
                     if (maxScore >= minConf) {
-                        val cx = outputChannels[0][i] / inputSize.toFloat()
-                        val cy = outputChannels[1][i] / inputSize.toFloat()
-                        val w = outputChannels[2][i] / inputSize.toFloat()
-                        val h = outputChannels[3][i] / inputSize.toFloat()
+                        // Coordinates are at indices 0, 1, 2, 3 * numAnchors + i
+                        val cx = currentFlatArray[0 * numAnchors + i] / inputSize.toFloat()
+                        val cy = currentFlatArray[1 * numAnchors + i] / inputSize.toFloat()
+                        val w = currentFlatArray[2 * numAnchors + i] / inputSize.toFloat()
+                        val h = currentFlatArray[3 * numAnchors + i] / inputSize.toFloat()
 
                         val x1 = (cx - w / 2) * bitmap.width
                         val y1 = (cy - h / 2) * bitmap.height
@@ -306,7 +323,8 @@ class ThermalObjectDetector(context: Context) {
         try {
             interpreter?.close()
             interpreter = null
-            outputArray = null
+            outputFlatArray = null
+            outputBuffer = null
             // enhancedBitmap cleanup removed
             scaledBitmap?.recycle()
             scaledBitmap = null
