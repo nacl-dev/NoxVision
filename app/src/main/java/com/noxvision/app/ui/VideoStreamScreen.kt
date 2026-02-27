@@ -1095,7 +1095,7 @@ fun VideoStreamScreen() {
                     ) {
                         Icon(
                             Icons.Filled.ZoomIn,
-                            contentDescription = null,
+                            contentDescription = stringResource(R.string.zoom),
                             tint = NightColors.onSurface,
                             modifier = Modifier.size(18.dp)
                         )
@@ -1150,7 +1150,7 @@ fun VideoStreamScreen() {
                     ) {
                         Icon(
                             Icons.Filled.Palette,
-                            contentDescription = null,
+                            contentDescription = stringResource(R.string.palette),
                             tint = NightColors.onSurface,
                             modifier = Modifier.size(16.dp)
                         )
