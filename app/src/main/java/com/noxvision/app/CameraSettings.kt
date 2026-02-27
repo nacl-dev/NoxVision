@@ -2,6 +2,8 @@ package com.noxvision.app
 
 import android.content.Context
 import androidx.core.content.edit
+import com.noxvision.app.util.KeyStoreSecureStorageManager
+import com.noxvision.app.util.SecureStorageManager
 
 enum class CrosshairStyle(val displayNameRes: Int, val id: Int) {
     SIMPLE(R.string.crosshair_simple, 0),
@@ -88,6 +90,20 @@ object CameraSettings {
     private const val DEFAULT_AUTOCONNECT_ENABLED = true
     private const val DEFAULT_HUNTING_ASSISTANT_HOME_ENABLED = true
     
+    private var secureStorageManager: SecureStorageManager? = null
+
+    // For testing purposes
+    fun setSecureStorageManager(manager: SecureStorageManager) {
+        secureStorageManager = manager
+    }
+
+    private fun getSecureStorageManager(): SecureStorageManager {
+        if (secureStorageManager == null) {
+            secureStorageManager = KeyStoreSecureStorageManager()
+        }
+        return secureStorageManager!!
+    }
+
     // ==================== Connection Settings ====================
     
     /**
@@ -139,18 +155,26 @@ object CameraSettings {
     
     /**
      * Get the saved WiFi Password.
+     * Decrypts the password if it's encrypted.
      */
     fun getWifiPassword(context: Context): String {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getString(KEY_WIFI_PASSWORD, DEFAULT_WIFI_PASSWORD) ?: DEFAULT_WIFI_PASSWORD
+        val storedValue = prefs.getString(KEY_WIFI_PASSWORD, DEFAULT_WIFI_PASSWORD) ?: DEFAULT_WIFI_PASSWORD
+
+        // Try to decrypt. If it fails or is legacy plaintext, the manager should handle fallback logic or we do it here.
+        // Our SecureStorageManager.decrypt returns the input if decryption fails/format mismatch,
+        // effectively handling legacy plaintext migration on read.
+        return getSecureStorageManager().decrypt(storedValue)
     }
     
     /**
      * Set the WiFi Password.
+     * Encrypts the password before saving.
      */
     fun setWifiPassword(context: Context, password: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit { putString(KEY_WIFI_PASSWORD, password) }
+        val encryptedPassword = getSecureStorageManager().encrypt(password)
+        prefs.edit { putString(KEY_WIFI_PASSWORD, encryptedPassword) }
     }
     
     /**
