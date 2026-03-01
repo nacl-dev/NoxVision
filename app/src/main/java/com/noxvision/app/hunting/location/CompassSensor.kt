@@ -30,6 +30,12 @@ class CompassSensor(context: Context) {
 
         val gravity = FloatArray(3)
         val geomagnetic = FloatArray(3)
+
+        // Pre-allocate matrices to avoid GC pressure in hot sensor loop
+        val rotationMatrix = FloatArray(9)
+        val inclinationMatrix = FloatArray(9)
+        val orientation = FloatArray(3)
+
         var hasGravity = false
         var hasMagnetic = false
 
@@ -37,21 +43,17 @@ class CompassSensor(context: Context) {
             override fun onSensorChanged(event: SensorEvent) {
                 when (event.sensor.type) {
                     Sensor.TYPE_ACCELEROMETER -> {
-                        lowPassFilter(event.values.clone(), gravity)
+                        lowPassFilter(event.values, gravity)
                         hasGravity = true
                     }
                     Sensor.TYPE_MAGNETIC_FIELD -> {
-                        lowPassFilter(event.values.clone(), geomagnetic)
+                        lowPassFilter(event.values, geomagnetic)
                         hasMagnetic = true
                     }
                 }
 
                 if (hasGravity && hasMagnetic) {
-                    val rotationMatrix = FloatArray(9)
-                    val inclinationMatrix = FloatArray(9)
-
                     if (SensorManager.getRotationMatrix(rotationMatrix, inclinationMatrix, gravity, geomagnetic)) {
-                        val orientation = FloatArray(3)
                         SensorManager.getOrientation(rotationMatrix, orientation)
 
                         val azimuthRadians = orientation[0]
@@ -84,14 +86,6 @@ class CompassSensor(context: Context) {
         }
     }
 
-    private fun lowPassFilter(input: FloatArray, output: FloatArray): FloatArray {
-        val alpha = 0.15f
-        for (i in input.indices) {
-            output[i] = output[i] + alpha * (input[i] - output[i])
-        }
-        return output
-    }
-
     private fun getDirectionFromAzimuth(azimuth: Float): String {
         return when {
             azimuth < 22.5 -> "N"
@@ -112,6 +106,15 @@ class CompassSensor(context: Context) {
             if (relative < 0) relative += 360
             if (relative > 180) relative -= 360
             return relative
+        }
+
+        @JvmStatic
+        internal fun lowPassFilter(input: FloatArray, output: FloatArray): FloatArray {
+            val alpha = 0.15f
+            for (i in input.indices) {
+                output[i] = output[i] + alpha * (input[i] - output[i])
+            }
+            return output
         }
     }
 }
