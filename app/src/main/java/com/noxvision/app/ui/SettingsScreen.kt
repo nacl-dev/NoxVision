@@ -19,6 +19,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.noxvision.app.CameraSettings
@@ -533,6 +535,8 @@ private fun ConnectionSettingsPage(
                 supportingText = { Text(stringResource(R.string.wifi_password_hint)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Password),
                 colors = nightTextFieldColors()
             )
         }
