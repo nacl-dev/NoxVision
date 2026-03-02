@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -609,7 +610,7 @@ private fun PhotoSection(
                 .height(200.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, NightColors.surface, RoundedCornerShape(12.dp))
-                .clickable { imagePickerLauncher.launch("image/*") }
+                .clickable(role = Role.Button) { imagePickerLauncher.launch("image/*") }
         ) {
             AsyncImage(
                 model = photoUri,
@@ -636,7 +637,7 @@ private fun PhotoSection(
                 .clip(RoundedCornerShape(12.dp))
                 .background(NightColors.surface)
                 .border(1.dp, NightColors.onBackground.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                .clickable { imagePickerLauncher.launch("image/*") },
+                .clickable(role = Role.Button) { imagePickerLauncher.launch("image/*") },
             contentAlignment = Alignment.Center
         ) {
             Column(

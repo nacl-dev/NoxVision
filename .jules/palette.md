@@ -1,0 +1,3 @@
+## 2024-03-02 - Added `Role.Button` to custom clickable components
+**Learning:** By default, adding `Modifier.clickable` to components like `Card`, `Row`, or `Box` in Jetpack Compose doesn't automatically announce them as "Buttons" to accessibility services (like TalkBack on Android).
+**Action:** Always include `role = Role.Button` when adding `Modifier.clickable` to custom components that act as buttons to ensure screen readers properly announce these interactive elements.
