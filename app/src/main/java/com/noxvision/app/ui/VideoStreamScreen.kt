@@ -985,6 +985,15 @@ fun VideoStreamScreen() {
 
                         // Canvas overlay for AI detections
                         if (objectDetectionEnabled && detectedObjects.isNotEmpty()) {
+                            val textPaint = remember {
+                                android.graphics.Paint().apply {
+                                    color = android.graphics.Color.GREEN
+                                    textSize = 40f
+                                    typeface = android.graphics.Typeface.DEFAULT_BOLD
+                                }
+                            }
+                            val textBounds = remember { android.graphics.Rect() }
+
                             Canvas(modifier = Modifier.fillMaxSize()) {
                                 detectedObjects.forEach { obj ->
                                     drawRect(
@@ -1001,12 +1010,6 @@ fun VideoStreamScreen() {
                                     val confidenceText = " (%.0f%%)".format(obj.confidence * 100)
                                     val fullText = "$germanLabel$distanceText$confidenceText"
 
-                                    val textPaint = android.graphics.Paint().apply {
-                                        color = android.graphics.Color.GREEN
-                                        textSize = 40f
-                                        typeface = android.graphics.Typeface.DEFAULT_BOLD
-                                    }
-                                    val textBounds = android.graphics.Rect()
                                     textPaint.getTextBounds(fullText, 0, fullText.length, textBounds)
 
                                     val textX = obj.boundingBox.left.coerceAtLeast(0f)
@@ -1170,15 +1173,17 @@ fun VideoStreamScreen() {
                         .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    val palettes = listOf(
-                        Triple("whitehot", "White Hot", R.drawable.stream_palette_whitehot),
-                        Triple("blackhot", "Black Hot", R.drawable.stream_palette_blackhot),
-                        Triple("redhot", "Red Hot", R.drawable.stream_palette_tint2),
-                        Triple("iron", "Iron", R.drawable.stream_palette_ironred),
-                        Triple("bluehot", "Blue", R.drawable.stream_palette_bluehot),
-                        Triple("greenhot", "Green", R.drawable.stream_palette_greenhot),
-                        Triple("darkbrown", "Brown", R.drawable.stream_palette_dark_brown)
-                    )
+                    val palettes = remember {
+                        listOf(
+                            Triple("whitehot", "White Hot", R.drawable.stream_palette_whitehot),
+                            Triple("blackhot", "Black Hot", R.drawable.stream_palette_blackhot),
+                            Triple("redhot", "Red Hot", R.drawable.stream_palette_tint2),
+                            Triple("iron", "Iron", R.drawable.stream_palette_ironred),
+                            Triple("bluehot", "Blue", R.drawable.stream_palette_bluehot),
+                            Triple("greenhot", "Green", R.drawable.stream_palette_greenhot),
+                            Triple("darkbrown", "Brown", R.drawable.stream_palette_dark_brown)
+                        )
+                    }
 
                     palettes.forEach { (id, name, imageRes) ->
                         PaletteButton(
@@ -1544,6 +1549,8 @@ fun VideoStreamScreen() {
 
 @Composable
 private fun CrosshairOverlay(style: CrosshairStyle) {
+    val chevronPath = remember { Path() }
+
     Canvas(modifier = Modifier.fillMaxSize()) {
         val cx = size.width / 2
         val cy = size.height / 2
@@ -1574,12 +1581,13 @@ private fun CrosshairOverlay(style: CrosshairStyle) {
                 val w = 12.dp.toPx()
                 val h1 = 4.dp.toPx()
                 val h2 = 8.dp.toPx()
-                val path = Path().apply {
+                chevronPath.reset()
+                chevronPath.apply {
                     moveTo(cx - w, cy + h1)
                     lineTo(cx, cy - h2)
                     lineTo(cx + w, cy + h1)
                 }
-                drawPath(path, color, style = Stroke(strokeWidth))
+                drawPath(chevronPath, color, style = Stroke(strokeWidth))
             }
         }
     }
