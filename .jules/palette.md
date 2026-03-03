@@ -1,0 +1,3 @@
+## 2024-05-18 - Improve Screen Reader Experience for Custom Buttons
+**Learning:** In Jetpack Compose, when you build custom interactive components using elements like `Card`, `Row`, or `Box` and apply `Modifier.clickable` to them, screen readers may not automatically announce them as buttons. This can cause confusion for users relying on assistive technologies.
+**Action:** Always include the `role` parameter explicitly when using `Modifier.clickable` on custom components that act like buttons, e.g., `Modifier.clickable(onClick = { ... }, role = Role.Button)`. This ensures that screen readers properly announce the element's interactive role, significantly improving accessibility.
