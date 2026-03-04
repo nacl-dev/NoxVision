@@ -985,6 +985,18 @@ fun VideoStreamScreen() {
 
                         // Canvas overlay for AI detections
                         if (objectDetectionEnabled && detectedObjects.isNotEmpty()) {
+                            // ⚡ Bolt: Hoist Paint and Rect allocations out of the loop and Canvas.
+                            // This prevents excessive GC churn and frame drops caused by instantiating
+                            // new objects for every detected object in every rendered frame.
+                            val textPaint = remember {
+                                android.graphics.Paint().apply {
+                                    color = android.graphics.Color.GREEN
+                                    textSize = 40f
+                                    typeface = android.graphics.Typeface.DEFAULT_BOLD
+                                }
+                            }
+                            val textBounds = remember { android.graphics.Rect() }
+
                             Canvas(modifier = Modifier.fillMaxSize()) {
                                 detectedObjects.forEach { obj ->
                                     drawRect(
@@ -1001,12 +1013,6 @@ fun VideoStreamScreen() {
                                     val confidenceText = " (%.0f%%)".format(obj.confidence * 100)
                                     val fullText = "$germanLabel$distanceText$confidenceText"
 
-                                    val textPaint = android.graphics.Paint().apply {
-                                        color = android.graphics.Color.GREEN
-                                        textSize = 40f
-                                        typeface = android.graphics.Typeface.DEFAULT_BOLD
-                                    }
-                                    val textBounds = android.graphics.Rect()
                                     textPaint.getTextBounds(fullText, 0, fullText.length, textBounds)
 
                                     val textX = obj.boundingBox.left.coerceAtLeast(0f)
@@ -1544,6 +1550,10 @@ fun VideoStreamScreen() {
 
 @Composable
 private fun CrosshairOverlay(style: CrosshairStyle) {
+    // ⚡ Bolt: Hoist Path allocation outside of Canvas and reuse it via path.reset()
+    // to prevent GC churn during frequent redraws.
+    val chevronPath = remember { Path() }
+
     Canvas(modifier = Modifier.fillMaxSize()) {
         val cx = size.width / 2
         val cy = size.height / 2
@@ -1574,12 +1584,11 @@ private fun CrosshairOverlay(style: CrosshairStyle) {
                 val w = 12.dp.toPx()
                 val h1 = 4.dp.toPx()
                 val h2 = 8.dp.toPx()
-                val path = Path().apply {
-                    moveTo(cx - w, cy + h1)
-                    lineTo(cx, cy - h2)
-                    lineTo(cx + w, cy + h1)
-                }
-                drawPath(path, color, style = Stroke(strokeWidth))
+                chevronPath.reset()
+                chevronPath.moveTo(cx - w, cy + h1)
+                chevronPath.lineTo(cx, cy - h2)
+                chevronPath.lineTo(cx + w, cy + h1)
+                drawPath(chevronPath, color, style = Stroke(strokeWidth))
             }
         }
     }
