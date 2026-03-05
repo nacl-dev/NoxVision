@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -195,7 +196,7 @@ fun FeatureBountyScreen(
                                 .height(40.dp)
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(if (isSelected) selectedColor else Color.Transparent)
-                                .clickable { selectedStatus = status }
+                                .clickable(role = Role.Button) { selectedStatus = status }
                                 .then(if (!isSelected) Modifier.border(1.dp, Color(0xFF424242), RoundedCornerShape(4.dp)) else Modifier),
                             contentAlignment = Alignment.Center
                         ) {
@@ -392,7 +393,7 @@ fun BuyCreditsDialog(billingManager: BillingManager, onDismiss: () -> Unit) {
 fun CreditPackageCard(title: String, price: String, onClick: () -> Unit) {
     Card(
         modifier = Modifier
-            .clickable(onClick = onClick)
+            .clickable(onClick = onClick, role = Role.Button)
             .fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
     ) {

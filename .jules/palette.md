@@ -1,0 +1,3 @@
+## 2024-03-22 - Semantic Accessibility for Compose Clickables
+**Learning:** Found multiple instances where Jetpack Compose `Modifier.clickable` was used for components behaving like buttons (cards, boxes, rows) without the explicit `role = Role.Button` semantic property. Screen readers like TalkBack might not correctly announce these custom components as interactive buttons without this role property, limiting accessibility for visually impaired users navigating the app.
+**Action:** Always include `role = Role.Button` when adding `Modifier.clickable` to a custom Compose component (like a Row or Card) that functions as a button to ensure proper accessibility semantics.
