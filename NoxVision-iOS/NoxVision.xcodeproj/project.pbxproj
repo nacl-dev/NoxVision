@@ -633,7 +633,7 @@
 		E2000001 /* VLCKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E2000010 /* XCRemoteSwiftPackageReference "vlckit-spm" */;
-			productName = MobileVLCKit;
+			productName = VLCKitSPM;
 		};
 /* End XCSwiftPackageProductDependency section */
 

@@ -18,7 +18,7 @@ let package = Package(
             name: "NoxVision",
             path: "NoxVision",
             dependencies: [
-                .product(name: "VLCKit", package: "vlckit-spm"),
+                .product(name: "VLCKitSPM", package: "vlckit-spm"),
             ]
         )
     ]
