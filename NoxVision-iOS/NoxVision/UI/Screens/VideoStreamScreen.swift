@@ -1,6 +1,6 @@
 import SwiftUI
 import AVKit
-import VLCKit
+import VLCKitSPM
 
 struct VideoStreamScreen: View {
     @EnvironmentObject var settings: CameraSettingsStore
