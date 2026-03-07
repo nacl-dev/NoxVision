@@ -1,5 +1,6 @@
 import Foundation
 import CoreImage
+import CoreML
 import Vision
 
 struct DetectedObject: Identifiable {
@@ -16,82 +17,76 @@ class ThermalObjectDetector: ObservableObject {
 
     private var visionModel: VNCoreMLModel?
     private let confidenceThreshold: Float = 0.45
-    private let iouThreshold: Float = 0.5
+    private let iouThreshold: Float = 0.45
 
-    // COCO class labels matching Android's YOLO model
-    private let classLabels = [
-        "person", "bicycle", "car", "motorcycle", "airplane", "bus",
-        "train", "truck", "boat", "traffic light", "fire hydrant",
-        "stop sign", "parking meter", "bench", "bird", "cat", "dog",
-        "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe",
-        "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee",
-        "skis", "snowboard", "sports ball", "kite", "baseball bat",
-        "baseball glove", "skateboard", "surfboard", "tennis racket",
-        "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl",
-        "banana", "apple", "sandwich", "orange", "broccoli", "carrot",
-        "hot dog", "pizza", "donut", "cake", "chair", "couch",
-        "potted plant", "bed", "dining table", "toilet", "tv", "laptop",
-        "mouse", "remote", "keyboard", "cell phone", "microwave", "oven",
-        "toaster", "sink", "refrigerator", "book", "clock", "vase",
-        "scissors", "teddy bear", "hair drier", "toothbrush"
+    // Labels matching the custom thermal YOLO model
+    private let classLabels = ["car", "cat", "dog", "person"]
+
+    // Display label mapping and per-class confidence thresholds (matching Android)
+    private let classConfig: [String: (display: String, minConf: Float)] = [
+        "person": ("Person", 0.45),
+        "car": ("Vehicle", 0.50),
+        "truck": ("Vehicle", 0.50),
+        "bus": ("Vehicle", 0.50),
+        "bicycle": ("Bicycle", 0.50),
+        "motorcycle": ("Bicycle", 0.50),
+        "dog": ("Animal", 0.45),
+        "cat": ("Animal", 0.45),
+        "horse": ("Animal", 0.45),
+        "cow": ("Animal", 0.45),
+        "sheep": ("Animal", 0.45),
+        "bear": ("Animal", 0.45),
     ]
-
-    // Relevant labels for thermal hunting use
-    private let relevantLabels = Set(["person", "bicycle", "car", "motorcycle", "bus", "truck", "dog", "cat"])
 
     // Known heights for distance estimation (pinhole camera model)
     private let knownHeights: [String: Double] = [
         "person": 1.7,
         "bicycle": 1.0,
         "car": 1.5,
-        "motorcycle": 1.1,
+        "motorcycle": 1.2,
         "bus": 3.0,
-        "truck": 2.5,
-        "dog": 0.5,
-        "cat": 0.3
+        "truck": 3.0,
+        "dog": 0.6,
+        "cat": 0.3,
     ]
+
+    private let focalLengthPixels: Double = 3350.0
 
     init() {
         loadModel()
     }
 
     private func loadModel() {
-        // In production, load a .mlmodel file bundled with the app
-        // For now, we use Vision's built-in object detection as a placeholder
-        // To use a custom YOLO model:
-        // 1. Convert your TFLite model to CoreML using coremltools
-        // 2. Add the .mlmodel file to the Xcode project
-        // 3. Uncomment and modify the code below:
-        //
-        // guard let modelURL = Bundle.main.url(forResource: "ThermalYOLO", withExtension: "mlmodelc"),
-        //       let model = try? MLModel(contentsOf: modelURL) else { return }
-        // visionModel = try? VNCoreMLModel(for: model)
-
-        AppLogger.shared.log("ThermalObjectDetector initialized (CoreML)", type: .info)
-    }
-
-    func processFrame(_ pixelBuffer: CVPixelBuffer) {
-        guard isRunning else { return }
-
-        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
-
-        let request: VNRequest
-        if let model = visionModel {
-            let mlRequest = VNCoreMLRequest(model: model) { [weak self] request, error in
-                self?.handleDetectionResults(request.results)
-            }
-            mlRequest.imageCropAndScaleOption = .scaleFill
-            request = mlRequest
-        } else {
-            // Fallback to Apple's built-in object recognition
-            let recognizeRequest = VNRecognizeAnimalsRequest { [weak self] request, error in
-                self?.handleAnimalResults(request.results)
-            }
-            request = recognizeRequest
+        // Load the CoreML YOLO model bundled with the app
+        // The model should be added to the Xcode project as "ThermalYOLO.mlmodel"
+        // Convert from TFLite using: python3 convert_model.py
+        guard let modelURL = Bundle.main.url(forResource: "ThermalYOLO", withExtension: "mlmodelc") else {
+            AppLogger.shared.log("ThermalYOLO.mlmodel not found in bundle — detection disabled", type: .warning)
+            AppLogger.shared.log("Run 'python3 scripts/convert_model.py' to convert the TFLite model", type: .info)
+            return
         }
 
         do {
-            try handler.perform([request])
+            let model = try MLModel(contentsOf: modelURL)
+            visionModel = try VNCoreMLModel(for: model)
+            AppLogger.shared.log("ThermalObjectDetector initialized (CoreML)", type: .info)
+        } catch {
+            AppLogger.shared.log("Failed to load CoreML model: \(error.localizedDescription)", type: .error)
+        }
+    }
+
+    func processFrame(_ pixelBuffer: CVPixelBuffer) {
+        guard isRunning, visionModel != nil else { return }
+
+        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
+
+        let mlRequest = VNCoreMLRequest(model: visionModel!) { [weak self] request, error in
+            self?.handleDetectionResults(request.results)
+        }
+        mlRequest.imageCropAndScaleOption = .scaleFill
+
+        do {
+            try handler.perform([mlRequest])
         } catch {
             AppLogger.shared.log("Detection failed: \(error.localizedDescription)", type: .error)
         }
@@ -100,58 +95,70 @@ class ThermalObjectDetector: ObservableObject {
     private func handleDetectionResults(_ results: [Any]?) {
         guard let observations = results as? [VNRecognizedObjectObservation] else { return }
 
-        let filtered = observations
+        var detections = observations
             .filter { $0.confidence >= confidenceThreshold }
-            .filter { obs in
-                guard let topLabel = obs.labels.first?.identifier else { return false }
-                return relevantLabels.contains(topLabel)
-            }
-            .map { obs -> DetectedObject in
-                let label = obs.labels.first?.identifier ?? "unknown"
-                let distance = estimateDistance(label: label, boundingBox: obs.boundingBox)
+            .compactMap { obs -> DetectedObject? in
+                guard let topLabel = obs.labels.first?.identifier.lowercased() else { return nil }
+                guard let config = classConfig[topLabel] else { return nil }
+                guard obs.confidence >= config.minConf else { return nil }
+
+                let distance = estimateDistance(label: topLabel, boundingBox: obs.boundingBox)
                 return DetectedObject(
-                    label: label,
+                    label: config.display,
                     confidence: obs.confidence,
                     boundingBox: obs.boundingBox,
                     estimatedDistance: distance
                 )
             }
 
+        // Apply NMS
+        detections = applyNMS(detections)
+
+        // Keep top 5
+        let top = Array(detections.sorted { $0.confidence > $1.confidence }.prefix(5))
+
         DispatchQueue.main.async {
-            self.detectedObjects = filtered
+            self.detectedObjects = top
         }
     }
 
-    private func handleAnimalResults(_ results: [Any]?) {
-        guard let observations = results as? [VNRecognizedObjectObservation] else { return }
+    private func applyNMS(_ detections: [DetectedObject]) -> [DetectedObject] {
+        guard !detections.isEmpty else { return [] }
+        let sorted = detections.sorted { $0.confidence > $1.confidence }
+        var keep: [DetectedObject] = []
+        var suppressed = Set<Int>()
 
-        let detected = observations
-            .filter { $0.confidence >= confidenceThreshold }
-            .map { obs -> DetectedObject in
-                let label = obs.labels.first?.identifier ?? "animal"
-                return DetectedObject(
-                    label: label,
-                    confidence: obs.confidence,
-                    boundingBox: obs.boundingBox,
-                    estimatedDistance: nil
-                )
+        for i in sorted.indices {
+            if suppressed.contains(i) { continue }
+            keep.append(sorted[i])
+            for j in (i + 1)..<sorted.count {
+                if suppressed.contains(j) { continue }
+                if calculateIoU(sorted[i].boundingBox, sorted[j].boundingBox) > iouThreshold {
+                    suppressed.insert(j)
+                }
             }
-
-        DispatchQueue.main.async {
-            self.detectedObjects = detected
         }
+        return keep
+    }
+
+    private func calculateIoU(_ a: CGRect, _ b: CGRect) -> Float {
+        let intersection = a.intersection(b)
+        guard !intersection.isNull else { return 0 }
+        let intersectionArea = intersection.width * intersection.height
+        let unionArea = (a.width * a.height) + (b.width * b.height) - intersectionArea
+        return unionArea > 0 ? Float(intersectionArea / unionArea) : 0
     }
 
     private func estimateDistance(label: String, boundingBox: CGRect) -> Double? {
         guard let knownHeight = knownHeights[label] else { return nil }
-        let focalLength = 3.5 // mm (approximate for thermal lens)
-        let sensorHeight = 3.0 // mm (approximate sensor size)
-        let pixelHeight = boundingBox.height
+        // boundingBox height is normalized (0-1), convert to approximate pixel height
+        // assuming 640px input like Android
+        let pixelHeight = boundingBox.height * 640.0
+        guard pixelHeight > 10 else { return nil }
 
-        guard pixelHeight > 0.01 else { return nil }
-
-        let distance = (knownHeight * focalLength) / (pixelHeight * sensorHeight)
-        return min(max(distance, 0.5), 500.0) // Clamp to reasonable range
+        let distance = (knownHeight * focalLengthPixels) / pixelHeight
+        // Clamp to reasonable range (1-100m like Android)
+        return min(max(distance, 1.0), 100.0)
     }
 
     func start() {

@@ -1,5 +1,6 @@
 import SwiftUI
 import AVKit
+import VLCKit
 
 struct VideoStreamScreen: View {
     @EnvironmentObject var settings: CameraSettingsStore
@@ -339,11 +340,7 @@ struct VideoStreamScreen: View {
             isConnected = false
         } else {
             isBuffering = true
-            // In production, initiate RTSP connection
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                isConnected = true
-                isBuffering = false
-            }
+            isConnected = true
         }
     }
 
@@ -383,26 +380,71 @@ struct VideoStreamScreen: View {
     }
 }
 
-// MARK: - RTSP Player View (placeholder using AVPlayer)
-struct RTSPPlayerView: UIViewControllerRepresentable {
+// MARK: - RTSP Player View (VLCKit)
+struct RTSPPlayerView: UIViewRepresentable {
     let url: String
     @Binding var isConnected: Bool
     @Binding var isBuffering: Bool
 
-    func makeUIViewController(context: Context) -> AVPlayerViewController {
-        let controller = AVPlayerViewController()
-        controller.showsPlaybackControls = false
-        controller.videoGravity = .resizeAspect
-
-        if let streamURL = URL(string: url) {
-            let player = AVPlayer(url: streamURL)
-            controller.player = player
-            player.play()
-        }
-
-        return controller
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
     }
 
-    func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
+    func makeUIView(context: Context) -> UIView {
+        let videoView = UIView()
+        videoView.backgroundColor = .black
+
+        let mediaPlayer = VLCMediaPlayer()
+        mediaPlayer.delegate = context.coordinator
+        mediaPlayer.drawable = videoView
+
+        if let streamURL = URL(string: url) {
+            let media = VLCMedia(url: streamURL)
+            media.addOptions([
+                "network-caching": 300,
+                "rtsp-tcp": true,
+                "clock-jitter": 0,
+                "clock-synchro": 0,
+            ])
+            mediaPlayer.media = media
+            mediaPlayer.play()
+        }
+
+        context.coordinator.mediaPlayer = mediaPlayer
+        return videoView
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {}
+
+    static func dismantleUIView(_ uiView: UIView, coordinator: Coordinator) {
+        coordinator.mediaPlayer?.stop()
+        coordinator.mediaPlayer = nil
+    }
+
+    class Coordinator: NSObject, VLCMediaPlayerDelegate {
+        let parent: RTSPPlayerView
+        var mediaPlayer: VLCMediaPlayer?
+
+        init(parent: RTSPPlayerView) {
+            self.parent = parent
+        }
+
+        func mediaPlayerStateChanged(_ notification: Notification) {
+            guard let player = mediaPlayer else { return }
+            DispatchQueue.main.async {
+                switch player.state {
+                case .playing:
+                    self.parent.isConnected = true
+                    self.parent.isBuffering = false
+                case .buffering:
+                    self.parent.isBuffering = true
+                case .stopped, .error:
+                    self.parent.isConnected = false
+                    self.parent.isBuffering = false
+                default:
+                    break
+                }
+            }
+        }
     }
 }

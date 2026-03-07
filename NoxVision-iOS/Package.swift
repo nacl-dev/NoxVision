@@ -11,11 +11,15 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/nicklama/coreml-yolo", from: "1.0.0"),
+        .package(url: "https://github.com/tylerjonesio/vlckit-spm", from: "3.5.0"),
     ],
     targets: [
         .target(
             name: "NoxVision",
-            path: "NoxVision"
+            path: "NoxVision",
+            dependencies: [
+                .product(name: "VLCKit", package: "vlckit-spm"),
+            ]
         )
     ]
 )
