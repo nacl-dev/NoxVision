@@ -1,6 +1,4 @@
-## Sentinel Journal
-
-## 2024-03-24 - Unsafe Media URL Construction
-**Vulnerability:** URLs for media files were constructed by concatenating unsanitized filenames (e.g., "$baseUrl/$filename"). This could lead to malformed URLs if filenames contained spaces or special characters, or potential server-side interpretation issues if path traversal sequences were present.
-**Learning:** Developers often assume filenames are safe because they are "from the camera", but relying on external input without sanitization is risky. Manual string concatenation for URLs is error-prone.
-**Prevention:** Always use `URLEncoder` (for path segments) or `Uri.Builder` (on Android) to construct URLs programmatically. Use helper functions to centralize URL logic.
+## 2024-05-24 - [Insecure Password Input in SettingsScreen]
+**Vulnerability:** The WiFi password input field (`OutlinedTextField`) in `SettingsScreen.kt` was missing `PasswordVisualTransformation` and `KeyboardOptions(keyboardType = KeyboardType.Password)`, causing the password to be displayed in plaintext.
+**Learning:** This oversight allowed shoulder-surfing and potentially caused the password to be cached in the device's keyboard dictionary, which is a known security vulnerability for sensitive data entry in Jetpack Compose.
+**Prevention:** Always apply `visualTransformation = PasswordVisualTransformation()` and configure `keyboardOptions` with `KeyboardType.Password` when implementing text fields that collect sensitive information like passwords or API keys in Jetpack Compose.
