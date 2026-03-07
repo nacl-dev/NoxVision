@@ -1,0 +1,294 @@
+/* Common */
+"app_name" = "NoxVision";
+"back" = "Zurück";
+"close" = "Schließen";
+"save" = "Speichern";
+"cancel" = "Abbrechen";
+"delete" = "Löschen";
+"ok" = "OK";
+"refresh" = "Aktualisieren";
+"loading" = "Lade…";
+"error" = "Fehler";
+"no_files" = "Keine Dateien";
+"understood" = "Verstanden";
+"next" = "Weiter";
+"start" = "Starten";
+"clear" = "Löschen";
+
+/* Settings Screen */
+"settings" = "Einstellungen";
+"connection" = "Verbindung";
+"connection_subtitle" = "WiFi, IP-Adresse, Port";
+"camera" = "Kamera";
+"camera_subtitle" = "Audio, Helligkeit, Kontrast";
+"thermal_settings" = "Thermische Einstellungen";
+"thermal_settings_subtitle" = "Emissivität, Entfernung, Shutter";
+"app_features" = "App-Funktionen";
+"app_features_subtitle" = "KI-Erkennung, Bildverbesserung";
+"system_info" = "SYSTEM & INFO";
+"system_log" = "System Log";
+"whats_new" = "Was ist neu?";
+"about_noxvision" = "Über NoxVision";
+"language" = "Sprache";
+"language_subtitle" = "App-Sprache ändern";
+
+/* Connection Settings */
+"camera_address" = "KAMERA-ADRESSE";
+"ip_address" = "IP-Adresse";
+"invalid_ip" = "Ungültige IP-Adresse";
+"reset_to_default" = "Auf Standard zurücksetzen (%@)";
+"http_api_port" = "HTTP API Port";
+"default_port" = "Standard: 80";
+"wifi_auto_connect" = "WIFI AUTO-CONNECT";
+"auto_connect" = "Automatisch verbinden";
+"wifi_ssid" = "WiFi SSID (Netzwerkname)";
+"wifi_ssid_hint" = "Steht auf dem Aufkleber der Kamera";
+"wifi_password" = "WiFi Passwort";
+"wifi_password_hint" = "Oft: 12345678";
+
+/* Camera Settings */
+"audio_display" = "AUDIO & ANZEIGE";
+"enable_audio" = "Audio aktivieren";
+"show_hotspot" = "Hotspot anzeigen (heißester Punkt)";
+"crosshair_settings" = "FADENKREUZ";
+"enable_crosshair" = "Fadenkreuz aktivieren";
+"crosshair_style" = "Fadenkreuz-Stil";
+"crosshair_simple" = "Einfach";
+"crosshair_gap" = "Lücke";
+"crosshair_circle_dot" = "Kreis-Punkt";
+"crosshair_chevron" = "Chevron";
+"image_settings" = "BILDEINSTELLUNGEN";
+"brightness" = "Helligkeit";
+"contrast" = "Kontrast";
+"advanced" = "ERWEITERT";
+
+/* App Features */
+"hunting" = "JAGD";
+"hunting_assistant" = "Jagd-Assistent";
+"hunting_assistant_subtitle" = "Dokumentation, Wetter, Karten, Nachsuche";
+"ai_features" = "KI-FUNKTIONEN";
+"ai_object_detection" = "KI Objekterkennung";
+"ai_detection_desc" = "Erkennt Personen, Fahrzeuge und Tiere im Wärmebild mit Entfernungsschätzung.";
+"image_enhancement" = "BILDVERBESSERUNG";
+"enable_image_enhancement" = "Bildverbesserung aktivieren";
+"image_enhancement_desc" = "Verbessert Kontrast und Schärfe des Wärmebilds in Echtzeit.";
+"show_hunting_assistant_home" = "Auf Homescreen anzeigen";
+"hunting_country" = "Länderprofil";
+"hunting_country_germany" = "Deutschland";
+"hunting_country_france" = "Frankreich";
+"hunting_country_spain" = "Spanien";
+"hunting_country_italy" = "Italien";
+"hunting_country_netherlands" = "Niederlande";
+"hunting_country_poland" = "Polen";
+"hunting_country_ukraine" = "Ukraine";
+"hunting_country_international" = "International";
+"hunting_seasons_not_available_for_country" = "Jagdzeiten sind für %@ derzeit nicht verfügbar.";
+
+/* Thermal Settings */
+"camera_features" = "Kamera-Features";
+"radiometry" = "Radiometrie";
+"focus" = "Fokus";
+"gps" = "GPS";
+"shutter_nuc" = "Shutter / NUC Kalibrierung";
+"calibrating" = "Kalibriere…";
+"emissivity" = "Emissivität: %.2f";
+"presets" = "Presets";
+"skin" = "Haut";
+"wood" = "Holz";
+"steel" = "Stahl";
+"aluminum" = "Alu";
+"distance" = "Entfernung: %.1f m";
+"humidity" = "Luftfeuchtigkeit: %.0f %%";
+"reflect_temperature" = "Reflexionstemperatur: %.1f °C";
+"apply_settings" = "Einstellungen anwenden";
+
+/* Video Stream Screen */
+"connecting" = "Verbinde…";
+"connecting_to_camera" = "Verbinde mit Kamera…";
+"buffering" = "Puffert %d%%";
+"live" = "LIVE";
+"offline" = "Offline";
+"rec" = "REC %@";
+"zoom" = "Zoom";
+"palette" = "Palette";
+"connect" = "Verbinden";
+"disconnect" = "Trennen";
+"gallery" = "Galerie";
+"record" = "Aufnahme";
+"stop_rec" = "Stopp";
+"photo" = "Foto";
+"permissions_required" = "Berechtigungen erforderlich";
+"wifi_connection_failed" = "WiFi Verbindung fehlgeschlagen";
+"photo_saved" = "Foto gespeichert";
+"video_saved" = "Video gespeichert";
+"video_too_small" = "Video zu klein/leer";
+
+/* Gallery */
+"phone" = "Handy";
+"thermal" = "Thermal";
+"no_viewer_found" = "Kein Viewer gefunden";
+"error_loading" = "Fehler beim Laden";
+
+/* Log Dialog */
+"no_log_entries" = "Keine Einträge";
+
+/* About Dialog */
+"version" = "Version %@";
+"about_description" = "Open Source iOS App für Guide Wärmebildkameras";
+"about_long_description" = "NoxVision ist eine leistungsstarke Alternative zur offiziellen Guide App, speziell entwickelt für das Guide TE211M Wärmebild-Monokular und kompatible TE-Serie Kameras.";
+"features" = "Features";
+"feature_stream" = "Live RTSP Video Stream";
+"feature_ai" = "KI-Objekterkennung (CoreML)";
+"feature_palettes" = "Mehrere Farbpaletten";
+"feature_capture" = "Screenshot & Video-Aufnahme";
+"feature_gallery" = "Integrierte Galerie";
+"feature_wifi" = "Auto-WiFi Verbindung";
+"feature_night" = "Nacht-optimiertes Design";
+"supported_devices" = "Unterstützte Geräte";
+
+/* Welcome Dialog */
+"welcome_title" = "Willkommen bei NoxVision";
+"setup_connection" = "Verbindung einrichten";
+"important_features" = "Wichtige Funktionen";
+"ready" = "Bereit!";
+"welcome_intro" = "Ihr Begleiter für Wärmebildaufnahmen.\n\nDiese App bietet erweiterte Funktionen für Ihre Guide Kamera.";
+"welcome_wifi" = "Damit die App funktioniert, müssen Sie die korrekte SSID und das Passwort Ihrer Kamera in den Einstellungen hinterlegen.";
+"default_values" = "Standard-Werte:";
+"ssid_hint" = "SSID: Siehe Kamera";
+"password_hint" = "Passwort: Oft 12345678";
+"feature_gallery_desc" = "Bilder & Videos direkt in der App verwalten";
+"feature_measurements" = "Messungen";
+"feature_measurements_desc" = "Temperaturpunkte und Emissionsgrad anpassen";
+"feature_auto_connect" = "Auto-Connect";
+"feature_auto_connect_desc" = "Automatische Verbindung beim Start";
+"feature_recording" = "Aufnahme";
+"feature_recording_desc" = "Videos mit Ton aufzeichnen";
+"welcome_outro" = "Sie können diese Einstellungen später jederzeit über das Zahnrad-Symbol ändern.\n\nViel Spaß mit NoxVision!";
+
+/* Whats New Dialog */
+"whats_new_title" = "Das ist neu!";
+"whats_new_gallery_reload" = "Galerie Reload";
+"whats_new_gallery_reload_desc" = "Es gibt nun einen Button zum manuellen Aktualisieren der Galerie.";
+"whats_new_video_fix" = "Fix: Video Vorschau";
+"whats_new_video_fix_desc" = "Behoben: Video Vorschau blieb manchmal schwarz.";
+"whats_new_onboarding" = "Onboarding";
+"whats_new_onboarding_desc" = "Neuer Guide für den ersten Start.";
+
+/* Hunting Hub */
+"entries" = "%d Einträge";
+"hunting_diary" = "Jagdtagebuch";
+"main_features" = "HAUPTFUNKTIONEN";
+"kill_documentation" = "Abschuss-Dokumentation";
+"kill_documentation_subtitle" = "Jagdtagebuch führen, GPS, Fotos, Export";
+"tracking" = "Nachsuche";
+"tracking_subtitle" = "Wegpunkte, Kompass, Fluchtrichtung";
+"information" = "INFORMATIONEN";
+"weather" = "Wetter";
+"weather_subtitle" = "Aktuelle Bedingungen, Wind, Prognose";
+"hunting_seasons" = "Jagdzeiten";
+"hunting_seasons_subtitle" = "Deutsche Jagdzeiten nach Bundesland";
+"map" = "Karte";
+"map_subtitle" = "Hochsitze, Wegpunkte, Offline-Karten";
+
+/* Weather Screen */
+"no_weather_data" = "Keine Wetterdaten";
+"fetch_weather" = "Wetter abrufen";
+"feels_like" = "Gefühlt %@";
+"wind" = "WIND";
+"from_direction" = "aus %@";
+"gusts" = "Böen: %@";
+"details" = "DETAILS";
+"air_humidity" = "Luftfeuchtigkeit";
+"air_pressure" = "Luftdruck";
+"cloud_cover" = "Bewölkung";
+"visibility" = "Sichtweite";
+"sunrise" = "Sonnenaufgang";
+"sunset" = "Sonnenuntergang";
+"moon_phase" = "MONDPHASE";
+"illumination" = "Beleuchtung: %d%%";
+"last_updated" = "Zuletzt aktualisiert: %@";
+"data_outdated" = "Daten sind veraltet - bitte aktualisieren";
+"position_error" = "Position konnte nicht ermittelt werden";
+
+/* Abschuss Form */
+"new_kill" = "Neuer Abschuss";
+"edit_kill" = "Abschuss bearbeiten";
+"wildlife" = "WILD";
+"wildlife_type" = "Wildart";
+"gender_age" = "Geschlecht/Alter";
+"not_specified" = "Nicht angegeben";
+"estimated_weight" = "Geschätztes Gewicht (kg)";
+"position" = "POSITION";
+"capture_gps" = "GPS erfassen";
+"bundesland" = "Bundesland";
+"photo_section" = "FOTO";
+"add_photo" = "Foto hinzufügen";
+"remove_photo" = "Foto entfernen";
+"notes" = "NOTIZEN";
+"additional_notes" = "Zusätzliche Notizen";
+
+/* Abschuss List */
+"no_entries" = "Noch keine Einträge";
+"tap_to_add" = "Tippe auf + um einen Abschuss zu dokumentieren";
+"export" = "Exportieren";
+"export_csv" = "Als CSV exportieren";
+"export_pdf" = "Als PDF exportieren";
+"csv_saved" = "CSV gespeichert: %@";
+"pdf_saved" = "PDF gespeichert: %@";
+"new_entry" = "Neuer Eintrag";
+"delete_entry" = "Eintrag löschen?";
+"delete_entry_confirm" = "Dieser Eintrag wird unwiderruflich gelöscht.";
+
+/* Calendar Screen */
+"hunting_seasons_active" = "%d Jagdzeiten aktiv";
+"starting_soon" = "%d beginnen in den nächsten 30 Tagen";
+"show_active_only" = "Nur aktuelle Jagdzeiten anzeigen";
+"starting_soon_section" = "BALD BEGINNEND";
+"active_hunting_seasons" = "AKTIVE JAGDZEITEN";
+"all_hunting_seasons" = "ALLE JAGDZEITEN";
+"all_genders" = "Alle";
+"in_days" = "in %d Tagen";
+"starts_on" = "Beginnt am %d. %@";
+"hunting_seasons_note" = "Hinweis: Angezeigte Zeiten entsprechen den Bundesjagdzeiten. Länderspezifische Abweichungen sind möglich.";
+
+/* Map Screen */
+"my_location" = "Meine Position";
+"hunting_stands" = "Hochsitze: %d";
+"waypoints_count" = "Wegpunkte: %d";
+"cache_size" = "Cache: %@";
+"long_press_hint" = "Lang drücken um Hochsitz hinzuzufügen";
+"add_hunting_stand" = "Hochsitz hinzufügen";
+"stand_name" = "Name";
+"stand_type" = "Typ";
+"stand_position" = "Position: %@";
+"zoom_in" = "Hineinzoomen";
+"zoom_out" = "Herauszoomen";
+
+/* Stand Types */
+"stand_hochsitz" = "Hochsitz";
+"stand_kanzel" = "Kanzel";
+"stand_druckjagd" = "Druckjagdstand";
+"stand_ansitz" = "Ansitz";
+"stand_custom" = "Benutzerdefiniert";
+
+/* Waypoint Types */
+"waypoint_anschuss" = "Anschuss";
+"waypoint_last_seen" = "Letzte Sichtung";
+"waypoint_blood_trail" = "Schweißfährte";
+"waypoint_recovery" = "Fundstelle";
+"waypoint_custom" = "Benutzerdefiniert";
+
+/* Nachsuche Screen */
+"current_position" = "Aktuelle Position";
+"accuracy" = "Genauigkeit: %dm";
+"compass_unavailable" = "Kompass nicht verfügbar";
+"waypoints" = "WEGPUNKTE";
+"no_waypoints" = "Keine Wegpunkte";
+"tap_to_add_waypoint" = "Tippe auf + um einen Anschuss oder Wegpunkt zu markieren";
+"add_waypoint" = "Wegpunkt hinzufügen";
+"select_type" = "Typ auswählen:";
+"target" = "Ziel: %@";
+
+/* Language Dialog */
+"select_language" = "Sprache auswählen";
+"system_language" = "Systemsprache";

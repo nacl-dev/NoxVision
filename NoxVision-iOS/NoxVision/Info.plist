@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>de</string>
+	<key>CFBundleDisplayName</key>
+	<string>NoxVision</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.3.0</string>
+	<key>CFBundleVersion</key>
+	<string>4</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+	</dict>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
+	</dict>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>wifi</string>
+	</array>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleLightContent</string>
+	<key>UIUserInterfaceStyle</key>
+	<string>Dark</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>NoxVision benötigt Ihren Standort für GPS-Koordinaten bei der Jagddokumentation, Wetteranzeige und Kartennavigation.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>NoxVision benötigt Ihren Standort für GPS-Koordinaten bei der Jagddokumentation und Nachsuche.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>NoxVision benötigt Kamerazugriff für Fotos bei der Abschuss-Dokumentation.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>NoxVision benötigt Zugriff auf Ihre Fotos zum Speichern und Anzeigen von Wärmebild-Screenshots und Jagdfotos.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>NoxVision möchte Screenshots und aufgenommene Videos in Ihrer Fotobibliothek speichern.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>NoxVision benötigt Zugriff auf das lokale Netzwerk, um sich mit Ihrer Guide Wärmebildkamera zu verbinden.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_rtsp._tcp</string>
+		<string>_http._tcp</string>
+	</array>
+	<key>OPENWEATHER_API_KEY</key>
+	<string></string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+</dict>
+</plist>
