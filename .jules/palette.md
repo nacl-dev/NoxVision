@@ -1,0 +1,3 @@
+## 2024-05-15 - Compose Modifiers & Intrinsic Semantics
+**Learning:** In Jetpack Compose, native UI elements like `Button` or `RadioButton` carry their intrinsic accessibility semantics. However, using `Modifier.clickable` on custom generic layouts (like `Card` or `Row`) transforms them into interactive elements *without* assigning the proper interactive semantic roles. This means a screen reader will announce them generally, but not as a standard button, causing confusion.
+**Action:** When implementing custom interactive components using `Modifier.clickable`, always explicitly add `role = Role.Button` (or another appropriate Role like `Role.RadioButton`) so screen readers correctly announce the component's functionality to assistive technologies.
