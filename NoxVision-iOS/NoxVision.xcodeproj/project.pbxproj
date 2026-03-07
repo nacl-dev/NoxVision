@@ -7,41 +7,42 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1000001 /* NoxVisionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001; };
-		A1000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002; };
-		A1000003 /* DeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003; };
-		A1000004 /* CameraSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004; };
-		A1000005 /* MediaModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005; };
-		A1000006 /* WhatsNewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006; };
-		A1000007 /* HuntingDatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000007; };
-		A1000008 /* HuntingEntities.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000008; };
-		A1000009 /* CameraApiClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000009; };
-		A1000010 /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000010; };
-		A1000011 /* MoonPhaseCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000011; };
-		A1000012 /* WeatherApiClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000012; };
-		A1000013 /* WeatherDtos.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000013; };
-		A1000014 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000014; };
-		A1000015 /* WiFiAutoConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000015; };
-		A1000016 /* NoxComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000016; };
-		A1000017 /* NoxVisionTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000017; };
-		A1000018 /* CrosshairOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000018; };
-		A1000019 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000019; };
-		A1000020 /* ThermalSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000020; };
-		A1000021 /* AbschussFormScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000021; };
-		A1000022 /* AbschussListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000022; };
-		A1000023 /* HuntingHubScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000023; };
-		A1000024 /* WeatherScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000024; };
-		A1000025 /* CalendarScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000025; };
-		A1000026 /* MapScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000026; };
-		A1000027 /* NachsucheScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000027; };
-		A1000028 /* Dialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000028; };
-		A1000029 /* HuntingSeasonData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000029; };
-		A1000030 /* Exporters.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000030; };
-		A1000031 /* VideoStreamScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000031; };
-		A1000032 /* ThermalObjectDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000032; };
-		A1000040 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B1000040; };
-		A1000041 /* ThermalYOLO.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = B1000041; };
-		A1000042 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B1000050; };
+		A1000001 /* NoxVisionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001 /* NoxVisionApp.swift */; };
+		A1000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002 /* ContentView.swift */; };
+		A1000003 /* DeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003 /* DeviceInfo.swift */; };
+		A1000004 /* CameraSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004 /* CameraSettings.swift */; };
+		A1000005 /* MediaModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005 /* MediaModels.swift */; };
+		A1000006 /* WhatsNewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006 /* WhatsNewData.swift */; };
+		A1000007 /* HuntingDatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000007 /* HuntingDatabaseManager.swift */; };
+		A1000008 /* HuntingEntities.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000008 /* HuntingEntities.swift */; };
+		A1000009 /* CameraApiClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000009 /* CameraApiClient.swift */; };
+		A1000010 /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000010 /* AppLogger.swift */; };
+		A1000011 /* MoonPhaseCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000011 /* MoonPhaseCalculator.swift */; };
+		A1000012 /* WeatherApiClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000012 /* WeatherApiClient.swift */; };
+		A1000013 /* WeatherDtos.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000013 /* WeatherDtos.swift */; };
+		A1000014 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000014 /* LocationManager.swift */; };
+		A1000015 /* WiFiAutoConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000015 /* WiFiAutoConnect.swift */; };
+		A1000016 /* NoxComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000016 /* NoxComponents.swift */; };
+		A1000017 /* NoxVisionTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000017 /* NoxVisionTheme.swift */; };
+		A1000018 /* CrosshairOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000018 /* CrosshairOverlay.swift */; };
+		A1000019 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000019 /* SettingsScreen.swift */; };
+		A1000020 /* ThermalSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000020 /* ThermalSettingsScreen.swift */; };
+		A1000021 /* AbschussFormScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000021 /* AbschussFormScreen.swift */; };
+		A1000022 /* AbschussListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000022 /* AbschussListScreen.swift */; };
+		A1000023 /* HuntingHubScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000023 /* HuntingHubScreen.swift */; };
+		A1000024 /* WeatherScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000024 /* WeatherScreen.swift */; };
+		A1000025 /* CalendarScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000025 /* CalendarScreen.swift */; };
+		A1000026 /* MapScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000026 /* MapScreen.swift */; };
+		A1000027 /* NachsucheScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000027 /* NachsucheScreen.swift */; };
+		A1000028 /* Dialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000028 /* Dialogs.swift */; };
+		A1000029 /* HuntingSeasonData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000029 /* HuntingSeasonData.swift */; };
+		A1000030 /* Exporters.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000030 /* Exporters.swift */; };
+		A1000031 /* VideoStreamScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000031 /* VideoStreamScreen.swift */; };
+		A1000032 /* ThermalObjectDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000032 /* ThermalObjectDetector.swift */; };
+		A1000040 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B1000040 /* Assets.xcassets */; };
+		A1000041 /* ThermalYOLO.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = B1000041 /* ThermalYOLO.mlpackage */; };
+		A1000042 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B1000050 /* Localizable.strings */; };
+		D175BED82F5CAEF800873B29 /* VLCKitSPM in Frameworks */ = {isa = PBXBuildFile; productRef = E2000001 /* VLCKitSPM */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -90,13 +91,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D175BED82F5CAEF800873B29 /* VLCKitSPM in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		D1000001 /* = */ = {
+		D1000001 = {
 			isa = PBXGroup;
 			children = (
 				D1000002 /* NoxVision */,
@@ -324,7 +326,7 @@
 			);
 			name = NoxVision;
 			packageProductDependencies = (
-				E2000001 /* VLCKit */,
+				E2000001 /* VLCKitSPM */,
 			);
 			productName = NoxVision;
 			productReference = B1000060 /* NoxVision.app */;
@@ -355,7 +357,7 @@
 				uk,
 				Base,
 			);
-			mainGroup = D1000001 /* = */;
+			mainGroup = D1000001;
 			packageReferences = (
 				E2000010 /* XCRemoteSwiftPackageReference "vlckit-spm" */,
 			);
@@ -557,6 +559,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z389H2V22R;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = NoxVision/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
@@ -579,6 +582,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z389H2V22R;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = NoxVision/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
@@ -630,13 +634,12 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E2000001 /* VLCKit */ = {
+		E2000001 /* VLCKitSPM */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E2000010 /* XCRemoteSwiftPackageReference "vlckit-spm" */;
 			productName = VLCKitSPM;
 		};
 /* End XCSwiftPackageProductDependency section */
-
 	};
 	rootObject = 000000000000000000000001 /* Project object */;
 }
