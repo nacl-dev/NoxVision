@@ -41,11 +41,11 @@
 			};
 			buildConfigurationList = 000000000000000000000010 /* Build configuration list for PBXProject "NoxVision" */;
 			compatibilityVersion = "Xcode 14.0";
-			developmentRegion = de;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				de,
 				en,
+				de,
 				fr,
 				es,
 				it,

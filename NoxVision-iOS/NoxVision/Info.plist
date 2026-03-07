@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>de</string>
+	<string>en</string>
 	<key>CFBundleDisplayName</key>
 	<string>NoxVision</string>
 	<key>CFBundleExecutable</key>
@@ -47,17 +47,17 @@
 	<key>UIUserInterfaceStyle</key>
 	<string>Dark</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>NoxVision benötigt Ihren Standort für GPS-Koordinaten bei der Jagddokumentation, Wetteranzeige und Kartennavigation.</string>
+	<string>NoxVision needs your location for GPS coordinates in hunting documentation, weather display, and map navigation.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>NoxVision benötigt Ihren Standort für GPS-Koordinaten bei der Jagddokumentation und Nachsuche.</string>
+	<string>NoxVision needs your location for GPS coordinates in hunting documentation and tracking.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>NoxVision benötigt Kamerazugriff für Fotos bei der Abschuss-Dokumentation.</string>
+	<string>NoxVision needs camera access for photos in kill documentation.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>NoxVision benötigt Zugriff auf Ihre Fotos zum Speichern und Anzeigen von Wärmebild-Screenshots und Jagdfotos.</string>
+	<string>NoxVision needs access to your photos to save and display thermal screenshots and hunting photos.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>NoxVision möchte Screenshots und aufgenommene Videos in Ihrer Fotobibliothek speichern.</string>
+	<string>NoxVision would like to save screenshots and recorded videos to your photo library.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>NoxVision benötigt Zugriff auf das lokale Netzwerk, um sich mit Ihrer Guide Wärmebildkamera zu verbinden.</string>
+	<string>NoxVision needs local network access to connect to your Guide thermal camera.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_rtsp._tcp</string>
