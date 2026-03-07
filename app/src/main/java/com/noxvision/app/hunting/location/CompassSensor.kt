@@ -33,25 +33,26 @@ class CompassSensor(context: Context) {
         var hasGravity = false
         var hasMagnetic = false
 
+        // Pre-allocate arrays to avoid object creation in the high-frequency sensor loop
+        val rotationMatrix = FloatArray(9)
+        val inclinationMatrix = FloatArray(9)
+        val orientation = FloatArray(3)
+
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
                 when (event.sensor.type) {
                     Sensor.TYPE_ACCELEROMETER -> {
-                        lowPassFilter(event.values.clone(), gravity)
+                        lowPassFilter(event.values, gravity)
                         hasGravity = true
                     }
                     Sensor.TYPE_MAGNETIC_FIELD -> {
-                        lowPassFilter(event.values.clone(), geomagnetic)
+                        lowPassFilter(event.values, geomagnetic)
                         hasMagnetic = true
                     }
                 }
 
                 if (hasGravity && hasMagnetic) {
-                    val rotationMatrix = FloatArray(9)
-                    val inclinationMatrix = FloatArray(9)
-
                     if (SensorManager.getRotationMatrix(rotationMatrix, inclinationMatrix, gravity, geomagnetic)) {
-                        val orientation = FloatArray(3)
                         SensorManager.getOrientation(rotationMatrix, orientation)
 
                         val azimuthRadians = orientation[0]
