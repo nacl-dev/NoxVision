@@ -241,7 +241,7 @@ private fun HuntRecordCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick, role = androidx.compose.ui.semantics.Role.Button),
         colors = CardDefaults.cardColors(containerColor = NightColors.surface),
         shape = RoundedCornerShape(12.dp)
     ) {

@@ -392,7 +392,7 @@ fun BuyCreditsDialog(billingManager: BillingManager, onDismiss: () -> Unit) {
 fun CreditPackageCard(title: String, price: String, onClick: () -> Unit) {
     Card(
         modifier = Modifier
-            .clickable(onClick = onClick)
+            .clickable(onClick = onClick, role = androidx.compose.ui.semantics.Role.Button)
             .fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
     ) {
