@@ -64,3 +64,6 @@ CLAUDE.md
 # Test outputs
 /test-results/
 /test-reports/
+
+# Xcode user-specific files
+xcuserdata/
