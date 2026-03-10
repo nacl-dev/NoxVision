@@ -1381,9 +1381,12 @@ fun VideoStreamScreen() {
                         CameraSettings.setHuntingAssistantCountry(context, country)
                     },
                     onCameraIpChange = { newIp ->
-                        CameraSettings.setCameraIp(context, newIp)
-                        cameraIp = newIp
-                        AppLogger.log("Kamera IP geandert: $newIp", AppLogger.LogType.SUCCESS)
+                        if (CameraSettings.setCameraIp(context, newIp)) {
+                            cameraIp = newIp
+                            AppLogger.log("Kamera IP geandert: $newIp", AppLogger.LogType.SUCCESS)
+                        } else {
+                            AppLogger.log("Ungültige IP-Adresse abgelehnt: $newIp", AppLogger.LogType.ERROR)
+                        }
                     },
                     onShowThermalSettings = {
                         showSettingsDialog = false

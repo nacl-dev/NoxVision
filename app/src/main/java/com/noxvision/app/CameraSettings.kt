@@ -99,11 +99,16 @@ object CameraSettings {
     }
     
     /**
-     * Save the camera IP address.
+     * Save the camera IP address. Validates the IP format before saving to prevent SSRF and injection.
+     * Returns true if successful, false if the IP is invalid.
      */
-    fun setCameraIp(context: Context, ip: String) {
+    fun setCameraIp(context: Context, ip: String): Boolean {
+        if (!isValidIp(ip)) {
+            return false
+        }
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit { putString(KEY_CAMERA_IP, ip) }
+        return true
     }
     
     /**
