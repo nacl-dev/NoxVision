@@ -609,7 +609,7 @@ private fun PhotoSection(
                 .height(200.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, NightColors.surface, RoundedCornerShape(12.dp))
-                .clickable { imagePickerLauncher.launch("image/*") }
+                .clickable(role = androidx.compose.ui.semantics.Role.Button) { imagePickerLauncher.launch("image/*") }
         ) {
             AsyncImage(
                 model = photoUri,
@@ -636,7 +636,7 @@ private fun PhotoSection(
                 .clip(RoundedCornerShape(12.dp))
                 .background(NightColors.surface)
                 .border(1.dp, NightColors.onBackground.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                .clickable { imagePickerLauncher.launch("image/*") },
+                .clickable(role = androidx.compose.ui.semantics.Role.Button) { imagePickerLauncher.launch("image/*") },
             contentAlignment = Alignment.Center
         ) {
             Column(

@@ -311,7 +311,7 @@ private fun HuntingFeatureCard(
     val cardModifier = if (enabled) {
         Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(onClick = onClick, role = androidx.compose.ui.semantics.Role.Button)
     } else {
         Modifier.fillMaxWidth()
     }

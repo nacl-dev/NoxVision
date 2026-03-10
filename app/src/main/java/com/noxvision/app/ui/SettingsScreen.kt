@@ -315,7 +315,7 @@ private fun SettingsCategoryCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick, role = androidx.compose.ui.semantics.Role.Button),
         colors = CardDefaults.cardColors(containerColor = NightColors.surface),
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -363,7 +363,7 @@ private fun SettingsActionItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(onClick = onClick, role = androidx.compose.ui.semantics.Role.Button)
             .padding(vertical = 12.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
