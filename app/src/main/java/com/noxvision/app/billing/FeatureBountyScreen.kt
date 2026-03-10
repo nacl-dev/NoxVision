@@ -195,7 +195,7 @@ fun FeatureBountyScreen(
                                 .height(40.dp)
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(if (isSelected) selectedColor else Color.Transparent)
-                                .clickable { selectedStatus = status }
+                                .clickable(role = androidx.compose.ui.semantics.Role.Button) { selectedStatus = status }
                                 .then(if (!isSelected) Modifier.border(1.dp, Color(0xFF424242), RoundedCornerShape(4.dp)) else Modifier),
                             contentAlignment = Alignment.Center
                         ) {
@@ -392,7 +392,7 @@ fun BuyCreditsDialog(billingManager: BillingManager, onDismiss: () -> Unit) {
 fun CreditPackageCard(title: String, price: String, onClick: () -> Unit) {
     Card(
         modifier = Modifier
-            .clickable(onClick = onClick)
+            .clickable(onClick = onClick, role = androidx.compose.ui.semantics.Role.Button)
             .fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
     ) {
