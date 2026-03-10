@@ -985,6 +985,15 @@ fun VideoStreamScreen() {
 
                         // Canvas overlay for AI detections
                         if (objectDetectionEnabled && detectedObjects.isNotEmpty()) {
+                            val textPaint = remember {
+                                android.graphics.Paint().apply {
+                                    color = android.graphics.Color.GREEN
+                                    textSize = 40f
+                                    typeface = android.graphics.Typeface.DEFAULT_BOLD
+                                }
+                            }
+                            val textBounds = remember { android.graphics.Rect() }
+
                             Canvas(modifier = Modifier.fillMaxSize()) {
                                 detectedObjects.forEach { obj ->
                                     drawRect(
@@ -1001,12 +1010,6 @@ fun VideoStreamScreen() {
                                     val confidenceText = " (%.0f%%)".format(obj.confidence * 100)
                                     val fullText = "$germanLabel$distanceText$confidenceText"
 
-                                    val textPaint = android.graphics.Paint().apply {
-                                        color = android.graphics.Color.GREEN
-                                        textSize = 40f
-                                        typeface = android.graphics.Typeface.DEFAULT_BOLD
-                                    }
-                                    val textBounds = android.graphics.Rect()
                                     textPaint.getTextBounds(fullText, 0, fullText.length, textBounds)
 
                                     val textX = obj.boundingBox.left.coerceAtLeast(0f)
