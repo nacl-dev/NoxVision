@@ -1,3 +1,3 @@
-## 2024-XX-XX - Added Button Roles to Clickable Modifiers
-**Learning:** In Jetpack Compose, custom components (like Cards, Rows) acting as buttons using `Modifier.clickable` are not announced as buttons by screen readers (TalkBack) unless explicitly given a semantic role. This is an accessibility issue specific to compose applications where traditional buttons are not used.
-**Action:** Always include `role = Role.Button` when adding `Modifier.clickable` to a composable that acts as a button or interactive element to ensure proper screen reader support.
+## 2025-03-10 - Add Role.Button to custom clickable components in FeatureBountyScreen
+**Learning:** Found custom Compose components (`Box`, `Card`) acting as clickable buttons without `Role.Button` applied, preventing screen readers from correctly identifying their interactive state.
+**Action:** When adding `Modifier.clickable` to a composable that acts like a button, always pass `role = androidx.compose.ui.semantics.Role.Button` to ensure proper accessibility semantics.
