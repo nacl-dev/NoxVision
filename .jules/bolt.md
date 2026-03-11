@@ -8,3 +8,7 @@
 ## 2024-05-24 - [Avoid Object Allocation in Jetpack Compose Canvas Loops]
 **Learning:** Jetpack Compose `Canvas` rendering executes very frequently on the UI thread, potentially leading to Garbage Collection (GC) churn and frame rate drops if objects are instantiated inside the `Canvas` scope or draw loops.
 **Action:** When drawing dynamic content on a `Canvas`, hoist and pre-allocate drawing tools such as `android.graphics.Paint`, `android.graphics.Rect`, and `androidx.compose.ui.graphics.Path` out of the `Canvas` scope using `remember { ... }`. When re-using objects like `Path`, ensure you call `path.reset()` before re-constructing the shape data for each frame.
+
+## 2025-03-11 - Avoid Array Allocation in SensorEvent Loops
+**Learning:** High-frequency Android sensor event loops (`onSensorChanged`), especially those running at `SENSOR_DELAY_UI` (approx. 60Hz), will cause rapid garbage collection (GC) churn and subsequent UI micro-stutters if objects or arrays are instantiated inside the callback or if `event.values.clone()` is used when the data is only being read temporarily.
+**Action:** Always pre-allocate arrays (e.g., `rotationMatrix`, `inclinationMatrix`, `orientation`) outside of the sensor event callback and reuse them. Eliminate `.clone()` calls on sensor event values if the data is just being passed to a local filter or processing function that reads it immediately.
