@@ -464,6 +464,8 @@ private fun TrackingCompass(
     val backgroundColor = NightColors.onBackground
     val targetColor = NightColors.error
 
+    val strokeStyle = remember { androidx.compose.ui.graphics.drawscope.Stroke(width = 2f) }
+
     Canvas(modifier = Modifier.fillMaxSize()) {
         val center = Offset(size.width / 2, size.height / 2)
         val radius = size.minDimension / 2
@@ -473,7 +475,7 @@ private fun TrackingCompass(
             color = backgroundColor.copy(alpha = 0.3f),
             radius = radius,
             center = center,
-            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f)
+            style = strokeStyle
         )
 
         // Draw cardinal direction markers (fixed, compass rotates)
