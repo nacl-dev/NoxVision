@@ -471,6 +471,8 @@ private fun WindCompass(windDirection: Float) {
     val primaryColor = NightColors.primary
     val backgroundColor = NightColors.onBackground
 
+    val strokeStyle = remember { androidx.compose.ui.graphics.drawscope.Stroke(width = 2f) }
+
     Canvas(modifier = Modifier.fillMaxSize()) {
         val center = Offset(size.width / 2, size.height / 2)
         val radius = size.minDimension / 2
@@ -480,7 +482,7 @@ private fun WindCompass(windDirection: Float) {
             color = backgroundColor.copy(alpha = 0.3f),
             radius = radius,
             center = center,
-            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f)
+            style = strokeStyle
         )
 
         // Draw direction markers

@@ -122,6 +122,16 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Locale
 
+private val STREAM_PALETTES = listOf(
+    Triple("whitehot", "White Hot", R.drawable.stream_palette_whitehot),
+    Triple("blackhot", "Black Hot", R.drawable.stream_palette_blackhot),
+    Triple("redhot", "Red Hot", R.drawable.stream_palette_tint2),
+    Triple("iron", "Iron", R.drawable.stream_palette_ironred),
+    Triple("bluehot", "Blue", R.drawable.stream_palette_bluehot),
+    Triple("greenhot", "Green", R.drawable.stream_palette_greenhot),
+    Triple("darkbrown", "Brown", R.drawable.stream_palette_dark_brown)
+)
+
 @Composable
 fun VideoStreamScreen() {
     val context = LocalContext.current
@@ -995,6 +1005,7 @@ fun VideoStreamScreen() {
                                 }
                             }
                             val textBounds = remember { android.graphics.Rect() }
+                            val boxStroke = remember { Stroke(width = 4f) }
 
                             Canvas(modifier = Modifier.fillMaxSize()) {
                                 detectedObjects.forEach { obj ->
@@ -1002,7 +1013,7 @@ fun VideoStreamScreen() {
                                         color = NightColors.primary,
                                         topLeft = Offset(obj.boundingBox.left, obj.boundingBox.top),
                                         size = Size(obj.boundingBox.width(), obj.boundingBox.height()),
-                                        style = Stroke(width = 4f)
+                                        style = boxStroke
                                     )
 
                                     val germanLabel = KNOWN_OBJECTS[obj.label]?.label ?: obj.label
@@ -1175,17 +1186,7 @@ fun VideoStreamScreen() {
                         .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    val palettes = listOf(
-                        Triple("whitehot", "White Hot", R.drawable.stream_palette_whitehot),
-                        Triple("blackhot", "Black Hot", R.drawable.stream_palette_blackhot),
-                        Triple("redhot", "Red Hot", R.drawable.stream_palette_tint2),
-                        Triple("iron", "Iron", R.drawable.stream_palette_ironred),
-                        Triple("bluehot", "Blue", R.drawable.stream_palette_bluehot),
-                        Triple("greenhot", "Green", R.drawable.stream_palette_greenhot),
-                        Triple("darkbrown", "Brown", R.drawable.stream_palette_dark_brown)
-                    )
-
-                    palettes.forEach { (id, name, imageRes) ->
+                    STREAM_PALETTES.forEach { (id, name, imageRes) ->
                         PaletteButton(
                             imageRes = imageRes,
                             name = name,
@@ -1555,31 +1556,34 @@ private fun CrosshairOverlay(style: CrosshairStyle) {
     // Pre-allocate Path outside the Canvas scope to prevent memory allocation and GC churn on every frame
     val chevronPath = remember { Path() }
 
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val strokeStyle = remember(density) { Stroke(width = with(density) { 2.dp.toPx() }) }
+
     Canvas(modifier = Modifier.fillMaxSize()) {
         val cx = size.width / 2
         val cy = size.height / 2
         val color = Color.Red.copy(alpha = 0.8f)
-        val strokeWidth = 2.dp.toPx()
+        val strokeWidthPx = strokeStyle.width
 
         when (style) {
             CrosshairStyle.SIMPLE -> {
                 val len = 20.dp.toPx()
-                drawLine(color, Offset(cx - len, cy), Offset(cx + len, cy), strokeWidth)
-                drawLine(color, Offset(cx, cy - len), Offset(cx, cy + len), strokeWidth)
+                drawLine(color, Offset(cx - len, cy), Offset(cx + len, cy), strokeWidthPx)
+                drawLine(color, Offset(cx, cy - len), Offset(cx, cy + len), strokeWidthPx)
             }
             CrosshairStyle.GAP -> {
                 val gap = 8.dp.toPx()
                 val len = 24.dp.toPx()
-                drawLine(color, Offset(cx - len, cy), Offset(cx - gap, cy), strokeWidth)
-                drawLine(color, Offset(cx + gap, cy), Offset(cx + len, cy), strokeWidth)
-                drawLine(color, Offset(cx, cy - len), Offset(cx, cy - gap), strokeWidth)
-                drawLine(color, Offset(cx, cy + gap), Offset(cx, cy + len), strokeWidth)
+                drawLine(color, Offset(cx - len, cy), Offset(cx - gap, cy), strokeWidthPx)
+                drawLine(color, Offset(cx + gap, cy), Offset(cx + len, cy), strokeWidthPx)
+                drawLine(color, Offset(cx, cy - len), Offset(cx, cy - gap), strokeWidthPx)
+                drawLine(color, Offset(cx, cy + gap), Offset(cx, cy + len), strokeWidthPx)
             }
             CrosshairStyle.CIRCLE_DOT -> {
                 val dotRadius = 2.dp.toPx()
                 val circleRadius = 16.dp.toPx()
                 drawCircle(color, radius = dotRadius, center = Offset(cx, cy))
-                drawCircle(color, radius = circleRadius, center = Offset(cx, cy), style = Stroke(strokeWidth))
+                drawCircle(color, radius = circleRadius, center = Offset(cx, cy), style = strokeStyle)
             }
             CrosshairStyle.CHEVRON -> {
                 val w = 12.dp.toPx()
@@ -1591,7 +1595,7 @@ private fun CrosshairOverlay(style: CrosshairStyle) {
                 chevronPath.lineTo(cx, cy - h2)
                 chevronPath.lineTo(cx + w, cy + h1)
 
-                drawPath(chevronPath, color, style = Stroke(strokeWidth))
+                drawPath(chevronPath, color, style = strokeStyle)
             }
         }
     }
