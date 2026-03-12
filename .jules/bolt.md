@@ -12,3 +12,11 @@
 ## 2025-03-11 - Avoid Array Allocation in SensorEvent Loops
 **Learning:** High-frequency Android sensor event loops (`onSensorChanged`), especially those running at `SENSOR_DELAY_UI` (approx. 60Hz), will cause rapid garbage collection (GC) churn and subsequent UI micro-stutters if objects or arrays are instantiated inside the callback or if `event.values.clone()` is used when the data is only being read temporarily.
 **Action:** Always pre-allocate arrays (e.g., `rotationMatrix`, `inclinationMatrix`, `orientation`) outside of the sensor event callback and reuse them. Eliminate `.clone()` calls on sensor event values if the data is just being passed to a local filter or processing function that reads it immediately.
+
+## 2024-05-24 - [Avoid Recreating Stroke Objects inside Jetpack Compose Canvas Loops]
+**Learning:** `Stroke` object instantiation inside `Canvas` scopes adds up when drawn repeatedly. Re-assigning variables (e.g. `strokeStyle = Stroke(width = strokeWidthPx)`) only when width changes prevents massive garbage creation per frame (60Hz) during draw loops.
+**Action:** Extract `Stroke` and other style objects into `remember` blocks. If dynamic updates are needed, update the `remember`ed reference only when values change rather than re-creating them on each frame.
+
+## 2024-05-24 - [Idiomatic Jetpack Compose Density-Aware Optimizations]
+**Learning:** Working around Density conversions (`.toPx()`) outside of a `Canvas` by creating mutable variables and updating them later during the draw phase is an anti-pattern that defeats the purpose of the optimization by forcing a reference wrapper allocation.
+**Action:** When extracting styling objects like `Stroke` out of a `Canvas` that depend on `dp` values, get `LocalDensity.current` and pass it to a `remember` block: `remember(density) { Stroke(width = with(density) { 2.dp.toPx() }) }`.
