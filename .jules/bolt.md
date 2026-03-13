@@ -20,3 +20,7 @@
 ## 2024-05-24 - [Idiomatic Jetpack Compose Density-Aware Optimizations]
 **Learning:** Working around Density conversions (`.toPx()`) outside of a `Canvas` by creating mutable variables and updating them later during the draw phase is an anti-pattern that defeats the purpose of the optimization by forcing a reference wrapper allocation.
 **Action:** When extracting styling objects like `Stroke` out of a `Canvas` that depend on `dp` values, get `LocalDensity.current` and pass it to a `remember` block: `remember(density) { Stroke(width = with(density) { 2.dp.toPx() }) }`.
+
+## 2025-03-22 - Filter High-Frequency Sensor Emissions
+**Learning:** Emitting a new data object unconditionally on every high-frequency Android sensor event (e.g., `SENSOR_DELAY_UI` at 60Hz) creates severe GC churn from rapid object allocations and causes downstream Jetpack Compose UI loops to recompose 60 times a second.
+**Action:** When working with continuous sensor flows, track the last emitted values and apply a change threshold (e.g., > 1 degree for compass data). Only instantiate and emit the new data object if the threshold is met. This drastically reduces object allocation and UI recompositions.
