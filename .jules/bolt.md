@@ -20,3 +20,7 @@
 ## 2024-05-24 - [Idiomatic Jetpack Compose Density-Aware Optimizations]
 **Learning:** Working around Density conversions (`.toPx()`) outside of a `Canvas` by creating mutable variables and updating them later during the draw phase is an anti-pattern that defeats the purpose of the optimization by forcing a reference wrapper allocation.
 **Action:** When extracting styling objects like `Stroke` out of a `Canvas` that depend on `dp` values, get `LocalDensity.current` and pass it to a `remember` block: `remember(density) { Stroke(width = with(density) { 2.dp.toPx() }) }`.
+
+## 2026-03-14 - Add Emission Threshold to Sensor Streams
+**Learning:** High-frequency Android sensor event streams (e.g., Compass updates at ~60Hz) fed directly into Jetpack Compose state flows cause excessive UI recomposition churn, leading to GC pressure and potential micro-stutters, even if the visual change is imperceptible to the user.
+**Action:** When bridging high-frequency sensor callbacks (like `onSensorChanged`) to Jetpack Compose reactive streams, always track the last emitted values and introduce a minimum emission threshold (e.g., `1.0f` degree) outside the callback loop to only emit significant changes downstream.

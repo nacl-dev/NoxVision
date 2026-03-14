@@ -38,6 +38,11 @@ class CompassSensor(context: Context) {
         var hasGravity = false
         var hasMagnetic = false
 
+        // Track last emitted values to prevent recomposition churn
+        var lastEmittedAzimuth = -1f
+        var lastEmittedPitch = -1f
+        var lastEmittedRoll = -1f
+
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
                 when (event.sensor.type) {
@@ -63,14 +68,26 @@ class CompassSensor(context: Context) {
                         val pitch = Math.toDegrees(orientation[1].toDouble()).toFloat()
                         val roll = Math.toDegrees(orientation[2].toDouble()).toFloat()
 
-                        trySend(
-                            CompassData(
-                                azimuth = azimuthDegrees,
-                                pitch = pitch,
-                                roll = roll,
-                                direction = getDirectionFromAzimuth(azimuthDegrees)
+                        // Only emit if change is significant to avoid downstream Compose UI churn
+                        val hasSignificantChange = lastEmittedAzimuth == -1f ||
+                                Math.abs(azimuthDegrees - lastEmittedAzimuth) > EMISSION_THRESHOLD ||
+                                Math.abs(pitch - lastEmittedPitch) > EMISSION_THRESHOLD ||
+                                Math.abs(roll - lastEmittedRoll) > EMISSION_THRESHOLD
+
+                        if (hasSignificantChange) {
+                            lastEmittedAzimuth = azimuthDegrees
+                            lastEmittedPitch = pitch
+                            lastEmittedRoll = roll
+
+                            trySend(
+                                CompassData(
+                                    azimuth = azimuthDegrees,
+                                    pitch = pitch,
+                                    roll = roll,
+                                    direction = getDirectionFromAzimuth(azimuthDegrees)
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
@@ -109,6 +126,8 @@ class CompassSensor(context: Context) {
     }
 
     companion object {
+        private const val EMISSION_THRESHOLD = 1.0f // degrees
+
         fun calculateRelativeBearing(compassAzimuth: Float, targetBearing: Float): Float {
             var relative = targetBearing - compassAzimuth
             if (relative < 0) relative += 360
