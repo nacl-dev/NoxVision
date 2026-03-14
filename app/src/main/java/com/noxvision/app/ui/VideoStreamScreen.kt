@@ -802,6 +802,12 @@ fun VideoStreamScreen() {
         connectionJob?.cancel()
 
         connectionJob = scope.launch {
+            if (CameraSettings.isAutoConnectEnabled(context) && CameraSettings.getWifiPassword(context).length < 8) {
+                isConnecting = false
+                Toast.makeText(context, context.getString(R.string.wifi_password_invalid), Toast.LENGTH_LONG).show()
+                return@launch
+            }
+
             try {
                 val connected = withContext(Dispatchers.IO) {
                     (context as? MainActivity)?.wifiAutoConnect?.connectToCamera()

@@ -46,7 +46,8 @@
     <string name="wifi_ssid">WiFi SSID (nazwa sieci)</string>
     <string name="wifi_ssid_hint">Znajduje się na naklejce kamery</string>
     <string name="wifi_password">Hasło WiFi</string>
-    <string name="wifi_password_hint">Często: 12345678</string>
+    <string name="wifi_password_hint">Zobacz naklejkę na kamerze</string>
+    <string name="wifi_password_invalid">Hasło musi mieć co najmniej 8 znaków</string>
 
     <!-- Camera Settings -->
     <string name="audio_display">AUDIO &amp; WYŚWIETLANIE</string>
@@ -159,7 +160,7 @@
     <string name="welcome_wifi">Aby aplikacja działała, musisz ustawić poprawny SSID i hasło swojej kamery w ustawieniach.</string>
     <string name="default_values">Wartości domyślne:</string>
     <string name="ssid_hint">SSID: patrz kamera</string>
-    <string name="password_hint">Hasło: często 12345678</string>
+    <string name="password_hint">Hasło: Zobacz naklejkę</string>
     <string name="feature_gallery_desc">Zarządzaj zdjęciami &amp; wideo bezpośrednio w aplikacji</string>
     <string name="feature_measurements">Pomiary</string>
     <string name="feature_measurements_desc">Dostosuj punkty temperatury i emisyjność</string>

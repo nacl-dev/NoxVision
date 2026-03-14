@@ -83,7 +83,7 @@ object CameraSettings {
     
     // Default WiFi/Port values
     private const val DEFAULT_WIFI_SSID = "TE Mini-089F"
-    private const val DEFAULT_WIFI_PASSWORD = "12345678"
+    private const val DEFAULT_WIFI_PASSWORD = ""
     private const val DEFAULT_HTTP_PORT = 80
     private const val DEFAULT_AUTOCONNECT_ENABLED = true
     private const val DEFAULT_HUNTING_ASSISTANT_HOME_ENABLED = true

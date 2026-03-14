@@ -46,7 +46,8 @@
     <string name="wifi_ssid">WiFi SSID (netwerknaam)</string>
     <string name="wifi_ssid_hint">Staat op de sticker van de camera</string>
     <string name="wifi_password">WiFi-wachtwoord</string>
-    <string name="wifi_password_hint">Vaak: 12345678</string>
+    <string name="wifi_password_hint">Zie sticker op de camera</string>
+    <string name="wifi_password_invalid">Wachtwoord moet minimaal 8 tekens lang zijn</string>
 
     <!-- Camera Settings -->
     <string name="audio_display">AUDIO &amp; WEERGAVE</string>
@@ -159,7 +160,7 @@
     <string name="welcome_wifi">Om de app te laten werken, moet u de juiste SSID en het wachtwoord van uw camera in de instellingen invullen.</string>
     <string name="default_values">Standaardwaarden:</string>
     <string name="ssid_hint">SSID: zie camera</string>
-    <string name="password_hint">Wachtwoord: vaak 12345678</string>
+    <string name="password_hint">Wachtwoord: Zie sticker</string>
     <string name="feature_gallery_desc">Beheer afbeeldingen &amp; video’s direct in de app</string>
     <string name="feature_measurements">Metingen</string>
     <string name="feature_measurements_desc">Temperatuurpunten en emissiviteit aanpassen</string>

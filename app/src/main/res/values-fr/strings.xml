@@ -47,7 +47,8 @@
     <string name="wifi_ssid">SSID WiFi (Nom du réseau)</string>
     <string name="wifi_ssid_hint">Voir l\'autocollant de la caméra</string>
     <string name="wifi_password">Mot de passe WiFi</string>
-    <string name="wifi_password_hint">Souvent: 12345678</string>
+    <string name="wifi_password_hint">Voir l\'autocollant sur la caméra</string>
+    <string name="wifi_password_invalid">Le mot de passe doit comporter au moins 8 caractères</string>
 
     <!-- Camera Settings -->
     <string name="audio_display">AUDIO &amp; AFFICHAGE</string>
@@ -160,7 +161,7 @@
     <string name="welcome_wifi">Pour que l\'application fonctionne, entrez le SSID et le mot de passe corrects de votre caméra dans les paramètres.</string>
     <string name="default_values">Valeurs par défaut:</string>
     <string name="ssid_hint">SSID: Voir caméra</string>
-    <string name="password_hint">Mot de passe: Souvent 12345678</string>
+    <string name="password_hint">Mot de passe: Voir autocollant</string>
     <string name="feature_gallery_desc">Gérer photos &amp; vidéos dans l\'application</string>
     <string name="feature_measurements">Mesures</string>
     <string name="feature_measurements_desc">Ajuster points de température et émissivité</string>

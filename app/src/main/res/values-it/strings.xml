@@ -46,7 +46,8 @@
     <string name="wifi_ssid">WiFi SSID (nome rete)</string>
     <string name="wifi_ssid_hint">Si trova sull’etichetta della camera</string>
     <string name="wifi_password">Password WiFi</string>
-    <string name="wifi_password_hint">Spesso: 12345678</string>
+    <string name="wifi_password_hint">Vedi etichetta sulla fotocamera</string>
+    <string name="wifi_password_invalid">La password deve contenere almeno 8 caratteri</string>
 
     <!-- Camera Settings -->
     <string name="audio_display">AUDIO &amp; DISPLAY</string>
@@ -159,7 +160,7 @@
     <string name="welcome_wifi">Per far funzionare l’app, devi inserire l’SSID corretto e la password della tua camera nelle impostazioni.</string>
     <string name="default_values">Valori predefiniti:</string>
     <string name="ssid_hint">SSID: vedi camera</string>
-    <string name="password_hint">Password: spesso 12345678</string>
+    <string name="password_hint">Password: Vedi etichetta</string>
     <string name="feature_gallery_desc">Gestisci foto &amp; video direttamente nell’app</string>
     <string name="feature_measurements">Misurazioni</string>
     <string name="feature_measurements_desc">Regola i punti temperatura e l’emissività</string>

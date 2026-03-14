@@ -46,7 +46,8 @@
     <string name="wifi_ssid">WiFi SSID (назва мережі)</string>
     <string name="wifi_ssid_hint">Вказано на наклейці камери</string>
     <string name="wifi_password">Пароль WiFi</string>
-    <string name="wifi_password_hint">Часто: 12345678</string>
+    <string name="wifi_password_hint">Дивіться наклейку на камері</string>
+    <string name="wifi_password_invalid">Пароль має містити не менше 8 символів</string>
 
     <!-- Camera Settings -->
     <string name="audio_display">АУДІО &amp; ВІДОБРАЖЕННЯ</string>
@@ -159,7 +160,7 @@
     <string name="welcome_wifi">Щоб застосунок працював, потрібно вказати правильний SSID і пароль вашої камери в налаштуваннях.</string>
     <string name="default_values">Стандартні значення:</string>
     <string name="ssid_hint">SSID: див. камеру</string>
-    <string name="password_hint">Пароль: часто 12345678</string>
+    <string name="password_hint">Пароль: Дивіться наклейку</string>
     <string name="feature_gallery_desc">Керуйте фото &amp; відео прямо в застосунку</string>
     <string name="feature_measurements">Вимірювання</string>
     <string name="feature_measurements_desc">Налаштування точок температури та коефіцієнта емісії</string>

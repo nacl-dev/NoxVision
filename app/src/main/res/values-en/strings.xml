@@ -46,7 +46,8 @@
     <string name="wifi_ssid">WiFi SSID (Network name)</string>
     <string name="wifi_ssid_hint">See the sticker on your camera</string>
     <string name="wifi_password">WiFi Password</string>
-    <string name="wifi_password_hint">Often: 12345678</string>
+    <string name="wifi_password_hint">See sticker on the camera</string>
+    <string name="wifi_password_invalid">Password must be at least 8 characters</string>
 
     <!-- Camera Settings -->
     <string name="audio_display">AUDIO &amp; DISPLAY</string>
@@ -159,7 +160,7 @@
     <string name="welcome_wifi">For the app to work, you need to enter the correct SSID and password of your camera in the settings.</string>
     <string name="default_values">Default values:</string>
     <string name="ssid_hint">SSID: See camera</string>
-    <string name="password_hint">Password: Often 12345678</string>
+    <string name="password_hint">Password: See sticker</string>
     <string name="feature_gallery_desc">Manage photos &amp; videos directly in the app</string>
     <string name="feature_measurements">Measurements</string>
     <string name="feature_measurements_desc">Adjust temperature points and emissivity</string>
