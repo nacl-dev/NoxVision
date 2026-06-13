@@ -38,6 +38,11 @@ class CompassSensor(context: Context) {
         var hasGravity = false
         var hasMagnetic = false
 
+        // Track last emitted values to prevent excessive object allocation and UI recompositions
+        var lastEmittedAzimuth = -1000f
+        var lastEmittedPitch = -1000f
+        var lastEmittedRoll = -1000f
+
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
                 when (event.sensor.type) {
@@ -63,14 +68,28 @@ class CompassSensor(context: Context) {
                         val pitch = Math.toDegrees(orientation[1].toDouble()).toFloat()
                         val roll = Math.toDegrees(orientation[2].toDouble()).toFloat()
 
-                        trySend(
-                            CompassData(
-                                azimuth = azimuthDegrees,
-                                pitch = pitch,
-                                roll = roll,
-                                direction = getDirectionFromAzimuth(azimuthDegrees)
+                        // Only emit if value has changed by >= 1 degree to save GC allocations
+                        // and prevent constant 60Hz UI recompositions
+                        val azimuthDiff = Math.abs(azimuthDegrees - lastEmittedAzimuth)
+                        val shortestAzimuthDiff = Math.min(azimuthDiff, 360f - azimuthDiff)
+
+                        val pitchDiff = Math.abs(pitch - lastEmittedPitch)
+                        val rollDiff = Math.abs(roll - lastEmittedRoll)
+
+                        if (shortestAzimuthDiff >= 1.0f || pitchDiff >= 1.0f || rollDiff >= 1.0f) {
+                            lastEmittedAzimuth = azimuthDegrees
+                            lastEmittedPitch = pitch
+                            lastEmittedRoll = roll
+
+                            trySend(
+                                CompassData(
+                                    azimuth = azimuthDegrees,
+                                    pitch = pitch,
+                                    roll = roll,
+                                    direction = getDirectionFromAzimuth(azimuthDegrees)
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
