@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Convert the TFLite YOLOv8 model (detect.tflite) to CoreML format for iOS.
+Convert the TFLite YOLOv8 model (detect.tflite) to CoreML format.
 
 Pipeline: TFLite -> ONNX -> PyTorch -> CoreML
 
@@ -11,7 +11,7 @@ Usage:
     python3 scripts/convert_model.py
 
 Output:
-    NoxVision-iOS/NoxVision/Detection/ThermalYOLO.mlpackage/
+    artifacts/ios/ThermalYOLO.mlpackage/
 """
 
 import sys
@@ -25,12 +25,14 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
     tflite_path = os.path.join(project_root, "app", "src", "main", "assets", "detect.tflite")
-    output_path = os.path.join(project_root, "NoxVision-iOS", "NoxVision", "Detection", "ThermalYOLO.mlpackage")
+    output_path = os.path.join(project_root, "artifacts", "ios", "ThermalYOLO.mlpackage")
     onnx_path = os.path.join(tempfile.gettempdir(), "noxvision_detect.onnx")
 
     if not os.path.exists(tflite_path):
         print(f"Error: TFLite model not found at {tflite_path}")
         sys.exit(1)
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     print(f"Model: {tflite_path}")
     print(f"Size:  {os.path.getsize(tflite_path) / 1024 / 1024:.1f} MB")
@@ -135,10 +137,8 @@ print("SUCCESS")
     if os.path.exists(onnx_path):
         os.unlink(onnx_path)
 
-    print("\nDone! Add ThermalYOLO.mlpackage to your Xcode project:")
-    print("  1. Drag ThermalYOLO.mlpackage into Xcode (NoxVision/Detection group)")
-    print("  2. Make sure 'Copy items if needed' is checked")
-    print("  3. Xcode will auto-compile it to .mlmodelc at build time")
+    print("\nDone! CoreML package written to:")
+    print(f"  {output_path}")
 
 
 if __name__ == "__main__":

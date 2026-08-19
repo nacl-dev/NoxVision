@@ -53,6 +53,8 @@ kotlin-js-store/
 
 # Logs
 *.log
+assemble_output.txt
+lint_output.txt
 
 # VS Code
 .vscode/
@@ -60,6 +62,8 @@ kotlin-js-store/
 !.vscode/tasks.json
 !.vscode/launch.json
 CLAUDE.md
+.claude/
+.jules/
 
 # Test outputs
 /test-results/
