@@ -4,9 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
-import android.location.LocationListener
 import android.location.LocationManager
-import android.os.Bundle
 import android.os.Looper
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -54,7 +52,7 @@ class HuntingLocationManager(private val context: Context) {
                         val legacyLocation = getLegacyLastKnownLocation()
                         continuation.resume(legacyLocation)
                     }
-            } catch (e: SecurityException) {
+            } catch (_: SecurityException) {
                 continuation.resume(null)
             }
         }
@@ -66,7 +64,7 @@ class HuntingLocationManager(private val context: Context) {
         return try {
             legacyLocationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                 ?: legacyLocationManager?.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
-        } catch (e: SecurityException) {
+        } catch (_: SecurityException) {
             null
         }
     }
@@ -100,41 +98,6 @@ class HuntingLocationManager(private val context: Context) {
 
         awaitClose {
             fusedLocationClient.removeLocationUpdates(callback)
-        }
-    }
-
-    fun getLegacyLocationUpdates(minTimeMs: Long = 5000, minDistanceM: Float = 5f): Flow<Location> = callbackFlow {
-        if (!hasLocationPermission()) {
-            close()
-            return@callbackFlow
-        }
-
-        val listener = object : LocationListener {
-            override fun onLocationChanged(location: Location) {
-                trySend(location)
-            }
-
-            @Deprecated("Deprecated in Java")
-            override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
-            override fun onProviderEnabled(provider: String) {}
-            override fun onProviderDisabled(provider: String) {}
-        }
-
-        try {
-            legacyLocationManager?.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER,
-                minTimeMs,
-                minDistanceM,
-                listener,
-                Looper.getMainLooper()
-            )
-        } catch (e: SecurityException) {
-            close(e)
-            return@callbackFlow
-        }
-
-        awaitClose {
-            legacyLocationManager?.removeUpdates(listener)
         }
     }
 

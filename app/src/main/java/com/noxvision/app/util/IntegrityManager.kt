@@ -58,7 +58,7 @@ class KeyStoreIntegrityManager : IntegrityManager {
             mac.init(getSecretKey())
             val bytes = mac.doFinal(value.toString().toByteArray())
             bytes.joinToString("") { "%02x".format(it) }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // Fallback in case of KeyStore error (should be rare)
             // returning empty string will fail validation, resetting to 0 (safe default)
             ""

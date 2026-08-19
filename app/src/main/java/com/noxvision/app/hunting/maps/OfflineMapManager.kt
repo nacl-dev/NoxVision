@@ -4,7 +4,6 @@ import android.content.Context
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.ITileSource
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import java.io.File
 
@@ -25,24 +24,6 @@ class OfflineMapManager(context: Context) {
 
     fun getTileSource(): ITileSource = TileSourceFactory.MAPNIK
 
-    fun getOfflineTileSource(): ITileSource = TileSourceFactory.MAPNIK
-
-    fun calculateBoundingBox(centerLat: Double, centerLon: Double, radiusKm: Double): BoundingBox {
-        // Approximate degrees per km at given latitude
-        val latDegPerKm = 1.0 / 111.0
-        val lonDegPerKm = 1.0 / (111.0 * kotlin.math.cos(Math.toRadians(centerLat)))
-
-        val latDelta = radiusKm * latDegPerKm
-        val lonDelta = radiusKm * lonDegPerKm
-
-        return BoundingBox(
-            centerLat + latDelta, // north
-            centerLon + lonDelta, // east
-            centerLat - latDelta, // south
-            centerLon - lonDelta  // west
-        )
-    }
-
     fun getCacheSize(): Long {
         val cacheDir = Configuration.getInstance().osmdroidTileCache
         return cacheDir?.let { calculateDirSize(it) } ?: 0L
@@ -58,12 +39,6 @@ class OfflineMapManager(context: Context) {
             }
         }
         return size
-    }
-
-    fun clearCache() {
-        val cacheDir = Configuration.getInstance().osmdroidTileCache
-        cacheDir?.deleteRecursively()
-        cacheDir?.mkdirs()
     }
 
     fun formatCacheSize(bytes: Long): String {

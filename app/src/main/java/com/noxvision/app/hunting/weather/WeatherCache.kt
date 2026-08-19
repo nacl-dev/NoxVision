@@ -38,13 +38,6 @@ class WeatherCache(context: Context) {
         return weatherDao.getCachedWeather()
     }
 
-    suspend fun clearCache() {
-        weatherDao.clear()
-    }
-
-    suspend fun isOnline(latitude: Double, longitude: Double): Boolean {
-        return apiClient.fetchWeather(latitude, longitude).isSuccess
-    }
 }
 
 object WeatherIconHelper {

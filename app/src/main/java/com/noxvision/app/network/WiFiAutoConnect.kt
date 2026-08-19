@@ -12,6 +12,7 @@ import com.noxvision.app.util.AppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.milliseconds
 
 class WiFiAutoConnect(
     private val context: Context,
@@ -80,7 +81,7 @@ class WiFiAutoConnect(
 
             var attempts = 0
             while (!connected && attempts < 100) {
-                delay(500)
+                delay(500.milliseconds)
                 attempts++
                 if (attempts % 4 == 0) {
                     AppLogger.log("Waiting for connection... (${attempts / 2}s)", AppLogger.LogType.INFO)
@@ -88,7 +89,7 @@ class WiFiAutoConnect(
             }
 
             if (connected) {
-                delay(1000)
+                delay(1000.milliseconds)
             } else {
                 AppLogger.log("Timeout after ${attempts / 2}s", AppLogger.LogType.ERROR)
             }

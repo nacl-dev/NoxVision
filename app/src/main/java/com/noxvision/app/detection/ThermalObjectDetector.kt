@@ -81,7 +81,7 @@ class ThermalObjectDetector(context: Context) {
         try {
             val modelExists = try {
                 context.assets.open("detect.tflite").use { true }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 false
             }
 
@@ -133,7 +133,7 @@ class ThermalObjectDetector(context: Context) {
             context.assets.open("labelmap.txt").bufferedReader().useLines { lines ->
                 labels.addAll(lines.filter { it.isNotBlank() })
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             labels.addAll(listOf("car", "cat", "dog", "Person"))
         }
     }

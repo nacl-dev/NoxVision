@@ -21,7 +21,7 @@ class MediaUtilsUrlTest {
     fun buildDownloadUrls_encodesSpecialChars() {
         val urls = buildDownloadUrls("http://192.168.1.1", "foo#bar?.mp4")
 
-        // # should be %23, ? should be %3F
+        // # should be %23, should be %3F
         val hasEncoded = urls.any { it.contains("foo%23bar%3F.mp4") }
         assertTrue("Should encode special chars # and ?", hasEncoded)
     }

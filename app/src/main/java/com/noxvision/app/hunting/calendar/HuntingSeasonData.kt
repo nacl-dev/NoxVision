@@ -170,15 +170,4 @@ object HuntingSeasonData {
         return (diff / (1000 * 60 * 60 * 24)).toInt()
     }
 
-    fun isWildlifeInSeason(wildlifeType: String, gender: String?, bundesland: Bundesland): Boolean {
-        val calendar = Calendar.getInstance()
-        val month = calendar.get(Calendar.MONTH) + 1
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-        return getSeasonsForBundesland(bundesland).any { season ->
-            season.wildlifeType == wildlifeType &&
-                    (gender == null || season.gender == null || season.gender == gender) &&
-                    season.isInSeason(month, day)
-        }
-    }
 }

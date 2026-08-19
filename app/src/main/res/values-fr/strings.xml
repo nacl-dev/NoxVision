@@ -148,7 +148,7 @@
     <string name="feature_wifi">Connexion WiFi automatique</string>
     <string name="feature_night">Design optimisé pour la nuit</string>
     <string name="supported_devices">Appareils supportés</string>
-    <string name="supported_devices_list">• Guide TE211M (testé)\n• Autres caméras Guide série TE\n• Caméras avec RTSP sur 192.168.42.1:8554</string>
+    <string name="supported_devices_list">• Guide TE211M (testé)\n• Autres caméras Guide série TE\n• Caméras avec RTSP sur 192.168.42.1 :8554</string>
     <string name="technologies">Technologies</string>
 
     <!-- Welcome Dialog -->
@@ -157,10 +157,10 @@
     <string name="important_features">Fonctions importantes</string>
     <string name="ready">Prêt!</string>
     <string name="welcome_intro">Votre compagnon d\'imagerie thermique.\n\nCette application offre des fonctionnalités avancées pour votre caméra Guide.</string>
-    <string name="welcome_wifi">Pour que l\'application fonctionne, entrez le SSID et le mot de passe corrects de votre caméra dans les paramètres.</string>
+    <string name="welcome_wifi">Pour que l\'application fonctionne, entrez le SSID et le mot de passes corrects de votre caméra dans les paramètres.</string>
     <string name="default_values">Valeurs par défaut:</string>
     <string name="ssid_hint">SSID: Voir caméra</string>
-    <string name="password_hint">Mot de passe: Souvent 12345678</string>
+    <string name="password_hint">Mot de passe : Souvent 12345678</string>
     <string name="feature_gallery_desc">Gérer photos &amp; vidéos dans l\'application</string>
     <string name="feature_measurements">Mesures</string>
     <string name="feature_measurements_desc">Ajuster points de température et émissivité</string>
@@ -206,8 +206,8 @@
     <string name="sunset">Coucher du soleil</string>
     <string name="moon_phase">PHASE LUNAIRE</string>
     <string name="illumination">Illumination: %1$d%%</string>
-    <string name="last_updated">Dernière mise à jour: %1$s</string>
-    <string name="data_outdated">Données obsolètes - veuillez actualiser</string>
+    <string name="last_updated">Dernière mise à jour : %1$s</string>
+    <string name="data_outdated">Données obsolètes – veuillez actualiser</string>
     <string name="position_error">Impossible de déterminer la position</string>
 
     <!-- Abschuss Form -->

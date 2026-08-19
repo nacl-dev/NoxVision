@@ -8,6 +8,7 @@ import android.hardware.SensorManager
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlin.math.abs
 
 class CompassSensor(context: Context) {
     private val sensorManager: SensorManager =
@@ -70,11 +71,11 @@ class CompassSensor(context: Context) {
 
                         // Only emit if value has changed by >= 1 degree to save GC allocations
                         // and prevent constant 60Hz UI recompositions
-                        val azimuthDiff = Math.abs(azimuthDegrees - lastEmittedAzimuth)
-                        val shortestAzimuthDiff = Math.min(azimuthDiff, 360f - azimuthDiff)
+                        val azimuthDiff = abs(azimuthDegrees - lastEmittedAzimuth)
+                        val shortestAzimuthDiff = azimuthDiff.coerceAtMost(360f - azimuthDiff)
 
-                        val pitchDiff = Math.abs(pitch - lastEmittedPitch)
-                        val rollDiff = Math.abs(roll - lastEmittedRoll)
+                        val pitchDiff = abs(pitch - lastEmittedPitch)
+                        val rollDiff = abs(roll - lastEmittedRoll)
 
                         if (shortestAzimuthDiff >= 1.0f || pitchDiff >= 1.0f || rollDiff >= 1.0f) {
                             lastEmittedAzimuth = azimuthDegrees

@@ -4,13 +4,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.time.Duration.Companion.milliseconds
 
 class MediaUtilsPerformanceTest {
 
     // Helper to simulate network check
     private suspend fun mockCheckUrl(url: String, delays: Map<String, Long>, working: Set<String>): Boolean {
         val d = delays[url] ?: 100L
-        delay(d)
+        delay(d.milliseconds)
         return working.contains(url)
     }
 

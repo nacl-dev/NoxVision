@@ -274,7 +274,7 @@ private fun WildlifeSection(
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = wildlifeTypeExpanded) },
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true),
+                .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true),
             colors = huntingTextFieldColors()
         )
         ExposedDropdownMenu(
@@ -306,7 +306,7 @@ private fun WildlifeSection(
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = genderExpanded) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true),
+                    .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true),
                 colors = huntingTextFieldColors()
             )
             ExposedDropdownMenu(
@@ -337,7 +337,7 @@ private fun WildlifeSection(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("ClickableViewAccessibility")
+@SuppressLint("ClickableViewAccessibility", "LocalContextGetResourceValueCall")
 @Composable
 private fun LocationSection(
     latitude: Double?,
@@ -557,7 +557,7 @@ private fun LocationSection(
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = bundeslandExpanded) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true),
+                    .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true),
                 colors = huntingTextFieldColors()
             )
             ExposedDropdownMenu(

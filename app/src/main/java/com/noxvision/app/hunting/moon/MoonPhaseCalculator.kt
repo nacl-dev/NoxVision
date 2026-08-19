@@ -30,12 +30,12 @@ object MoonPhaseCalculator {
         val activityPrediction: WildlifeActivityPrediction
     )
 
-    enum class WildlifeActivityPrediction(val germanText: String, val level: Int) {
-        VERY_HIGH("Sehr hohe Aktivitaet", 5),
-        HIGH("Hohe Aktivitaet", 4),
-        MEDIUM("Mittlere Aktivitaet", 3),
-        LOW("Geringe Aktivitaet", 2),
-        VERY_LOW("Sehr geringe Aktivitaet", 1)
+    enum class WildlifeActivityPrediction(val germanText: String) {
+        VERY_HIGH("Sehr hohe Aktivitaet"),
+        HIGH("Hohe Aktivitaet"),
+        MEDIUM("Mittlere Aktivitaet"),
+        LOW("Geringe Aktivitaet"),
+        VERY_LOW("Sehr geringe Aktivitaet")
     }
 
     fun calculateMoonPhase(timestamp: Long = System.currentTimeMillis()): MoonInfo {

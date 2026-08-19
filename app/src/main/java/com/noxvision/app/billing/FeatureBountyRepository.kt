@@ -1,6 +1,5 @@
 package com.noxvision.app.billing
 
-import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,10 +41,6 @@ class FeatureBountyRepository(
     private val prefs: SharedPreferences,
     private val integrityManager: IntegrityManager = KeyStoreIntegrityManager()
 ) {
-    constructor(context: Context) : this(
-        context.getSharedPreferences("feature_bounties_prefs", Context.MODE_PRIVATE),
-        KeyStoreIntegrityManager()
-    )
 
     // User's available credits
     private val _userCredits = MutableStateFlow(loadSecureInt("user_credits", 0))

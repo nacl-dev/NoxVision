@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.milliseconds
 
 class BillingManager(
     context: Context,
@@ -70,7 +71,7 @@ class BillingManager(
             AppLogger.log("Retrying billing connection in ${delayMillis}ms (Attempt $retryCount/$maxRetryAttempts)", AppLogger.LogType.INFO)
 
             scope.launch {
-                delay(delayMillis)
+                delay(delayMillis.milliseconds)
                 startConnection()
             }
         } else {
@@ -90,9 +91,9 @@ class BillingManager(
             )
             .build()
 
-        _billingClient.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
+        _billingClient.queryProductDetailsAsync(params) { billingResult, result ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                _productDetails.value = productDetailsList
+                _productDetails.value = result.productDetailsList
             } else {
                 AppLogger.log("Error querying products: ${billingResult.debugMessage}", AppLogger.LogType.ERROR)
             }
@@ -113,20 +114,24 @@ class BillingManager(
     }
 
     override fun onPurchasesUpdated(billingResult: BillingResult, purchases: List<Purchase>?) {
-        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
-            for (purchase in purchases) {
-                handlePurchase(purchase)
+        when (billingResult.responseCode) {
+            BillingClient.BillingResponseCode.OK if purchases != null -> {
+                for (purchase in purchases) {
+                    handlePurchase(purchase)
+                }
             }
-        } else if (billingResult.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
-            AppLogger.log("User canceled purchase", AppLogger.LogType.INFO)
-        } else {
-            AppLogger.log("Purchase failed: ${billingResult.debugMessage}", AppLogger.LogType.ERROR)
+            BillingClient.BillingResponseCode.USER_CANCELED -> {
+                AppLogger.log("User canceled purchase", AppLogger.LogType.INFO)
+            }
+            else -> {
+                AppLogger.log("Purchase failed: ${billingResult.debugMessage}", AppLogger.LogType.ERROR)
+            }
         }
     }
 
     private fun handlePurchase(purchase: Purchase) {
         if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
-            // Confirm purchase (Consume it since it's credits)
+            // Confirm purchase (Consume it since its credits)
             val consumeParams = ConsumeParams.newBuilder()
                 .setPurchaseToken(purchase.purchaseToken)
                 .build()

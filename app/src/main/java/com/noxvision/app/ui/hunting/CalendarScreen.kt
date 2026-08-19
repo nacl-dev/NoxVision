@@ -99,7 +99,7 @@ fun CalendarScreen(
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = bundeslandExpanded) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true),
+                            .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = NightColors.primary,
                             unfocusedBorderColor = NightColors.onBackground,

@@ -8,7 +8,7 @@ class MediaUtilsSecurityTest {
 
     @Test
     fun sanitizeFilename_removesParentDirectory() {
-        // ".." should be sanitized to something safe
+        // "." should be sanitized to something safe
         val safeName = sanitizeFilename("..")
         assertFalse("Filename should not contain ..", safeName.contains(".."))
         assertEquals("__", safeName) // Expecting __ based on plan

@@ -144,13 +144,13 @@
     <string name="feature_palettes">Multiple Color Palettes</string>
     <string name="feature_capture">Screenshot &amp; Video Recording</string>
     <string name="feature_gallery">Integrated Gallery</string>
-    <string name="feature_wifi">Auto WiFi Connection</string>
+    <string name="feature_wifi">Auto Wi-Fi Connection</string>
     <string name="feature_night">Night-optimized Design</string>
     <string name="supported_devices">Supported Devices</string>
     <string name="supported_devices_list">• Guide TE211M (primary tested)\n• Other Guide TE series cameras\n• Cameras with RTSP at 192.168.42.1:8554</string>
     <string name="technologies">Technologies</string>
 
-    <!-- Welcome Dialog -->
+    <!-- Welcome, Dialog -->
     <string name="welcome_title">Welcome to NoxVision</string>
     <string name="setup_connection">Setup Connection</string>
     <string name="important_features">Important Features</string>
@@ -170,7 +170,7 @@
     <string name="welcome_outro">You can change these settings at any time via the gear icon.\n\nEnjoy NoxVision!</string>
     <string name="welcome_hunting_toggle_hint">You can change this option at any time in Settings under App Features.</string>
 
-    <!-- Whats New Dialog -->
+    <!-- What's New Dialog -->
     <string name="whats_new_title">What\'s New!</string>
 
     <!-- Hunting Hub -->

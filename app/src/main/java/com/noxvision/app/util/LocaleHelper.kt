@@ -43,5 +43,4 @@ object LocaleHelper {
             ?: AVAILABLE_LANGUAGES.first().displayName
     }
 
-    fun getAvailableLanguages(): List<LanguageOption> = AVAILABLE_LANGUAGES
 }

@@ -69,7 +69,7 @@ object CameraSettings {
     private const val KEY_VIDEO_WIDTH = "video_width"
     private const val KEY_VIDEO_HEIGHT = "video_height"
     
-    // WiFi and Connection settings
+    // Wi-Fi and Connection settings
     private const val KEY_WIFI_SSID = "wifi_ssid"
     private const val KEY_WIFI_PASSWORD = "wifi_password"
     private const val KEY_HTTP_PORT = "http_port"
@@ -81,7 +81,7 @@ object CameraSettings {
     private const val DEFAULT_HUMIDITY = 50.0f
     private const val DEFAULT_REFLECT_TEMP = 23.0f
     
-    // Default WiFi/Port values
+    // Default Wi-Fi/Port values
     private const val DEFAULT_WIFI_SSID = "TE Mini-089F"
     private const val DEFAULT_WIFI_PASSWORD = "12345678"
     private const val DEFAULT_HTTP_PORT = 80
@@ -127,7 +127,7 @@ object CameraSettings {
     }
     
     /**
-     * Get the saved WiFi SSID.
+     * Get the saved Wi-Fi SSID.
      */
     fun getWifiSsid(context: Context): String {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -135,7 +135,7 @@ object CameraSettings {
     }
     
     /**
-     * Set the WiFi SSID.
+     * Set the Wi-Fi SSID.
      */
     fun setWifiSsid(context: Context, ssid: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -143,7 +143,7 @@ object CameraSettings {
     }
     
     /**
-     * Get the saved WiFi Password.
+     * Get the saved Wi-Fi Password.
      */
     fun getWifiPassword(context: Context): String {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -151,7 +151,7 @@ object CameraSettings {
     }
     
     /**
-     * Set the WiFi Password.
+     * Set the Wi-Fi Password.
      */
     fun setWifiPassword(context: Context, password: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -175,7 +175,7 @@ object CameraSettings {
     }
     
     /**
-     * Check if WiFi Auto-Connect is enabled.
+     * Check if Wi-Fi Auto-Connect is enabled.
      */
     fun isAutoConnectEnabled(context: Context): Boolean {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -183,23 +183,13 @@ object CameraSettings {
     }
     
     /**
-     * Set WiFi Auto-Connect enabled state.
+     * Set Wi-Fi Auto-Connect enabled state.
      */
     fun setAutoConnectEnabled(context: Context, enabled: Boolean) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit { putBoolean(KEY_AUTOCONNECT_ENABLED, enabled) }
     }
-    
-    /**
-     * Get the default SSID.
-     */
-    fun getDefaultSsid(): String = DEFAULT_WIFI_SSID
-    
-    /**
-     * Get the default port.
-     */
-    fun getDefaultPort(): Int = DEFAULT_HTTP_PORT
-    
+
     /**
      * Validate IP address format using simple regex.
      * Returns true if the IP format is valid (basic check for x.x.x.x pattern).
@@ -281,27 +271,7 @@ object CameraSettings {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit { putFloat(KEY_REFLECT_TEMP, celsius) }
     }
-    
-    /**
-     * Get default emissivity value.
-     */
-    fun getDefaultEmissivity(): Float = DEFAULT_EMISSIVITY
-    
-    /**
-     * Get default distance value.
-     */
-    fun getDefaultDistance(): Float = DEFAULT_DISTANCE
-    
-    /**
-     * Get default humidity value.
-     */
-    fun getDefaultHumidity(): Float = DEFAULT_HUMIDITY
-    
-    /**
-     * Get default reflected temperature.
-     */
-    fun getDefaultReflectTemperature(): Float = DEFAULT_REFLECT_TEMP
-    
+
     // ==================== Device Info Cache ====================
     
     /**
@@ -318,7 +288,7 @@ object CameraSettings {
     }
     
     /**
-     * Get cached device info (may be null if never connected).
+     * Get cached device info (maybe null if never connected).
      */
     fun getCachedDeviceInfo(context: Context): DeviceInfo? {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -334,19 +304,6 @@ object CameraSettings {
             cameraLens = "",
             measureRange = ""
         )
-    }
-    
-    /**
-     * Clear cached device info.
-     */
-    fun clearDeviceInfo(context: Context) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit {
-            remove(KEY_DEVICE_NAME)
-            remove(KEY_CAMERA_NAME)
-            remove(KEY_VIDEO_WIDTH)
-            remove(KEY_VIDEO_HEIGHT)
-        }
     }
 
     /**

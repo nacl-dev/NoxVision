@@ -1,5 +1,6 @@
 package com.noxvision.app.ui.hunting
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,7 +28,9 @@ import com.noxvision.app.ui.NightColors
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.time.Duration.Companion.milliseconds
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AbschussListScreen(
@@ -213,7 +216,7 @@ fun AbschussListScreen(
     // Export message snackbar
     exportMessage?.let { message ->
         LaunchedEffect(message) {
-            kotlinx.coroutines.delay(3000)
+            kotlinx.coroutines.delay(3000.milliseconds)
             exportMessage = null
         }
 

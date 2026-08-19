@@ -86,7 +86,7 @@
     <string name="hunting_country_international">International</string>
     <string name="hunting_seasons_not_available_for_country">Jagdzeiten sind für %1$s derzeit nicht verfügbar.</string>
 
-    <!-- Thermal Settings -->
+    <!-- Thermale Settings -->
     <string name="camera_features">Kamera-Features</string>
     <string name="radiometry">Radiometrie</string>
     <string name="focus">Fokus</string>
@@ -137,7 +137,7 @@
     <!-- About Dialog -->
     <string name="version">Version %1$s</string>
     <string name="about_description">Open Source Android App für Guide Wärmebildkameras</string>
-    <string name="about_long_description">NoxVision ist eine leistungsstarke Alternative zur offiziellen Guide App, speziell entwickelt für das Guide TE211M Wärmebild-Monokular und kompatible TE-Serie Kameras.</string>
+    <string name="about_long_description">NoxVision ist eine leistungsstarke Alternative zur offiziellen Guide-App, speziell entwickelt für das Guide TE211M Wärmebild-Monokular und kompatible TE-Serie Kameras.</string>
     <string name="features">Features</string>
     <string name="feature_stream">Live RTSP Video Stream</string>
     <string name="feature_ai">YOLO KI-Objekterkennung</string>
@@ -155,7 +155,7 @@
     <string name="setup_connection">Verbindung einrichten</string>
     <string name="important_features">Wichtige Funktionen</string>
     <string name="ready">Bereit!</string>
-    <string name="welcome_intro">Ihr Begleiter für Wärmebildaufnahmen.\n\nDiese App bietet erweiterte Funktionen für Ihre Guide Kamera.</string>
+    <string name="welcome_intro">Ihr Begleiter für Wärmebildaufnahmen.\n\nDiese App bietet erweiterte Funktionen für Ihre Guide-Kamera.</string>
     <string name="welcome_wifi">Damit die App funktioniert, müssen Sie die korrekte SSID und das Passwort Ihrer Kamera in den Einstellungen hinterlegen.</string>
     <string name="default_values">Standard-Werte:</string>
     <string name="ssid_hint">SSID: Siehe Kamera</string>

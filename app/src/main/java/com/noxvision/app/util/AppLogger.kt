@@ -18,14 +18,14 @@ object AppLogger {
         INFO, SUCCESS, ERROR
     }
 
-    private val logs = mutableStateListOf<LogEntry>()
-    val logsList: List<LogEntry> get() = logs
+    val logsList: List<LogEntry>
+        field = mutableStateListOf<LogEntry>()
 
     fun log(message: String, type: LogType = LogType.INFO) {
         val timestamp = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-        logs.add(0, LogEntry(timestamp, message, type))
-        if (logs.size > 100) {
-            logs.removeAt(logs.size - 1)
+        logsList.add(0, LogEntry(timestamp, message, type))
+        if (logsList.size > 100) {
+            logsList.removeAt(logsList.size - 1)
         }
         if (BuildConfig.DEBUG) {
             Log.d("AppLogger", "[$type] $message")
@@ -33,6 +33,6 @@ object AppLogger {
     }
 
     fun clear() {
-        logs.clear()
+        logsList.clear()
     }
 }

@@ -51,7 +51,7 @@ fun buildDownloadUrls(baseUrl: String, filename: String): List<String> {
 
     val encodedFilename = try {
         URLEncoder.encode(safeName, "UTF-8").replace("+", "%20")
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         safeName
     }
 
@@ -79,7 +79,7 @@ suspend fun checkUrlConnection(urlString: String): Boolean {
             val code = conn.responseCode
             conn.disconnect()
             code == 200
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
@@ -110,7 +110,7 @@ suspend fun findWorkingUrl(
         val winner = resultChannel.receive()
         coroutineContext.cancelChildren()
         winner
-    } catch (e: ClosedReceiveChannelException) {
+    } catch (_: ClosedReceiveChannelException) {
         null
     }
 }
@@ -215,7 +215,7 @@ suspend fun downloadVideoToCache(baseUrl: String, filename: String, context: Con
         }
 
         // If we reached here, the chosen URL failed during download.
-        // We could fallback, but for now we return null as per optimized design.
+        // We could fall back, but for now we return null as per optimized design.
         return@withContext null
     }
 }

@@ -1,6 +1,7 @@
 package com.noxvision.app.ui
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Build
 import android.graphics.Bitmap
@@ -121,6 +122,7 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 
 private val STREAM_PALETTES = listOf(
     Triple("whitehot", "White Hot", R.drawable.stream_palette_whitehot),
@@ -132,6 +134,7 @@ private val STREAM_PALETTES = listOf(
     Triple("darkbrown", "Brown", R.drawable.stream_palette_dark_brown)
 )
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun VideoStreamScreen() {
     val context = LocalContext.current
@@ -164,7 +167,7 @@ fun VideoStreamScreen() {
     var showGalleryDialog by rememberSaveable { mutableStateOf(false) }
     var galleryRefreshKey by rememberSaveable { mutableIntStateOf(0) }
 
-    // First Run / Whats New
+    // First Run / What's New
     var showWelcomeDialog by rememberSaveable { mutableStateOf(false) }
     var showWhatsNewDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -185,7 +188,7 @@ fun VideoStreamScreen() {
                 @Suppress("DEPRECATION")
                 context.packageManager.getPackageInfo(context.packageName, 0).versionCode
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             1
         }
 
@@ -595,7 +598,7 @@ fun VideoStreamScreen() {
         } catch (_: Exception) {
         }
 
-        delay(800)
+        delay(800.milliseconds)
 
         file?.let { videoFile ->
             if (videoFile.exists() && videoFile.length() > 1024) {
@@ -616,7 +619,7 @@ fun VideoStreamScreen() {
     LaunchedEffect(isRecording) {
         if (isRecording) {
             while (isRecording) {
-                delay(1000)
+                delay(1000.milliseconds)
                 recordingDuration++
             }
         } else {
@@ -673,22 +676,22 @@ fun VideoStreamScreen() {
 
             try {
                 while (isActive && objectDetectionEnabled && isPlaying) {
-                    delay(1500)
+                    delay(1500.milliseconds)
 
                     surfaceView?.let { view ->
                         // Re-use cached bitmap or create new if size changed
-                        if (cachedBitmap == null || cachedBitmap?.width != view.width || cachedBitmap?.height != view.height) {
+                        if ((cachedBitmap == null) || (cachedBitmap.width != view.width) || (cachedBitmap.height != view.height)) {
                             cachedBitmap?.recycle()
-                            cachedBitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+                            cachedBitmap = createBitmap(view.width, view.height)
                         }
 
-                        val bitmap = cachedBitmap!!
+                        val bitmap = cachedBitmap
 
                         try {
                             // Use suspendCancellableCoroutine inside NonCancellable context to ensure copy completes
                             // before detection logic proceeds or cleanup happens, preventing race conditions with recycle()
                             val copyResult = withContext(NonCancellable) {
-                                suspendCancellableCoroutine<Int> { cont ->
+                                suspendCancellableCoroutine { cont ->
                                     try {
                                         PixelCopy.request(
                                             view.holder.surface,
@@ -744,10 +747,10 @@ fun VideoStreamScreen() {
 
                     MediaPlayer.Event.Buffering -> {
                         bufferPercent = event.buffering
-                        if (event.buffering < 100f) {
-                            statusText = context.getString(R.string.buffering, event.buffering.toInt())
+                        statusText = if (event.buffering < 100f) {
+                            context.getString(R.string.buffering, event.buffering.toInt())
                         } else {
-                            statusText = context.getString(R.string.live)
+                            context.getString(R.string.live)
                         }
                     }
 
@@ -828,7 +831,7 @@ fun VideoStreamScreen() {
                                     CameraSettings.saveDeviceInfo(context, info)
                                     AppLogger.log("Kamera erkannt: ${info.deviceName}", AppLogger.LogType.SUCCESS)
                                 }
-                            } catch (e: Exception) {
+                            } catch (_: Exception) {
                                 AppLogger.log("Device-Info nicht verfugbar", AppLogger.LogType.INFO)
                             }
                         }
@@ -1431,7 +1434,7 @@ fun VideoStreamScreen() {
                             @Suppress("DEPRECATION")
                             context.packageManager.getPackageInfo(context.packageName, 0).versionCode
                         }
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         1
                     }
 
@@ -1451,7 +1454,7 @@ fun VideoStreamScreen() {
                         @Suppress("DEPRECATION")
                         context.packageManager.getPackageInfo(context.packageName, 0).versionCode
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     1
                 }
 
