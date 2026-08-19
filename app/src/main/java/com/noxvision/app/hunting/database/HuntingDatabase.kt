@@ -59,7 +59,7 @@ abstract class HuntingDatabase : RoomDatabase() {
                     HuntingDatabase::class.java,
                     "hunting_database"
                 )
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration(false)
                     .build()
                 INSTANCE = instance
                 instance

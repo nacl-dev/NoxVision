@@ -114,6 +114,7 @@ class HuntingLocationManager(private val context: Context) {
                 trySend(location)
             }
 
+            @Deprecated("Deprecated in Java")
             override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
             override fun onProviderEnabled(provider: String) {}
             override fun onProviderDisabled(provider: String) {}
