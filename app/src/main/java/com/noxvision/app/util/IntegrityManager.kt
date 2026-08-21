@@ -66,13 +66,3 @@ class KeyStoreIntegrityManager : IntegrityManager {
     }
 }
 
-/**
- * Simple checksum implementation for unit tests.
- * Avoids Android KeyStore dependencies.
- */
-class TestIntegrityManager : IntegrityManager {
-    override fun computeChecksum(value: Int): String {
-        // Deterministic but simple checksum for testing
-        return "test_checksum_$value"
-    }
-}

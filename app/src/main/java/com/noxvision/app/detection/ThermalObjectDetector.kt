@@ -24,7 +24,7 @@ val KNOWN_OBJECTS = mapOf(
     "bus" to ObjectInfo("Bus", 3.0f),
     "truck" to ObjectInfo("Truck", 3.0f),
     "dog" to ObjectInfo("Dog", 0.6f),
-    "cat" to ObjectInfo("Cat", 0.3f)
+    "cat" to ObjectInfo("Cat", 0.3f),
 )
 
 data class DetectedObject(
@@ -140,7 +140,7 @@ class ThermalObjectDetector(context: Context) {
 
     @Synchronized
     fun detectObjects(bitmap: Bitmap): List<DetectedObject> {
-        if (!isInitialized || interpreter == null) {
+        if ((!isInitialized) || (interpreter == null)) {
             return emptyList()
         }
 
@@ -231,7 +231,7 @@ class ThermalObjectDetector(context: Context) {
             }
 
             val finalDetections = applyNMS(allDetections)
-            val topDetections = finalDetections.sortedByDescending { it.confidence }.take(5)
+            val topDetections = finalDetections.asSequence().sortedByDescending { it.confidence }.take(5).toList()
 
             val elapsed = System.currentTimeMillis() - startTime
             if (topDetections.isNotEmpty()) {
@@ -328,7 +328,7 @@ class ThermalObjectDetector(context: Context) {
             var floatIdx = 0
 
             // Flattened loop for performance
-            for (i in 0 until totalPixels) {
+            repeat(totalPixels) {
                 val value = intValues[pixel++]
                 // Use lookup table to avoid float conversion and multiplication
                 floatValues[floatIdx++] = floatLookup[(value shr 16) and 0xFF]

@@ -115,17 +115,4 @@ object MoonPhaseCalculator {
         }
     }
 
-    fun getNextFullMoon(fromTimestamp: Long = System.currentTimeMillis()): Long {
-        val info = calculateMoonPhase(fromTimestamp)
-        val daysUntilFull = when {
-            info.daysSinceNewMoon < SYNODIC_MONTH / 2 -> (SYNODIC_MONTH / 2) - info.daysSinceNewMoon
-            else -> SYNODIC_MONTH - info.daysSinceNewMoon + (SYNODIC_MONTH / 2)
-        }
-        return fromTimestamp + (daysUntilFull * 24 * 60 * 60 * 1000).toLong()
-    }
-
-    fun getNextNewMoon(fromTimestamp: Long = System.currentTimeMillis()): Long {
-        val info = calculateMoonPhase(fromTimestamp)
-        return fromTimestamp + (info.daysUntilNextNewMoon * 24 * 60 * 60 * 1000).toLong()
-    }
 }

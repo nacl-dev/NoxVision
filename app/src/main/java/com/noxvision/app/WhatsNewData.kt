@@ -5,16 +5,12 @@ data class ReleaseNote(val title: String, val description: String)
 object WhatsNewRepository {
     val features = listOf(
         ReleaseNote(
-            title = "Galerie Reload",
-            description = "Es gibt nun einen Button zum manuellen Aktualisieren der Galerie."
+            title = "Willkommen im Play Store!",
+            description = "NoxVision ist jetzt offiziell im Google Play Store verfügbar."
         ),
         ReleaseNote(
-            title = "Fix: Video Vorschau",
-            description = "Behoben: Video Vorschau blieb manchmal schwarz."
+            title = "Onboarding Guide",
+            description = "Ein neuer Einrichtungsassistent führt dich Schritt für Schritt durch den ersten Start."
         ),
-        ReleaseNote(
-            title = "Onboarding",
-            description = "Neuer Guide für den ersten Start."
-        )
     )
 }

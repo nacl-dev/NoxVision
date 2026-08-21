@@ -127,15 +127,6 @@ class CompassSensor(context: Context) {
             else -> "N"
         }
     }
-
-    companion object {
-        fun calculateRelativeBearing(compassAzimuth: Float, targetBearing: Float): Float {
-            var relative = targetBearing - compassAzimuth
-            if (relative < 0) relative += 360
-            if (relative > 180) relative -= 360
-            return relative
-        }
-    }
 }
 
 data class CompassData(

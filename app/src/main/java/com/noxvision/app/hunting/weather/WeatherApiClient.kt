@@ -14,7 +14,7 @@ class WeatherApiClient(private val apiKey: String = DEFAULT_API_KEY) {
 
     companion object {
         // OpenWeatherMap Free Tier API Key loaded from local.properties via BuildConfig
-        private val DEFAULT_API_KEY = BuildConfig.OPENWEATHER_API_KEY
+        private const val DEFAULT_API_KEY = BuildConfig.OPENWEATHER_API_KEY
         private const val BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
     }
 
