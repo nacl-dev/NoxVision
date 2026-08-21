@@ -9,22 +9,20 @@
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="License: MIT"></a>
   <a href="https://developer.android.com"><img src="https://img.shields.io/badge/Android-24%2B-3DDC84.svg?style=flat-square&logo=android" alt="Android"></a>
   <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-2.2.10-7F52FF.svg?style=flat-square&logo=kotlin" alt="Kotlin"></a>
-  <a href="../../releases"><img src="https://img.shields.io/badge/Version-1.3.0-blue.svg?style=flat-square" alt="Version"></a>
+  <a href="../../releases"><img src="https://img.shields.io/badge/Version-2.0.0-blue.svg?style=flat-square" alt="Version"></a>
 </p>
 
 ---
 
 ## 🚀 Get Started
 
-No technical knowledge is required to test NoxVision. Start in just 2 minutes!
+NoxVision is now **live in production on Google Play** — no technical knowledge required.
 
-1. 👥 **Join the Tester Group** → [Open Google Group](https://groups.google.com/g/noxvision-closed-testers)
-2. ✅ **Activate Test Access** → [Open Play Opt-in](https://play.google.com/apps/testing/com.noxvision.app) *(Use the same Google account)*
-3. 📥 **Install the App** → [Open Play Store](https://play.google.com/store/apps/details?id=com.noxvision.app)
-4. 💬 **Send Feedback** → [Report an Issue on GitHub](https://github.com/nacl-dev/NoxVision/issues)
+1. 📥 **Install the App** → [Open Play Store](https://play.google.com/store/apps/details?id=com.noxvision.app)
+2. 💬 **Send Feedback** → [Report an Issue on GitHub](https://github.com/nacl-dev/NoxVision/issues)
 
 > **Quick Links:**  
-> 📖 [Tester Guide](docs/closed-alpha-test.md) • 🔒 [Privacy Policy](PRIVACY_POLICY.md) • 🐛 [Issue Tracker](https://github.com/nacl-dev/NoxVision/issues)
+> 🔒 [Privacy Policy](PRIVACY_POLICY.md) • 🐛 [Issue Tracker](https://github.com/nacl-dev/NoxVision/issues)
 
 ---
 
@@ -64,9 +62,9 @@ NoxVision automatically detects and connects to **Guide Sensmart** models:
 
 ## 📊 Project Status
 
-- **Current Version:** `1.3.0` (`versionCode 4`)
-- Google Play rollout is actively in progress
-- Public installs will be managed via Google Play; GitHub artifacts are strictly for development and troubleshooting
+- **Current Version:** `2.0.0` (`versionCode 5`)
+- ✅ **Live in production on Google Play**
+- GitHub artifacts are strictly for development and troubleshooting; end-users install via Google Play
 
 ---
 
