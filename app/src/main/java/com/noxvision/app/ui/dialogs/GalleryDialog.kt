@@ -2,6 +2,9 @@ package com.noxvision.app.ui.dialogs
 
 import android.content.Intent
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,6 +69,23 @@ fun GalleryDialog(
     var selectedCameraFile by remember { mutableStateOf<CameraFile?>(null) }
     var refreshTrigger by remember { mutableIntStateOf(0) }
 
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            uri?.let {
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(it, context.contentResolver.getType(it))
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                try {
+                    context.startActivity(intent)
+                } catch (_: Exception) {
+                    Toast.makeText(context, "Kein Viewer gefunden", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    )
+
     LaunchedEffect(source, phoneFolder, refreshTrigger) {
         isLoading = true
         errorMessage = null
@@ -116,7 +136,8 @@ fun GalleryDialog(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 12.dp)
+                        .padding(bottom = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     FilterChip(
                         selected = source == GallerySource.PHONE,
@@ -130,6 +151,19 @@ fun GalleryDialog(
                         label = { Text("Thermal") },
                         modifier = Modifier.weight(1f)
                     )
+                    IconButton(
+                        onClick = {
+                            photoPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+                            )
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.PhotoLibrary,
+                            contentDescription = "System Picker",
+                            tint = NightColors.primary
+                        )
+                    }
                 }
 
 

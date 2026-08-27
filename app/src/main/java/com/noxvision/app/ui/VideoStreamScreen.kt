@@ -649,14 +649,6 @@ fun VideoStreamScreen() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 add(Manifest.permission.ACCESS_FINE_LOCATION)
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                add(Manifest.permission.READ_MEDIA_VIDEO)
-                add(Manifest.permission.READ_MEDIA_IMAGES)
-            } else {
-                add(Manifest.permission.READ_EXTERNAL_STORAGE)
-            }
         }
 
         val needPermissions = permissions.filter {
