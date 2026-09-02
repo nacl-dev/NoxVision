@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.noxvision.app.CameraSettings
 import com.noxvision.app.CrosshairStyle
+import com.noxvision.app.DeviceReticleColor
 import com.noxvision.app.HuntingAssistantCountry
 import com.noxvision.app.R
 import com.noxvision.app.ui.dialogs.AboutDialogContent
@@ -54,9 +55,16 @@ fun SettingsScreen(
     contrast: Int,
     crosshairEnabled: Boolean,
     crosshairStyle: CrosshairStyle,
+    deviceReticleEnabled: Boolean = false,
+    deviceReticleSupported: Boolean = false,
+    deviceReticleKnownUnsupported: Boolean = false,
+    deviceReticleConnected: Boolean = true,
+    deviceReticleType: Int = 1,
+    deviceReticleColor: DeviceReticleColor = DeviceReticleColor.WHITE,
+    deviceReticleBrightness: Int = 3,
     enhancementEnabled: Boolean,
     objectDetectionEnabled: Boolean,
-    huntingAssistantHomeEnabled: Boolean,
+    huntingAssistantEnabled: Boolean,
     huntingAssistantCountry: HuntingAssistantCountry,
     cameraIp: String,
     onClose: () -> Unit,
@@ -66,9 +74,13 @@ fun SettingsScreen(
     onContrastChange: (Int) -> Unit,
     onCrosshairEnabledChange: (Boolean) -> Unit,
     onCrosshairStyleChange: (CrosshairStyle) -> Unit,
+    onDeviceReticleEnabledChange: (Boolean) -> Unit = {},
+    onDeviceReticleTypeChange: (Int) -> Unit = {},
+    onDeviceReticleColorChange: (DeviceReticleColor) -> Unit = {},
+    onDeviceReticleBrightnessChange: (Int) -> Unit = {},
     onEnhancementChange: (Boolean) -> Unit,
     onObjectDetectionChange: (Boolean) -> Unit,
-    onHuntingAssistantHomeEnabledChange: (Boolean) -> Unit,
+    onHuntingAssistantEnabledChange: (Boolean) -> Unit,
     onHuntingAssistantCountryChange: (HuntingAssistantCountry) -> Unit,
     onCameraIpChange: (String) -> Unit,
     onShowThermalSettings: () -> Unit,
@@ -151,6 +163,13 @@ fun SettingsScreen(
                 contrast = contrast,
                 crosshairEnabled = crosshairEnabled,
                 crosshairStyle = crosshairStyle,
+                deviceReticleEnabled = deviceReticleEnabled,
+                deviceReticleSupported = deviceReticleSupported,
+                deviceReticleKnownUnsupported = deviceReticleKnownUnsupported,
+                deviceReticleConnected = deviceReticleConnected,
+                deviceReticleType = deviceReticleType,
+                deviceReticleColor = deviceReticleColor,
+                deviceReticleBrightness = deviceReticleBrightness,
                 enhancementEnabled = enhancementEnabled,
                 onAudioChange = onAudioChange,
                 onHotspotChange = onHotspotChange,
@@ -158,16 +177,20 @@ fun SettingsScreen(
                 onContrastChange = onContrastChange,
                 onCrosshairEnabledChange = onCrosshairEnabledChange,
                 onCrosshairStyleChange = onCrosshairStyleChange,
+                onDeviceReticleEnabledChange = onDeviceReticleEnabledChange,
+                onDeviceReticleTypeChange = onDeviceReticleTypeChange,
+                onDeviceReticleColorChange = onDeviceReticleColorChange,
+                onDeviceReticleBrightnessChange = onDeviceReticleBrightnessChange,
                 onEnhancementChange = onEnhancementChange,
                 onShowThermalSettings = onShowThermalSettings
             )
             SettingsPage.APP_FEATURES -> AppFeaturesPage(
                 paddingValues = paddingValues,
                 objectDetectionEnabled = objectDetectionEnabled,
-                huntingAssistantHomeEnabled = huntingAssistantHomeEnabled,
+                huntingAssistantEnabled = huntingAssistantEnabled,
                 huntingAssistantCountry = huntingAssistantCountry,
                 onObjectDetectionChange = onObjectDetectionChange,
-                onHuntingAssistantHomeEnabledChange = onHuntingAssistantHomeEnabledChange,
+                onHuntingAssistantEnabledChange = onHuntingAssistantEnabledChange,
                 onHuntingAssistantCountryChange = onHuntingAssistantCountryChange,
                 onShowHuntingHub = { showHuntingHub = true }
             )
@@ -559,6 +582,13 @@ private fun CameraSettingsPage(
     contrast: Int,
     crosshairEnabled: Boolean,
     crosshairStyle: CrosshairStyle,
+    deviceReticleEnabled: Boolean,
+    deviceReticleSupported: Boolean,
+    deviceReticleKnownUnsupported: Boolean,
+    deviceReticleConnected: Boolean,
+    deviceReticleType: Int,
+    deviceReticleColor: DeviceReticleColor,
+    deviceReticleBrightness: Int,
     enhancementEnabled: Boolean,
     onAudioChange: (Boolean) -> Unit,
     onHotspotChange: (Boolean) -> Unit,
@@ -566,6 +596,10 @@ private fun CameraSettingsPage(
     onContrastChange: (Int) -> Unit,
     onCrosshairEnabledChange: (Boolean) -> Unit,
     onCrosshairStyleChange: (CrosshairStyle) -> Unit,
+    onDeviceReticleEnabledChange: (Boolean) -> Unit,
+    onDeviceReticleTypeChange: (Int) -> Unit,
+    onDeviceReticleColorChange: (DeviceReticleColor) -> Unit,
+    onDeviceReticleBrightnessChange: (Int) -> Unit,
     onEnhancementChange: (Boolean) -> Unit,
     onShowThermalSettings: () -> Unit
 ) {
@@ -608,7 +642,7 @@ private fun CameraSettingsPage(
 
         HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 8.dp))
 
-        // Crosshair Settings
+        // Crosshair: app overlay + device reticle
         SettingsSectionHeader(
             icon = {
                 Icon(
@@ -626,6 +660,13 @@ private fun CameraSettingsPage(
             label = stringResource(R.string.enable_crosshair),
             checked = crosshairEnabled,
             onCheckedChange = onCrosshairEnabledChange
+        )
+
+        Text(
+            text = stringResource(R.string.app_crosshair_hint),
+            fontSize = 12.sp,
+            color = NightColors.onBackground.copy(alpha = 0.7f),
+            modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
         )
 
         if (crosshairEnabled) {
@@ -657,6 +698,164 @@ private fun CameraSettingsPage(
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        val deviceReticleInteractive = deviceReticleConnected &&
+            deviceReticleSupported &&
+            !deviceReticleKnownUnsupported
+        val deviceReticleMuted = deviceReticleKnownUnsupported ||
+            (!deviceReticleConnected && !deviceReticleSupported)
+        val sectionTint = if (deviceReticleMuted) {
+            NightColors.onBackground.copy(alpha = 0.5f)
+        } else {
+            NightColors.primary
+        }
+
+        SettingsSectionHeader(
+            icon = {
+                Icon(
+                    Icons.Filled.Adjust,
+                    contentDescription = null,
+                    tint = sectionTint,
+                    modifier = Modifier.size(18.dp)
+                )
+            },
+            title = stringResource(R.string.device_reticle_settings)
+        )
+
+        SettingsToggleRow(
+            icon = Icons.Filled.Adjust,
+            label = stringResource(R.string.enable_device_reticle),
+            checked = deviceReticleEnabled,
+            enabled = deviceReticleInteractive,
+            onCheckedChange = onDeviceReticleEnabledChange
+        )
+
+        Text(
+            text = stringResource(R.string.device_reticle_hint),
+            fontSize = 12.sp,
+            color = NightColors.onBackground.copy(alpha = if (deviceReticleMuted) 0.5f else 0.7f),
+            modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
+        )
+
+        when {
+            deviceReticleKnownUnsupported -> {
+                Text(
+                    text = stringResource(R.string.device_reticle_unsupported_hint),
+                    fontSize = 12.sp,
+                    color = NightColors.onBackground.copy(alpha = 0.5f),
+                    modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
+                )
+            }
+            deviceReticleSupported && deviceReticleConnected -> {
+                Text(
+                    text = stringResource(R.string.device_reticle_experimental_hint),
+                    fontSize = 12.sp,
+                    color = NightColors.onBackground.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
+                )
+            }
+            !deviceReticleConnected -> {
+                Text(
+                    text = stringResource(R.string.device_reticle_connect_hint),
+                    fontSize = 12.sp,
+                    color = NightColors.onBackground.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
+                )
+            }
+        }
+
+        if (deviceReticleEnabled && deviceReticleInteractive) {
+            Column(modifier = Modifier.padding(start = 12.dp, end = 12.dp)) {
+                Text(
+                    text = stringResource(R.string.device_reticle_type),
+                    fontSize = 12.sp,
+                    color = NightColors.onBackground,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    (1..5).forEach { type ->
+                        FilterChip(
+                            selected = deviceReticleType == type,
+                            onClick = { onDeviceReticleTypeChange(type) },
+                            enabled = deviceReticleInteractive,
+                            label = { Text("$type") },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = NightColors.primaryDim,
+                                selectedLabelColor = NightColors.onSurface
+                            )
+                        )
+                    }
+                }
+            }
+
+            Column(modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 8.dp)) {
+                Text(
+                    text = stringResource(R.string.device_reticle_color),
+                    fontSize = 12.sp,
+                    color = NightColors.onBackground,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    DeviceReticleColor.entries.forEach { color ->
+                        FilterChip(
+                            selected = deviceReticleColor == color,
+                            onClick = { onDeviceReticleColorChange(color) },
+                            enabled = deviceReticleInteractive,
+                            label = { Text(stringResource(color.displayNameRes())) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = NightColors.primaryDim,
+                                selectedLabelColor = NightColors.onSurface
+                            )
+                        )
+                    }
+                }
+            }
+
+            Column(modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 8.dp)) {
+                Text(
+                    text = stringResource(R.string.device_reticle_brightness),
+                    fontSize = 12.sp,
+                    color = NightColors.onBackground,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    (1..5).forEach { level ->
+                        FilterChip(
+                            selected = deviceReticleBrightness == level,
+                            onClick = { onDeviceReticleBrightnessChange(level) },
+                            enabled = deviceReticleInteractive,
+                            label = {
+                                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                    Text("$level")
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = NightColors.primaryDim,
+                                selectedLabelColor = NightColors.onSurface
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         HorizontalDivider(color = NightColors.surface, modifier = Modifier.padding(vertical = 8.dp))
 
@@ -808,10 +1007,10 @@ private fun CameraSettingsPage(
 private fun AppFeaturesPage(
     paddingValues: PaddingValues,
     objectDetectionEnabled: Boolean,
-    huntingAssistantHomeEnabled: Boolean,
+    huntingAssistantEnabled: Boolean,
     huntingAssistantCountry: HuntingAssistantCountry,
     onObjectDetectionChange: (Boolean) -> Unit,
-    onHuntingAssistantHomeEnabledChange: (Boolean) -> Unit,
+    onHuntingAssistantEnabledChange: (Boolean) -> Unit,
     onHuntingAssistantCountryChange: (HuntingAssistantCountry) -> Unit,
     onShowHuntingHub: () -> Unit
 ) {
@@ -840,68 +1039,79 @@ private fun AppFeaturesPage(
             title = stringResource(R.string.hunting)
         )
 
-        SettingsCategoryCard(
-            icon = Icons.Filled.Forest,
-            title = stringResource(R.string.hunting_assistant),
-            subtitle = stringResource(R.string.hunting_assistant_subtitle),
-            onClick = onShowHuntingHub
-        )
-
         Card(
             colors = CardDefaults.cardColors(containerColor = NightColors.surface),
             shape = RoundedCornerShape(12.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 SettingsToggleRow(
-                    icon = Icons.Filled.Home,
-                    label = stringResource(R.string.show_hunting_assistant_home),
-                    checked = huntingAssistantHomeEnabled,
-                    onCheckedChange = onHuntingAssistantHomeEnabledChange
+                    icon = Icons.Filled.Forest,
+                    label = stringResource(R.string.enable_hunting_assistant),
+                    checked = huntingAssistantEnabled,
+                    onCheckedChange = onHuntingAssistantEnabledChange
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                ExposedDropdownMenuBox(
-                    expanded = countryExpanded,
-                    onExpandedChange = { countryExpanded = it }
-                ) {
-                    OutlinedTextField(
-                        value = stringResource(huntingAssistantCountry.displayNameRes),
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text(stringResource(R.string.hunting_country)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = countryExpanded) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true),
-                        colors = nightTextFieldColors()
-                    )
-
-                    ExposedDropdownMenu(
-                        expanded = countryExpanded,
-                        onDismissRequest = { countryExpanded = false }
-                    ) {
-                        HuntingAssistantCountry.entries.forEach { country ->
-                            DropdownMenuItem(
-                                text = { Text(stringResource(country.displayNameRes)) },
-                                onClick = {
-                                    onHuntingAssistantCountryChange(country)
-                                    countryExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-                if (!huntingAssistantCountry.supportsGermanSeasons) {
+                if (huntingAssistantEnabled) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = stringResource(
-                            R.string.hunting_seasons_not_available_for_country,
-                            stringResource(huntingAssistantCountry.displayNameRes)
-                        ),
+                        text = stringResource(R.string.hunting_assistant_subtitle),
                         color = NightColors.onBackground,
                         fontSize = 12.sp
                     )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    SettingsCategoryCard(
+                        icon = Icons.Filled.Forest,
+                        title = stringResource(R.string.hunting_assistant),
+                        subtitle = stringResource(R.string.hunting_assistant_subtitle),
+                        onClick = onShowHuntingHub
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    ExposedDropdownMenuBox(
+                        expanded = countryExpanded,
+                        onExpandedChange = { countryExpanded = it }
+                    ) {
+                        OutlinedTextField(
+                            value = stringResource(huntingAssistantCountry.displayNameRes),
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text(stringResource(R.string.hunting_country)) },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = countryExpanded) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true),
+                            colors = nightTextFieldColors()
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = countryExpanded,
+                            onDismissRequest = { countryExpanded = false }
+                        ) {
+                            HuntingAssistantCountry.entries.forEach { country ->
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(country.displayNameRes)) },
+                                    onClick = {
+                                        onHuntingAssistantCountryChange(country)
+                                        countryExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    if (!huntingAssistantCountry.supportsGermanSeasons) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(
+                                R.string.hunting_seasons_not_available_for_country,
+                                stringResource(huntingAssistantCountry.displayNameRes)
+                            ),
+                            color = NightColors.onBackground,
+                            fontSize = 12.sp
+                        )
+                    }
                 }
             }
         }
@@ -949,9 +1159,6 @@ private fun AppFeaturesPage(
 }
 
 // ═══════════════════════════════════════════════════════════
-// HELPER COMPOSABLES
-// ═══════════════════════════════════════════════════════════
-
 @Composable
 private fun nightTextFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedBorderColor = NightColors.primary,
@@ -964,3 +1171,13 @@ private fun nightTextFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedSupportingTextColor = NightColors.onBackground,
     unfocusedSupportingTextColor = NightColors.onBackground
 )
+
+@Composable
+private fun DeviceReticleColor.displayNameRes(): Int = when (this) {
+    DeviceReticleColor.BLACK -> R.string.device_reticle_color_black
+    DeviceReticleColor.WHITE -> R.string.device_reticle_color_white
+    DeviceReticleColor.YELLOW -> R.string.device_reticle_color_yellow
+    DeviceReticleColor.GREEN -> R.string.device_reticle_color_green
+    DeviceReticleColor.BLUE -> R.string.device_reticle_color_blue
+    DeviceReticleColor.RED -> R.string.device_reticle_color_red
+}

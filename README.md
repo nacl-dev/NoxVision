@@ -1,125 +1,95 @@
-<h1 align="center">🦉 NoxVision</h1>
+# NoxVision
 
-<p align="center">
-  <strong>The ultimate Android companion app for Guide™ thermal cameras.</strong><br>
-  <em>Livestreaming, intelligent hunting workflows, and seamless field documentation.</em>
-</p>
+Android companion app for [Guide Sensmart](https://guideir-thermal.com) thermal cameras. Connects over Wi‑Fi via RTSP streaming and the camera HTTP REST API.
 
-<p align="center">
-  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="License: MIT"></a>
-  <a href="https://developer.android.com"><img src="https://img.shields.io/badge/Android-24%2B-3DDC84.svg?style=flat-square&logo=android" alt="Android"></a>
-  <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-2.2.10-7F52FF.svg?style=flat-square&logo=kotlin" alt="Kotlin"></a>
-  <a href="../../releases"><img src="https://img.shields.io/badge/Version-2.0.0-blue.svg?style=flat-square" alt="Version"></a>
-</p>
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)
+![Android 24+](https://img.shields.io/badge/Android-24%2B-3DDC84.svg?style=flat-square&logo=android)
+![Kotlin 2.2.10](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF.svg?style=flat-square&logo=kotlin)
+![Version 2.0.0](https://img.shields.io/badge/Version-2.0.0-blue.svg?style=flat-square)
 
----
+**[Google Play](https://play.google.com/store/apps/details?id=com.noxvision.app)** · [FAQ](docs/FAQ.md) · [Device Reticle Support](docs/device-reticle-support.md) · [Privacy Policy](PRIVACY_POLICY.md) · [Issues](https://github.com/nacl-dev/NoxVision/issues)
 
-## 🚀 Get Started
+![NoxVision live stream preview](docs/preview.gif)
 
-NoxVision is now **live in production on Google Play** — no technical knowledge required.
+## Overview
 
-1. 📥 **Install the App** → [Open Play Store](https://play.google.com/store/apps/details?id=com.noxvision.app)
-2. 💬 **Send Feedback** → [Report an Issue on GitHub](https://github.com/nacl-dev/NoxVision/issues)
+NoxVision provides live thermal streaming, camera controls, and field tools for Guide devices. It is an independent application — not affiliated with Guide Infrared or their official app — with its own UI, hunting assistant, on-device object detection, and offline maps.
 
-> **Quick Links:**  
-> 🔒 [Privacy Policy](PRIVACY_POLICY.md) • 🐛 [Issue Tracker](https://github.com/nacl-dev/NoxVision/issues)
+A focus of the project is **reliable camera connection**: one-tap WiFi pairing, stable RTSP streaming, and reconnect when returning to the app — areas where users often report friction with other Guide companion apps.
 
----
+The app is available on Google Play. End users should install from the store; GitHub builds are intended for development only.
 
-## ✨ Features
+## Features
 
-NoxVision transforms your smartphone into a powerful command center for your thermal camera.
+**Connection**
 
-🎥 **Advanced Vision**
-- Real-time thermal livestreaming from Guide cameras
-- On-device **AI Object Detection** for enhanced situational awareness
-- Precise camera tuning (thermal controls, image enhancement, audio toggle)
-- One-tap screenshot and video recording with an integrated media gallery
+- In-app WiFi auto-connect to the camera hotspot (Android 10+; SSID and password stored in Settings → Connection)
+- Process-bound to the camera network so streaming and REST control use the same link
+- RTSP over TCP with tuned buffering for a stable live view in the field
+- Stream resumes automatically when the app returns to the foreground
 
-🌲 **Hunting & Field Assistant**
-- **Shot Documentation:** Detailed journaling system for every shot
-- **Live Weather Data:** Built-in OpenWeather API integration for current conditions
-- **Hunting Calendar:** Keep track of hunting seasons effortlessly
-- **Offline Maps & Tracking:** Map out waypoints and navigate with compass support, even without cell service
+**Streaming & camera control**
 
-🌐 **Smart Connectivity & Localization**
-- Automatic Wi-Fi connection to your camera's hotspot
-- Multi-language UI: 🇩🇪 `de`, 🇬🇧 `en`, 🇫🇷 `fr`, 🇪🇸 `es`, 🇮🇹 `it`, 🇳🇱 `nl`, 🇵🇱 `pl`, 🇺🇦 `uk`
+- RTSP live view from Guide camera hotspots (default `192.168.42.1`)
+- Palette, brightness, contrast, zoom, audio, and hotspot controls
+- Thermal measurement settings (emissivity, distance, humidity, NUC shutter)
+- Screenshots and video recording with in-app gallery
+- On-device AI object detection (optional)
 
----
+**Hunting assistant**
 
-## 📷 Supported Cameras
+- Shot documentation and journal entries
+- Weather via OpenWeather API
+- Hunting calendar and season tracking
+- Offline maps, waypoints, and compass navigation
 
-NoxVision automatically detects and connects to **Guide Sensmart** models:
-- **TE Series** | **C Series** | **D Series** | **B Series** | **PS Series**
+**App crosshair**
 
-<div align="center">
-  <br>
-  <img src="docs/preview.gif" alt="NoxVision Demo" width="320" style="border-radius: 12px; margin-bottom: 20px;">
-</div>
+- Stream overlay crosshair (all supported models)
+- Hardware device reticle on models that support it — see [Device Reticle Support Guide](docs/device-reticle-support.md)
 
----
+**Localization:** German, English, French, Spanish, Italian, Dutch, Polish, Ukrainian
 
-## 📊 Project Status
+## Supported cameras
 
-- **Current Version:** `2.0.0` (`versionCode 5`)
-- ✅ **Live in production on Google Play**
-- GitHub artifacts are strictly for development and troubleshooting; end-users install via Google Play
+NoxVision targets Guide Sensmart thermal cameras. Compatibility varies by model and firmware.
 
----
 
-## 🛠️ For Developers
+| Series | Examples                                          | Notes                                      |
+| ------ | ------------------------------------------------- | ------------------------------------------ |
+| TE     | TE211M (primary test device), TE211, TE411, TE421 | Monoculars; TE211M has no hardware reticle |
+| C      | C400, C640, C800                                  | Handheld                                   |
+| D      | D160, D192, D384, D400                            | Industrial modules                         |
+| B      | B160, B256, B320                                  | Entry-level modules                        |
+| PS     | PS series                                         | Compact models                             |
 
-<details>
-<summary><strong>Build from Source</strong> <i>(Click to expand)</i></summary>
 
-<br>
+Cameras that expose RTSP at `192.168.42.1:8554` typically work for streaming. Advanced features depend on the specific model. See the [FAQ](docs/FAQ.md) for details.
 
-### Requirements
-- JDK 17+
-- Android SDK API 35
-- Gradle Wrapper (`./gradlew`)
+## Project status
 
-### Local Setup
-Create or edit `local.properties` in the project root:
 
-```properties
-sdk.dir=/path/to/Android/Sdk
-OPENWEATHER_API_KEY=your_openweather_key
+|              |                                                                                             |
+| ------------ | ------------------------------------------------------------------------------------------- |
+| Version      | 2.0.0 (`versionCode` 5)                                                                     |
+| Distribution | [Google Play](https://play.google.com/store/apps/details?id=com.noxvision.app) (production) |
 
-# Optional for signed Play release build
-UPLOAD_STORE_FILE=keystore/upload-keystore.jks
-UPLOAD_STORE_PASSWORD=...
-UPLOAD_KEY_ALIAS=upload
-UPLOAD_KEY_PASSWORD=...
-```
-*⚠️ **Note:** `local.properties` and keystore files must NEVER be committed to version control.*
 
-### Build Commands
-```bash
-# Debug APK
-JAVA_HOME=/opt/android-studio/jbr PATH=/opt/android-studio/jbr/bin:$PATH ./gradlew :app:assembleDebug
 
-# Release AAB for Play Console
-JAVA_HOME=/opt/android-studio/jbr PATH=/opt/android-studio/jbr/bin:$PATH ./gradlew :app:bundleRelease
-```
 
-### Release Workflow (Play Store)
-1. Update `versionCode` and `versionName` in `app/build.gradle.kts`
-2. Build AAB with `:app:bundleRelease`
-3. Upload to Play Console test track
-4. Add release notes and required declarations
-5. Promote to production when approved
+### Documentation
 
-*Do not distribute debug APKs to end-users.*
-</details>
+- [FAQ](docs/FAQ.md) — downloads, compatibility, and troubleshooting
+- [Device Reticle Support Guide](docs/device-reticle-support.md)
 
----
 
-## 🤝 Contributing & Support
 
-- **Found a bug or have an idea?** Our [Issue Tracker](https://github.com/nacl-dev/NoxVision/issues) is the best place to share it.
-- **Want to contribute?** Check out our [`CONTRIBUTING.md`](CONTRIBUTING.md) guide.
+## Contributing
 
-## 📄 License
-This project is licensed under the MIT License - see the [`LICENSE`](LICENSE) file for details.
+Bug reports and feature requests: [GitHub Issues](https://github.com/nacl-dev/NoxVision/issues)
+
+Contributions: see [CONTRIBUTING.md](CONTRIBUTING.md)
+
+## License
+
+MIT — see [LICENSE](LICENSE).

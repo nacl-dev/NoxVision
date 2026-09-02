@@ -11,6 +11,15 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlin.math.abs
 
 class CompassSensor(context: Context) {
+
+    companion object {
+        fun calculateRelativeBearing(compassAzimuth: Float, targetBearing: Float): Float {
+            var relative = targetBearing - compassAzimuth
+            if (relative > 180f) relative -= 360f
+            if (relative < -180f) relative += 360f
+            return relative
+        }
+    }
     private val sensorManager: SensorManager =
         context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 

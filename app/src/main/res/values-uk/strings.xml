@@ -74,7 +74,7 @@
     <string name="image_enhancement">ПОКРАЩЕННЯ ЗОБРАЖЕННЯ</string>
     <string name="enable_image_enhancement">Увімкнути покращення зображення</string>
     <string name="image_enhancement_desc">Покращує контраст і різкість тепловізійного зображення в реальному часі.</string>
-    <string name="show_hunting_assistant_home">Показувати на головному екрані</string>
+    <string name="enable_hunting_assistant">Увімкнути мисливського помічника</string>
     <string name="hunting_country">Профіль країни</string>
     <string name="hunting_country_germany">Німеччина</string>
     <string name="hunting_country_france">Франція</string>

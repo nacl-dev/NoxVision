@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
@@ -41,7 +42,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.ZoomIn
-import androidx.compose.material.icons.filled.Forest
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -87,8 +87,10 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.noxvision.app.CameraApiClient
 import com.noxvision.app.CameraSettings
 import com.noxvision.app.CrosshairStyle
+import com.noxvision.app.DeviceReticleColor
 import com.noxvision.app.MainActivity
 import com.noxvision.app.getCapabilities
+import com.noxvision.app.isKnownReticleUnsupported
 import com.noxvision.app.R
 import com.noxvision.app.detection.DetectedObject
 import com.noxvision.app.detection.KNOWN_OBJECTS
@@ -98,7 +100,6 @@ import com.noxvision.app.ui.components.PaletteButton
 import com.noxvision.app.ui.dialogs.GalleryDialog
 import com.noxvision.app.ui.dialogs.WelcomeDialog
 import com.noxvision.app.ui.dialogs.WhatsNewDialog
-import com.noxvision.app.ui.hunting.HuntingHubScreen
 import com.noxvision.app.util.AppLogger
 import com.noxvision.app.util.captureScreenshot
 import com.noxvision.app.util.createVideoFile
@@ -123,6 +124,8 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Locale
 import kotlin.time.Duration.Companion.milliseconds
+
+private const val DEVICE_RETICLE_TAG = "DeviceReticle"
 
 private val STREAM_PALETTES = listOf(
     Triple("whitehot", "White Hot", R.drawable.stream_palette_whitehot),
@@ -156,6 +159,12 @@ fun VideoStreamScreen() {
     var contrast by remember { mutableIntStateOf(3) }
     var crosshairEnabled by remember { mutableStateOf(CameraSettings.isCrosshairEnabled(context)) }
     var crosshairStyle by remember { mutableStateOf(CameraSettings.getCrosshairStyle(context)) }
+    var deviceReticleType by remember { mutableIntStateOf(1) }
+    var deviceReticleColor by remember { mutableStateOf(DeviceReticleColor.WHITE) }
+    var deviceReticleBrightness by remember { mutableIntStateOf(3) }
+    var deviceReticleEnabled by remember {
+        mutableStateOf(CameraSettings.isDeviceReticleEnabled(context))
+    }
     var enhancementEnabled by remember { mutableStateOf(false) }
 
     var isConnecting by remember { mutableStateOf(false) }
@@ -171,10 +180,9 @@ fun VideoStreamScreen() {
     var showWelcomeDialog by rememberSaveable { mutableStateOf(false) }
     var showWhatsNewDialog by rememberSaveable { mutableStateOf(false) }
 
-    // Hunting Hub
-    var showHuntingHub by rememberSaveable { mutableStateOf(false) }
-    var huntingAssistantHomeEnabled by remember {
-        mutableStateOf(CameraSettings.isHuntingAssistantHomeEnabled(context))
+    // Hunting Assistant
+    var huntingAssistantEnabled by remember {
+        mutableStateOf(CameraSettings.isHuntingAssistantEnabled(context))
     }
     var huntingAssistantCountry by remember {
         mutableStateOf(CameraSettings.getHuntingAssistantCountry(context))
@@ -818,10 +826,30 @@ fun VideoStreamScreen() {
                             try {
                                 val info = apiClient.getDeviceInfo()
                                 if (info != null) {
-                                    deviceInfo = info
-                                    cameraCapabilities = info.getCapabilities()
-                                    CameraSettings.saveDeviceInfo(context, info)
-                                    AppLogger.log("Kamera erkannt: ${info.deviceName}", AppLogger.LogType.SUCCESS)
+                                    val cached = CameraSettings.getCachedDeviceInfo(context)
+                                    val merged = if (cached != null &&
+                                        (info.deviceName == info.projectCode ||
+                                            info.deviceName == "Guide Camera" ||
+                                            info.deviceName == "Unknown")
+                                    ) {
+                                        info.copy(deviceName = cached.deviceName)
+                                    } else {
+                                        info
+                                    }
+                                    deviceInfo = merged
+                                    val capabilities = merged.getCapabilities()
+                                    cameraCapabilities = capabilities
+                                    CameraSettings.saveDeviceInfo(context, merged)
+                                    AppLogger.log("Kamera erkannt: ${merged.deviceName}", AppLogger.LogType.SUCCESS)
+                                    if (merged.isKnownReticleUnsupported() && deviceReticleEnabled) {
+                                        deviceReticleEnabled = false
+                                        CameraSettings.setDeviceReticleEnabled(context, false)
+                                    }
+                                    if (capabilities.reticle.hasDeviceReticle) {
+                                        apiClient.getReticleType()?.let { deviceReticleType = it }
+                                        apiClient.getReticleColor()?.let { deviceReticleColor = it }
+                                        apiClient.getReticleBrightness()?.let { deviceReticleBrightness = it }
+                                    }
                                 }
                             } catch (_: Exception) {
                                 AppLogger.log("Device-Info nicht verfugbar", AppLogger.LogType.INFO)
@@ -1299,17 +1327,6 @@ fun VideoStreamScreen() {
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-
-                if (huntingAssistantHomeEnabled) {
-                    // Hunting Assistant Button (full width)
-                    DarkButton(
-                        text = stringResource(R.string.hunting_assistant),
-                        icon = Icons.Filled.Forest,
-                        onClick = { showHuntingHub = true },
-                        enabled = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
             }
         }
 
@@ -1325,9 +1342,16 @@ fun VideoStreamScreen() {
                     contrast = contrast,
                     crosshairEnabled = crosshairEnabled,
                     crosshairStyle = crosshairStyle,
+                    deviceReticleEnabled = deviceReticleEnabled,
+                    deviceReticleSupported = cameraCapabilities?.reticle?.hasDeviceReticle == true,
+                    deviceReticleKnownUnsupported = deviceInfo?.isKnownReticleUnsupported() == true,
+                    deviceReticleConnected = isPlaying,
+                    deviceReticleType = deviceReticleType,
+                    deviceReticleColor = deviceReticleColor,
+                    deviceReticleBrightness = deviceReticleBrightness,
                     enhancementEnabled = enhancementEnabled,
                     objectDetectionEnabled = objectDetectionEnabled,
-                    huntingAssistantHomeEnabled = huntingAssistantHomeEnabled,
+                    huntingAssistantEnabled = huntingAssistantEnabled,
                     huntingAssistantCountry = huntingAssistantCountry,
                     cameraIp = cameraIp,
                     onClose = { showSettingsDialog = false },
@@ -1363,6 +1387,84 @@ fun VideoStreamScreen() {
                         crosshairStyle = style
                         CameraSettings.setCrosshairStyle(context, style)
                     },
+                    onDeviceReticleEnabledChange = { enabled ->
+                        if (deviceInfo?.isKnownReticleUnsupported() == true) {
+                            Log.d(DEVICE_RETICLE_TAG, "Toggle ignored — device reticle not supported on this model")
+                            return@SettingsScreen
+                        }
+                        if (cameraCapabilities?.reticle?.hasDeviceReticle != true) {
+                            Log.d(DEVICE_RETICLE_TAG, "Toggle ignored — device reticle not supported")
+                            return@SettingsScreen
+                        }
+                        if (!isPlaying) {
+                            Log.d(DEVICE_RETICLE_TAG, "Toggle ignored — camera not connected")
+                            return@SettingsScreen
+                        }
+                        val previous = deviceReticleEnabled
+                        deviceReticleEnabled = enabled
+                        scope.launch {
+                            Log.d(DEVICE_RETICLE_TAG, "Toggle requested: enabled=$enabled")
+                            val success = if (enabled) {
+                                apiClient.applyDeviceReticle(
+                                    deviceReticleType,
+                                    deviceReticleColor,
+                                    deviceReticleBrightness
+                                )
+                            } else {
+                                apiClient.setReticleEnabled(false)
+                            }
+                            if (success) {
+                                CameraSettings.setDeviceReticleEnabled(context, enabled)
+                                AppLogger.log(
+                                    "Geräte-Fadenkreuz: ${if (enabled) "EIN" else "AUS"}",
+                                    AppLogger.LogType.SUCCESS
+                                )
+                            } else {
+                                deviceReticleEnabled = previous
+                                Log.w(DEVICE_RETICLE_TAG, "Toggle failed, reverted to $previous")
+                                AppLogger.log(
+                                    "Geräte-Fadenkreuz ${if (enabled) "aktivieren" else "deaktivieren"} fehlgeschlagen",
+                                    AppLogger.LogType.ERROR
+                                )
+                            }
+                        }
+                    },
+                    onDeviceReticleTypeChange = { index ->
+                        if (cameraCapabilities?.reticle?.hasDeviceReticle != true || !isPlaying) return@SettingsScreen
+                        scope.launch {
+                            val success = apiClient.setReticleType(index)
+                            if (success) {
+                                deviceReticleType = index
+                                AppLogger.log("Geräte-Reticle Typ: $index", AppLogger.LogType.SUCCESS)
+                            } else {
+                                AppLogger.log("Geräte-Reticle Typ fehlgeschlagen", AppLogger.LogType.ERROR)
+                            }
+                        }
+                    },
+                    onDeviceReticleColorChange = { color ->
+                        if (cameraCapabilities?.reticle?.hasDeviceReticle != true || !isPlaying) return@SettingsScreen
+                        scope.launch {
+                            val success = apiClient.setReticleColor(color)
+                            if (success) {
+                                deviceReticleColor = color
+                                AppLogger.log("Geräte-Reticle Farbe: ${color.apiValue}", AppLogger.LogType.SUCCESS)
+                            } else {
+                                AppLogger.log("Geräte-Reticle Farbe fehlgeschlagen", AppLogger.LogType.ERROR)
+                            }
+                        }
+                    },
+                    onDeviceReticleBrightnessChange = { level ->
+                        if (cameraCapabilities?.reticle?.hasDeviceReticle != true || !isPlaying) return@SettingsScreen
+                        scope.launch {
+                            val success = apiClient.setReticleBrightness(level)
+                            if (success) {
+                                deviceReticleBrightness = level
+                                AppLogger.log("Geräte-Reticle Helligkeit: $level", AppLogger.LogType.SUCCESS)
+                            } else {
+                                AppLogger.log("Geräte-Reticle Helligkeit fehlgeschlagen", AppLogger.LogType.ERROR)
+                            }
+                        }
+                    },
                     onEnhancementChange = { enabled ->
                         scope.launch {
                             val success = setEnhancement(enabled)
@@ -1373,9 +1475,9 @@ fun VideoStreamScreen() {
                         objectDetectionEnabled = enabled
                         AppLogger.log("AI Erkennung ${if (enabled) "EIN" else "AUS"}", AppLogger.LogType.INFO)
                     },
-                    onHuntingAssistantHomeEnabledChange = { enabled ->
-                        huntingAssistantHomeEnabled = enabled
-                        CameraSettings.setHuntingAssistantHomeEnabled(context, enabled)
+                    onHuntingAssistantEnabledChange = { enabled ->
+                        huntingAssistantEnabled = enabled
+                        CameraSettings.setHuntingAssistantEnabled(context, enabled)
                     },
                     onHuntingAssistantCountryChange = { country ->
                         huntingAssistantCountry = country
@@ -1413,10 +1515,10 @@ fun VideoStreamScreen() {
 
         if (showWelcomeDialog) {
             WelcomeDialog(
-                huntingAssistantHomeEnabled = huntingAssistantHomeEnabled,
-                onHuntingAssistantHomeEnabledChange = { enabled ->
-                    huntingAssistantHomeEnabled = enabled
-                    CameraSettings.setHuntingAssistantHomeEnabled(context, enabled)
+                huntingAssistantEnabled = huntingAssistantEnabled,
+                onHuntingAssistantEnabledChange = { enabled ->
+                    huntingAssistantEnabled = enabled
+                    CameraSettings.setHuntingAssistantEnabled(context, enabled)
                 },
                 onDismiss = {
                     val currentVersionCode = try {
@@ -1460,18 +1562,6 @@ fun VideoStreamScreen() {
                 GalleryDialog(
                     baseUrl = baseUrl,
                     onDismiss = { showGalleryDialog = false }
-                )
-            }
-        }
-
-        if (showHuntingHub) {
-            Dialog(
-                onDismissRequest = { showHuntingHub = false },
-                properties = DialogProperties(usePlatformDefaultWidth = false)
-            ) {
-                HuntingHubScreen(
-                    onClose = { showHuntingHub = false },
-                    selectedCountry = huntingAssistantCountry
                 )
             }
         }

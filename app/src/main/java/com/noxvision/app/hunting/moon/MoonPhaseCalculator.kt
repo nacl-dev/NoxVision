@@ -7,6 +7,7 @@ import kotlin.math.floor
 object MoonPhaseCalculator {
     // Synodic month in days (average time between new moons)
     private const val SYNODIC_MONTH = 29.530588853
+    private const val MILLIS_PER_DAY = 24 * 60 * 60 * 1000L
 
     // Reference new moon: January 6, 2000, 18:14 UTC
     private const val REFERENCE_NEW_MOON_JD = 2451550.2597222
@@ -101,6 +102,22 @@ object MoonPhaseCalculator {
         // At full moon (progress = 0.5), illumination = 100
         val angle = progress * 2 * Math.PI
         return ((1 - kotlin.math.cos(angle)) / 2) * 100
+    }
+
+    fun getNextFullMoon(timestamp: Long): Long {
+        val info = calculateMoonPhase(timestamp)
+        val halfCycle = SYNODIC_MONTH / 2
+        val daysUntilFull = if (info.daysSinceNewMoon <= halfCycle) {
+            halfCycle - info.daysSinceNewMoon
+        } else {
+            SYNODIC_MONTH - info.daysSinceNewMoon + halfCycle
+        }
+        return timestamp + (daysUntilFull * MILLIS_PER_DAY).toLong()
+    }
+
+    fun getNextNewMoon(timestamp: Long): Long {
+        val info = calculateMoonPhase(timestamp)
+        return timestamp + (info.daysUntilNextNewMoon * MILLIS_PER_DAY).toLong()
     }
 
     private fun predictWildlifeActivity(phase: MoonPhase): WildlifeActivityPrediction {

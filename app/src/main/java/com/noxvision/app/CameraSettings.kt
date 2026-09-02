@@ -46,6 +46,7 @@ object CameraSettings {
     // Crosshair settings
     private const val KEY_CROSSHAIR_ENABLED = "crosshair_enabled"
     private const val KEY_CROSSHAIR_STYLE = "crosshair_style"
+    private const val KEY_DEVICE_RETICLE_ENABLED = "device_reticle_enabled"
 
     // Hunting assistant settings
     private const val KEY_HUNTING_ASSISTANT_HOME_ENABLED = "hunting_assistant_home_enabled"
@@ -68,6 +69,8 @@ object CameraSettings {
     private const val KEY_CAMERA_NAME = "camera_name"
     private const val KEY_VIDEO_WIDTH = "video_width"
     private const val KEY_VIDEO_HEIGHT = "video_height"
+    private const val KEY_PROJECT_CODE = "project_code"
+    private const val KEY_RESERVATION_CODE = "reservation_code"
     
     // Wi-Fi and Connection settings
     private const val KEY_WIFI_SSID = "wifi_ssid"
@@ -86,7 +89,7 @@ object CameraSettings {
     private const val DEFAULT_WIFI_PASSWORD = "12345678"
     private const val DEFAULT_HTTP_PORT = 80
     private const val DEFAULT_AUTOCONNECT_ENABLED = true
-    private const val DEFAULT_HUNTING_ASSISTANT_HOME_ENABLED = true
+    private const val DEFAULT_HUNTING_ASSISTANT_ENABLED = false
     
     // ==================== Connection Settings ====================
     
@@ -284,6 +287,8 @@ object CameraSettings {
             putString(KEY_CAMERA_NAME, deviceInfo.cameraName)
             putInt(KEY_VIDEO_WIDTH, deviceInfo.videoWidth)
             putInt(KEY_VIDEO_HEIGHT, deviceInfo.videoHeight)
+            putString(KEY_PROJECT_CODE, deviceInfo.projectCode)
+            putString(KEY_RESERVATION_CODE, deviceInfo.reservationCode)
         }
     }
     
@@ -302,7 +307,9 @@ object CameraSettings {
             videoFps = 25,
             measureGear = 0,
             cameraLens = "",
-            measureRange = ""
+            measureRange = "",
+            projectCode = prefs.getString(KEY_PROJECT_CODE, "") ?: "",
+            reservationCode = prefs.getString(KEY_RESERVATION_CODE, "") ?: ""
         )
     }
 
@@ -361,14 +368,24 @@ object CameraSettings {
         prefs.edit { putInt(KEY_CROSSHAIR_STYLE, style.id) }
     }
 
-    // ==================== Hunting Assistant Settings ====================
-
-    fun isHuntingAssistantHomeEnabled(context: Context): Boolean {
+    fun isDeviceReticleEnabled(context: Context): Boolean {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getBoolean(KEY_HUNTING_ASSISTANT_HOME_ENABLED, DEFAULT_HUNTING_ASSISTANT_HOME_ENABLED)
+        return prefs.getBoolean(KEY_DEVICE_RETICLE_ENABLED, false)
     }
 
-    fun setHuntingAssistantHomeEnabled(context: Context, enabled: Boolean) {
+    fun setDeviceReticleEnabled(context: Context, enabled: Boolean) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit { putBoolean(KEY_DEVICE_RETICLE_ENABLED, enabled) }
+    }
+
+    // ==================== Hunting Assistant Settings ====================
+
+    fun isHuntingAssistantEnabled(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(KEY_HUNTING_ASSISTANT_HOME_ENABLED, DEFAULT_HUNTING_ASSISTANT_ENABLED)
+    }
+
+    fun setHuntingAssistantEnabled(context: Context, enabled: Boolean) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit { putBoolean(KEY_HUNTING_ASSISTANT_HOME_ENABLED, enabled) }
     }

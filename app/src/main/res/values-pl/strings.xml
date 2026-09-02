@@ -74,7 +74,7 @@
     <string name="image_enhancement">POPRAWA OBRAZU</string>
     <string name="enable_image_enhancement">Włącz poprawę obrazu</string>
     <string name="image_enhancement_desc">Poprawia kontrast i ostrość obrazu termicznego w czasie rzeczywistym.</string>
-    <string name="show_hunting_assistant_home">Pokaż na ekranie głównym</string>
+    <string name="enable_hunting_assistant">Asystent myśliwski włącz</string>
     <string name="hunting_country">Profil kraju</string>
     <string name="hunting_country_germany">Niemcy</string>
     <string name="hunting_country_france">Francja</string>

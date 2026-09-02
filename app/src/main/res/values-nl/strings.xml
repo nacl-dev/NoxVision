@@ -74,7 +74,7 @@
     <string name="image_enhancement">BEELDVERBETERING</string>
     <string name="enable_image_enhancement">Beeldverbetering inschakelen</string>
     <string name="image_enhancement_desc">Verbetert contrast en scherpte van het thermisch beeld in realtime.</string>
-    <string name="show_hunting_assistant_home">Op startscherm tonen</string>
+    <string name="enable_hunting_assistant">Jachtassistent inschakelen</string>
     <string name="hunting_country">Landprofiel</string>
     <string name="hunting_country_germany">Duitsland</string>
     <string name="hunting_country_france">Frankrijk</string>

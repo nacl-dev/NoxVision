@@ -74,7 +74,7 @@
     <string name="image_enhancement">MIGLIORAMENTO IMMAGINE</string>
     <string name="enable_image_enhancement">Abilita miglioramento immagine</string>
     <string name="image_enhancement_desc">Migliora contrasto e nitidezza dell’immagine termica in tempo reale.</string>
-    <string name="show_hunting_assistant_home">Mostra nella schermata principale</string>
+    <string name="enable_hunting_assistant">Attiva assistente di caccia</string>
     <string name="hunting_country">Profilo paese</string>
     <string name="hunting_country_germany">Germania</string>
     <string name="hunting_country_france">Francia</string>

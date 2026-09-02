@@ -56,13 +56,13 @@ import com.noxvision.app.ui.components.WelcomeFeatureItem
 
 @Composable
 fun WelcomeDialog(
-    huntingAssistantHomeEnabled: Boolean,
-    onHuntingAssistantHomeEnabledChange: (Boolean) -> Unit,
+    huntingAssistantEnabled: Boolean,
+    onHuntingAssistantEnabledChange: (Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
     var step by remember { mutableIntStateOf(0) }
-    var homeToggleEnabled by remember(huntingAssistantHomeEnabled) {
-        mutableStateOf(huntingAssistantHomeEnabled)
+    var assistantToggleEnabled by remember(huntingAssistantEnabled) {
+        mutableStateOf(huntingAssistantEnabled)
     }
 
     Dialog(
@@ -189,16 +189,16 @@ fun WelcomeDialog(
                                                     tint = NightColors.primary
                                                 )
                                                 Text(
-                                                    text = stringResource(R.string.show_hunting_assistant_home),
+                                                    text = stringResource(R.string.enable_hunting_assistant),
                                                     color = NightColors.onSurface,
                                                     fontWeight = FontWeight.Medium
                                                 )
                                             }
                                             Switch(
-                                                checked = homeToggleEnabled,
+                                                checked = assistantToggleEnabled,
                                                 onCheckedChange = { enabled ->
-                                                    homeToggleEnabled = enabled
-                                                    onHuntingAssistantHomeEnabledChange(enabled)
+                                                    assistantToggleEnabled = enabled
+                                                    onHuntingAssistantEnabledChange(enabled)
                                                 },
                                                 colors = SwitchDefaults.colors(
                                                     checkedThumbColor = NightColors.primary,

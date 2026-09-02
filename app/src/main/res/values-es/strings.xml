@@ -75,7 +75,7 @@
     <string name="image_enhancement">MEJORA DE IMAGEN</string>
     <string name="enable_image_enhancement">Activar mejora de imagen</string>
     <string name="image_enhancement_desc">Mejora el contraste y la nitidez en tiempo real.</string>
-    <string name="show_hunting_assistant_home">Mostrar en la pantalla principal</string>
+    <string name="enable_hunting_assistant">Activar asistente de caza</string>
     <string name="hunting_country">Perfil de país</string>
     <string name="hunting_country_germany">Alemania</string>
     <string name="hunting_country_france">Francia</string>

@@ -1,7 +1,7 @@
 package com.noxvision.app.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -56,30 +56,41 @@ fun SettingsToggleRow(
     icon: ImageVector,
     label: String,
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .toggleable(
-                value = checked,
-                onValueChange = onCheckedChange,
-                role = Role.Switch
-            )
             .padding(vertical = 8.dp, horizontal = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
+            modifier = Modifier
+                .weight(1f)
+                .clickable(
+                    enabled = enabled,
+                    role = Role.Switch,
+                    onClick = { onCheckedChange(!checked) }
+                ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Icon(icon, contentDescription = null, tint = NightColors.onSurface)
-            Text(text = label, color = NightColors.onSurface)
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = if (enabled) NightColors.onSurface else NightColors.onBackground
+            )
+            Text(
+                text = label,
+                color = if (enabled) NightColors.onSurface else NightColors.onBackground
+            )
         }
         Switch(
             checked = checked,
-            onCheckedChange = null,
+            onCheckedChange = if (enabled) onCheckedChange else null,
+            enabled = enabled,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = NightColors.primary,
                 checkedTrackColor = NightColors.primary.copy(alpha = 0.5f)
