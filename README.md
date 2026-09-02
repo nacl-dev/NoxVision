@@ -7,6 +7,8 @@ Android companion app for [Guide Sensmart](https://guideir-thermal.com) thermal 
 ![Kotlin 2.2.10](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF.svg?style=flat-square)
 ![Version 2.0.0](https://img.shields.io/badge/Version-2.0.0-blue.svg?style=flat-square)
 
+**[☕ Support NoxVision on Ko-fi](https://ko-fi.com/nacl_dev#)** [Support & Hardware Fund](docs/SUPPORT.md)
+
 **[Google Play](https://play.google.com/store/apps/details?id=com.noxvision.app)** · [FAQ](docs/FAQ.md) · [Device Reticle Support](docs/device-reticle-support.md) · [Support NoxVision](docs/SUPPORT.md) · [Privacy Policy](PRIVACY_POLICY.md) · [Issues](https://github.com/nacl-dev/NoxVision/issues)
 
 ![NoxVision live stream preview](docs/preview.gif)
