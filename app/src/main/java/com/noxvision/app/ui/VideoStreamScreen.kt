@@ -119,9 +119,6 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import org.videolan.libvlc.MediaPlayer
 import java.io.File
-import java.io.OutputStreamWriter
-import java.net.HttpURLConnection
-import java.net.URL
 import java.util.Locale
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -153,10 +150,10 @@ fun VideoStreamScreen() {
 
     var recordingPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
     var recordingTempFile by remember { mutableStateOf<File?>(null) }
-    var hotspotEnabled by remember { mutableStateOf(false) }
+    var hotspotEnabled by remember { mutableStateOf(CameraSettings.isHotspotEnabled(context)) }
 
-    var brightness by remember { mutableIntStateOf(3) }
-    var contrast by remember { mutableIntStateOf(3) }
+    var brightness by remember { mutableIntStateOf(CameraSettings.getBrightness(context)) }
+    var contrast by remember { mutableIntStateOf(CameraSettings.getContrast(context)) }
     var crosshairEnabled by remember { mutableStateOf(CameraSettings.isCrosshairEnabled(context)) }
     var crosshairStyle by remember { mutableStateOf(CameraSettings.getCrosshairStyle(context)) }
     var deviceReticleType by remember { mutableIntStateOf(1) }
@@ -165,12 +162,14 @@ fun VideoStreamScreen() {
     var deviceReticleEnabled by remember {
         mutableStateOf(CameraSettings.isDeviceReticleEnabled(context))
     }
-    var enhancementEnabled by remember { mutableStateOf(false) }
+    var enhancementEnabled by remember {
+        mutableStateOf(CameraSettings.isImageEnhancementEnabled(context))
+    }
 
     var isConnecting by remember { mutableStateOf(false) }
     var zoomLevel by remember { mutableFloatStateOf(10f) }
     var audioEnabled by rememberSaveable { mutableStateOf(true) }
-    var selectedPalette by rememberSaveable { mutableStateOf("whitehot") }
+    var selectedPalette by rememberSaveable { mutableStateOf(CameraSettings.getPalette(context)) }
     var loadingPaletteId by remember { mutableStateOf<String?>(null) }
     var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
     var showGalleryDialog by rememberSaveable { mutableStateOf(false) }
@@ -242,315 +241,12 @@ fun VideoStreamScreen() {
     var wasPlayingBeforeStop by remember { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Camera control functions
-    suspend fun setZoom(level: Int): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                AppLogger.log("Setze Zoom auf $level", AppLogger.LogType.INFO)
-                val url = URL("$baseUrl/api/v1/camera/seekzoom")
-                val conn = url.openConnection() as HttpURLConnection
-                conn.connectTimeout = 3000
-                conn.readTimeout = 3000
-                conn.requestMethod = "PUT"
-                conn.setRequestProperty("Content-Type", "application/json")
-                conn.setRequestProperty("Accept-Encoding", "gzip")
-                conn.setRequestProperty("User-Agent", "okhttp/4.11.0")
-                conn.doOutput = true
-
-                val jsonInputString = """{"value":"$level"}"""
-                OutputStreamWriter(conn.outputStream).use {
-                    it.write(jsonInputString)
-                    it.flush()
-                }
-
-                val responseCode = conn.responseCode
-                val success = responseCode == 200
-
-                if (success) {
-                    val zoomDisplay = String.format(Locale.US, "%.1f", level / 10.0)
-                    AppLogger.log("Zoom: ${zoomDisplay}x", AppLogger.LogType.SUCCESS)
-                } else {
-                    AppLogger.log("Zoom error: HTTP $responseCode", AppLogger.LogType.ERROR)
-                }
-
-                conn.disconnect()
-                success
-            } catch (e: Exception) {
-                AppLogger.log("Zoom Exception: ${e.message}", AppLogger.LogType.ERROR)
-                false
-            }
-        }
-    }
-
-    suspend fun setAudio(status: String): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                AppLogger.log("Setze Audio auf $status", AppLogger.LogType.INFO)
-                val url = URL("$baseUrl/api/v1/peripheral/audio_status")
-                val conn = url.openConnection() as HttpURLConnection
-                conn.connectTimeout = 3000
-                conn.readTimeout = 3000
-                conn.requestMethod = "PUT"
-                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8")
-                conn.setRequestProperty("Accept-Encoding", "gzip")
-                conn.setRequestProperty("User-Agent", "okhttp/4.11.0")
-                conn.doOutput = true
-
-                val jsonInputString = """{"value":"$status"}"""
-                OutputStreamWriter(conn.outputStream).use {
-                    it.write(jsonInputString)
-                    it.flush()
-                }
-
-                val responseCode = conn.responseCode
-                val success = responseCode == 200
-                if (success) {
-                    AppLogger.log(
-                        "Audio: ${if (status == "on") "Ein" else "Aus"}",
-                        AppLogger.LogType.SUCCESS
-                    )
-                }
-
-                conn.disconnect()
-                success
-            } catch (e: Exception) {
-                AppLogger.log("Audio Exception: ${e.message}", AppLogger.LogType.ERROR)
-                false
-            }
-        }
-    }
-
-    fun buildGenericFrame(cmd: ByteArray, value: Int): ByteArray {
-        val frameHead = byteArrayOf(0x55.toByte(), 0xAA.toByte())
-
-        val valueBytes = byteArrayOf(
-            ((value shr 24) and 0xFF).toByte(),
-            ((value shr 16) and 0xFF).toByte(),
-            ((value shr 8) and 0xFF).toByte(),
-            (value and 0xFF).toByte()
-        )
-
-        val payloadLen: Byte = (cmd.size + valueBytes.size).toByte()
-        val payload = ByteArray(1 + cmd.size + valueBytes.size)
-        payload[0] = payloadLen
-        System.arraycopy(cmd, 0, payload, 1, cmd.size)
-        System.arraycopy(valueBytes, 0, payload, 1 + cmd.size, valueBytes.size)
-
-        var checksum = payload[0]
-        for (i in 1 until payload.size) {
-            checksum = (checksum.toInt() xor payload[i].toInt()).toByte()
-        }
-
-        val frame = ByteArray(frameHead.size + payload.size + 2)
-        frame[0] = frameHead[0]
-        frame[1] = frameHead[1]
-        System.arraycopy(payload, 0, frame, 2, payload.size)
-        frame[2 + payload.size] = checksum
-        frame[3 + payload.size] = 0xF0.toByte()
-
-        return frame
-    }
-
-    fun buildPaletteFrame(palletId: Int): ByteArray {
-        val cmd = byteArrayOf(0x02, 0x00, 0x04)
-        return buildGenericFrame(cmd, palletId)
-    }
-
-    suspend fun setPalette(paletteName: String): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                val paletteIds = mapOf(
-                    "whitehot" to 0,
-                    "blackhot" to 9,
-                    "redhot" to 11,
-                    "iron" to 2,
-                    "bluehot" to 4,
-                    "greenhot" to 5,
-                    "darkbrown" to 20
-                )
-
-                val palletId = paletteIds[paletteName] ?: run {
-                    AppLogger.log("Unbekannte Palette: $paletteName", AppLogger.LogType.ERROR)
-                    return@withContext false
-                }
-
-                AppLogger.log("Setze Palette: $paletteName (ID=$palletId)", AppLogger.LogType.INFO)
-
-                val data = buildPaletteFrame(palletId)
-                val hexStr = data.joinToString(" ") { "%02x".format(it) }
-                AppLogger.log("Frame: $hexStr", AppLogger.LogType.INFO)
-
-                val url = URL("${baseUrl}/api/v1/files/customdata")
-                val conn = (url.openConnection() as HttpURLConnection).apply {
-                    connectTimeout = 3000
-                    readTimeout = 5000
-                    requestMethod = "POST"
-                    setRequestProperty("Content-Type", "application/customdata")
-                    doOutput = true
-                }
-
-                conn.outputStream.use { it.write(data) }
-                val code = conn.responseCode
-                conn.disconnect()
-
-                val success = code == 200
-                if (success) {
-                    AppLogger.log("Palette: $paletteName", AppLogger.LogType.SUCCESS)
-                } else {
-                    AppLogger.log("Palette error: HTTP $code", AppLogger.LogType.ERROR)
-                }
-
-                success
-            } catch (e: Exception) {
-                AppLogger.log("Palette Exception: ${e.message}", AppLogger.LogType.ERROR)
-                false
-            }
-        }
-    }
-
-    suspend fun setHotspot(enabled: Boolean): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                val modeId = if (enabled) 1 else 0
-                AppLogger.log("Setze Hotspot: ${if (enabled) "ON" else "OFF"}", AppLogger.LogType.INFO)
-
-                val cmd = byteArrayOf(0x02, 0x00, 0x09)
-                val data = buildGenericFrame(cmd, modeId)
-
-                val url = URL("${baseUrl}/api/v1/files/customdata")
-                val conn = (url.openConnection() as HttpURLConnection).apply {
-                    connectTimeout = 3000
-                    readTimeout = 5000
-                    requestMethod = "POST"
-                    setRequestProperty("Content-Type", "application/customdata")
-                    doOutput = true
-                }
-
-                conn.outputStream.use { it.write(data) }
-                val code = conn.responseCode
-                conn.disconnect()
-
-                val success = code == 200
-                if (success) {
-                    AppLogger.log("Hotspot: ${if (enabled) "EIN" else "AUS"}", AppLogger.LogType.SUCCESS)
-                } else {
-                    AppLogger.log("Hotspot error: HTTP $code", AppLogger.LogType.ERROR)
-                }
-
-                success
-            } catch (e: Exception) {
-                AppLogger.log("Hotspot Exception: ${e.message}", AppLogger.LogType.ERROR)
-                false
-            }
-        }
-    }
-
-    suspend fun setBrightness(level: Int): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                val clampedLevel = level.coerceIn(1, 5)
-                AppLogger.log("Setze Helligkeit: $clampedLevel", AppLogger.LogType.INFO)
-
-                val cmd = byteArrayOf(0x02, 0x03, 0x09)
-                val data = buildGenericFrame(cmd, clampedLevel)
-
-                val url = URL("${baseUrl}/api/v1/files/customdata")
-                val conn = (url.openConnection() as HttpURLConnection).apply {
-                    connectTimeout = 3000
-                    readTimeout = 5000
-                    requestMethod = "POST"
-                    setRequestProperty("Content-Type", "application/customdata")
-                    doOutput = true
-                }
-
-                conn.outputStream.use { it.write(data) }
-                val code = conn.responseCode
-                conn.disconnect()
-
-                val success = code == 200
-                if (success) {
-                    AppLogger.log("Helligkeit: $clampedLevel", AppLogger.LogType.SUCCESS)
-                } else {
-                    AppLogger.log("Brightness error: HTTP $code", AppLogger.LogType.ERROR)
-                }
-                success
-            } catch (e: Exception) {
-                AppLogger.log("Helligkeit Exception: ${e.message}", AppLogger.LogType.ERROR)
-                false
-            }
-        }
-    }
-
-    suspend fun setContrast(level: Int): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                val clampedLevel = level.coerceIn(1, 5)
-                AppLogger.log("Setze Kontrast: $clampedLevel", AppLogger.LogType.INFO)
-
-                val cmd = byteArrayOf(0x02, 0x03, 0x0A)
-                val data = buildGenericFrame(cmd, clampedLevel)
-
-                val url = URL("${baseUrl}/api/v1/files/customdata")
-                val conn = (url.openConnection() as HttpURLConnection).apply {
-                    connectTimeout = 3000
-                    readTimeout = 5000
-                    requestMethod = "POST"
-                    setRequestProperty("Content-Type", "application/customdata")
-                    doOutput = true
-                }
-
-                conn.outputStream.use { it.write(data) }
-                val code = conn.responseCode
-                conn.disconnect()
-
-                val success = code == 200
-                if (success) {
-                    AppLogger.log("Kontrast: $clampedLevel", AppLogger.LogType.SUCCESS)
-                } else {
-                    AppLogger.log("Contrast error: HTTP $code", AppLogger.LogType.ERROR)
-                }
-                success
-            } catch (e: Exception) {
-                AppLogger.log("Kontrast Exception: ${e.message}", AppLogger.LogType.ERROR)
-                false
-            }
-        }
-    }
-
-    suspend fun setEnhancement(enabled: Boolean): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                val value = if (enabled) 1 else 0
-                AppLogger.log("Setze Bildverbesserung: ${if (enabled) "EIN" else "AUS"}", AppLogger.LogType.INFO)
-
-                val cmd = byteArrayOf(0x02, 0x03, 0x0B)
-                val data = buildGenericFrame(cmd, value)
-
-                val url = URL("${baseUrl}/api/v1/files/customdata")
-                val conn = (url.openConnection() as HttpURLConnection).apply {
-                    connectTimeout = 3000
-                    readTimeout = 5000
-                    requestMethod = "POST"
-                    setRequestProperty("Content-Type", "application/customdata")
-                    doOutput = true
-                }
-
-                conn.outputStream.use { it.write(data) }
-                val code = conn.responseCode
-                conn.disconnect()
-
-                val success = code == 200
-                if (success) {
-                    AppLogger.log("Bildverbesserung: ${if (enabled) "EIN" else "AUS"}", AppLogger.LogType.SUCCESS)
-                } else {
-                    AppLogger.log("Image enhancement error: HTTP $code", AppLogger.LogType.ERROR)
-                }
-                success
-            } catch (e: Exception) {
-                AppLogger.log("Bildverbesserung Exception: ${e.message}", AppLogger.LogType.ERROR)
-                false
-            }
-        }
+    suspend fun applySavedImageControls() {
+        apiClient.setPalette(CameraSettings.getPalette(context))
+        apiClient.setHotspot(CameraSettings.isHotspotEnabled(context))
+        apiClient.setBrightness(CameraSettings.getBrightness(context))
+        apiClient.setContrast(CameraSettings.getContrast(context))
+        apiClient.setImageEnhancement(CameraSettings.isImageEnhancementEnabled(context))
     }
 
     val libVLC = remember {
@@ -619,7 +315,7 @@ fun VideoStreamScreen() {
                 ).show()
             } else {
                 if (videoFile.exists()) videoFile.delete()
-                Toast.makeText(context, "Video zu klein/leer", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.video_too_small), Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -640,7 +336,7 @@ fun VideoStreamScreen() {
     ) { permissions ->
         val allGranted = permissions.values.all { it }
         if (!allGranted) {
-            Toast.makeText(context, "Berechtigungen erforderlich", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.permissions_required), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -850,6 +546,7 @@ fun VideoStreamScreen() {
                                         apiClient.getReticleColor()?.let { deviceReticleColor = it }
                                         apiClient.getReticleBrightness()?.let { deviceReticleBrightness = it }
                                     }
+                                    applySavedImageControls()
                                 }
                             } catch (_: Exception) {
                                 AppLogger.log("Device-Info nicht verfugbar", AppLogger.LogType.INFO)
@@ -950,7 +647,7 @@ fun VideoStreamScreen() {
                             .background(NightColors.recording, shape = RoundedCornerShape(50))
                     )
                     Text(
-                        text = "REC ${formatDuration(recordingDuration)}",
+                        text = stringResource(R.string.rec, formatDuration(recordingDuration)),
                         fontSize = 12.sp,
                         color = NightColors.recording,
                         fontWeight = FontWeight.Bold
@@ -1157,7 +854,7 @@ fun VideoStreamScreen() {
                     onValueChange = { zoomLevel = it },
                     onValueChangeFinished = {
                         scope.launch {
-                            setZoom(zoomLevel.toInt())
+                            apiClient.setZoom(zoomLevel.toInt())
                         }
                     },
                     valueRange = 10f..40f,
@@ -1220,8 +917,11 @@ fun VideoStreamScreen() {
                                     scope.launch {
                                         loadingPaletteId = id
                                         try {
-                                            val success = setPalette(id)
-                                            if (success) selectedPalette = id
+                                            val success = apiClient.setPalette(id)
+                                            if (success) {
+                                                selectedPalette = id
+                                                CameraSettings.setPalette(context, id)
+                                            }
                                         } finally {
                                             loadingPaletteId = null
                                         }
@@ -1357,26 +1057,35 @@ fun VideoStreamScreen() {
                     onClose = { showSettingsDialog = false },
                     onAudioChange = { enabled ->
                         scope.launch {
-                            val success = setAudio(if (enabled) "on" else "off")
+                            val success = apiClient.setAudio(if (enabled) "on" else "off")
                             if (success) audioEnabled = enabled
                         }
                     },
                     onHotspotChange = { enabled ->
                         scope.launch {
-                            val success = setHotspot(enabled)
-                            if (success) hotspotEnabled = enabled
+                            val success = apiClient.setHotspot(enabled)
+                            if (success) {
+                                hotspotEnabled = enabled
+                                CameraSettings.setHotspotEnabled(context, enabled)
+                            }
                         }
                     },
                     onBrightnessChange = { level ->
                         scope.launch {
-                            val success = setBrightness(level)
-                            if (success) brightness = level
+                            val success = apiClient.setBrightness(level)
+                            if (success) {
+                                brightness = level
+                                CameraSettings.setBrightness(context, level)
+                            }
                         }
                     },
                     onContrastChange = { level ->
                         scope.launch {
-                            val success = setContrast(level)
-                            if (success) contrast = level
+                            val success = apiClient.setContrast(level)
+                            if (success) {
+                                contrast = level
+                                CameraSettings.setContrast(context, level)
+                            }
                         }
                     },
                     onCrosshairEnabledChange = { enabled ->
@@ -1467,8 +1176,11 @@ fun VideoStreamScreen() {
                     },
                     onEnhancementChange = { enabled ->
                         scope.launch {
-                            val success = setEnhancement(enabled)
-                            if (success) enhancementEnabled = enabled
+                            val success = apiClient.setImageEnhancement(enabled)
+                            if (success) {
+                                enhancementEnabled = enabled
+                                CameraSettings.setImageEnhancementEnabled(context, enabled)
+                            }
                         }
                     },
                     onObjectDetectionChange = { enabled ->

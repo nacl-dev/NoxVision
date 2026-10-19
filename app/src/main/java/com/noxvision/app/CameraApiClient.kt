@@ -10,6 +10,7 @@ import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.Locale
 
 /**
  * REST API client for Guide Sensmart thermal cameras.
@@ -45,6 +46,9 @@ class CameraApiClient(private val baseUrl: String) {
         private const val ENDPOINT_SET_REFLECT_TEMP = "/api/v1/measure/setReflectTemperature"
 
         private const val ENDPOINT_SHUTTER = "/api/v1/measure/shutter"
+        private const val ENDPOINT_CUSTOM_DATA = "/api/v1/files/customdata"
+        private const val ENDPOINT_SEEK_ZOOM = "/api/v1/camera/seekzoom"
+        private const val ENDPOINT_AUDIO_STATUS = "/api/v1/peripheral/audio_status"
 
         // Reticle / OSD endpoints (Guide camera REST API)
         private const val ENDPOINT_MISC_DEVICE_INFO = "/api/v1/misc/deviceinfo"
@@ -313,7 +317,139 @@ class CameraApiClient(private val baseUrl: String) {
         return MiscDeviceInfo(projectCode = projectCode, reservationCode = reservationCode)
     }
 
-    // ==================== Palette Control ====================
+    // ==================== Palette and image controls ====================
+
+    /**
+     * POST a raw Guide control frame to `/api/v1/files/customdata`.
+     * Success is HTTP 200, matching the previous stream-screen client.
+     */
+    private suspend fun postCustomData(data: ByteArray): Int = withContext(Dispatchers.IO) {
+        val url = URL("$baseUrl$ENDPOINT_CUSTOM_DATA")
+        val conn = (url.openConnection() as HttpURLConnection).apply {
+            connectTimeout = CONNECT_TIMEOUT
+            readTimeout = READ_TIMEOUT
+            requestMethod = "POST"
+            setRequestProperty("Content-Type", "application/customdata")
+            doOutput = true
+        }
+        try {
+            conn.outputStream.use { it.write(data) }
+            conn.responseCode
+        } finally {
+            conn.disconnect()
+        }
+    }
+
+    private suspend fun postCustomCommand(
+        data: ByteArray,
+        successMessage: String,
+        httpErrorPrefix: String,
+        exceptionPrefix: String
+    ): Boolean {
+        return try {
+            val code = postCustomData(data)
+            if (code == 200) {
+                AppLogger.log(successMessage, AppLogger.LogType.SUCCESS)
+                true
+            } else {
+                AppLogger.log("$httpErrorPrefix: HTTP $code", AppLogger.LogType.ERROR)
+                false
+            }
+        } catch (e: Exception) {
+            AppLogger.log("$exceptionPrefix Exception: ${e.message}", AppLogger.LogType.ERROR)
+            false
+        }
+    }
+
+    /**
+     * Set a named thermal palette. Unknown names are rejected and not sent.
+     */
+    suspend fun setPalette(paletteName: String): Boolean {
+        val paletteId = GuideControlFrames.paletteId(paletteName) ?: run {
+            AppLogger.log("Unbekannte Palette: $paletteName", AppLogger.LogType.ERROR)
+            return false
+        }
+        AppLogger.log("Setze Palette: $paletteName (ID=$paletteId)", AppLogger.LogType.INFO)
+        val data = GuideControlFrames.paletteFrame(paletteId)
+        val hexStr = data.joinToString(" ") { "%02x".format(it) }
+        AppLogger.log("Frame: $hexStr", AppLogger.LogType.INFO)
+        return postCustomCommand(data, "Palette: $paletteName", "Palette error", "Palette")
+    }
+
+    /** Show or hide the camera hotspot marker (hottest point). */
+    suspend fun setHotspot(enabled: Boolean): Boolean {
+        AppLogger.log("Setze Hotspot: ${if (enabled) "ON" else "OFF"}", AppLogger.LogType.INFO)
+        return postCustomCommand(
+            GuideControlFrames.hotspotFrame(enabled),
+            "Hotspot: ${if (enabled) "EIN" else "AUS"}",
+            "Hotspot error",
+            "Hotspot"
+        )
+    }
+
+    /** Brightness level 1–5. Out-of-range values are clamped before sending. */
+    suspend fun setBrightness(level: Int): Boolean {
+        val clampedLevel = level.coerceIn(1, 5)
+        AppLogger.log("Setze Helligkeit: $clampedLevel", AppLogger.LogType.INFO)
+        return postCustomCommand(
+            GuideControlFrames.brightnessFrame(clampedLevel),
+            "Helligkeit: $clampedLevel",
+            "Brightness error",
+            "Helligkeit"
+        )
+    }
+
+    /** Contrast level 1–5. Out-of-range values are clamped before sending. */
+    suspend fun setContrast(level: Int): Boolean {
+        val clampedLevel = level.coerceIn(1, 5)
+        AppLogger.log("Setze Kontrast: $clampedLevel", AppLogger.LogType.INFO)
+        return postCustomCommand(
+            GuideControlFrames.contrastFrame(clampedLevel),
+            "Kontrast: $clampedLevel",
+            "Contrast error",
+            "Kontrast"
+        )
+    }
+
+    /** Enable or disable the camera's detail enhancement. */
+    suspend fun setImageEnhancement(enabled: Boolean): Boolean {
+        AppLogger.log(
+            "Setze Bildverbesserung: ${if (enabled) "EIN" else "AUS"}",
+            AppLogger.LogType.INFO
+        )
+        return postCustomCommand(
+            GuideControlFrames.enhancementFrame(enabled),
+            "Bildverbesserung: ${if (enabled) "EIN" else "AUS"}",
+            "Image enhancement error",
+            "Bildverbesserung"
+        )
+    }
+
+    /**
+     * Set digital zoom. [level] is tenths (10 = 1.0x), same as the previous stream control.
+     */
+    suspend fun setZoom(level: Int): Boolean {
+        AppLogger.log("Setze Zoom auf $level", AppLogger.LogType.INFO)
+        val result = httpPutJson(ENDPOINT_SEEK_ZOOM, mapOf("value" to level.toString()))
+        if (result.isFailure) return false
+        val zoomDisplay = String.format(Locale.US, "%.1f", level / 10.0)
+        AppLogger.log("Zoom: ${zoomDisplay}x", AppLogger.LogType.SUCCESS)
+        return true
+    }
+
+    /**
+     * Set camera audio. [status] is `"on"` or `"off"`.
+     */
+    suspend fun setAudio(status: String): Boolean {
+        AppLogger.log("Setze Audio auf $status", AppLogger.LogType.INFO)
+        val result = httpPutJson(ENDPOINT_AUDIO_STATUS, mapOf("value" to status))
+        if (result.isFailure) return false
+        AppLogger.log(
+            "Audio: ${if (status == "on") "Ein" else "Aus"}",
+            AppLogger.LogType.SUCCESS
+        )
+        return true
+    }
 
     // ==================== Thermal Measurement Settings ====================
 

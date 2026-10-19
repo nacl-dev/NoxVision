@@ -34,6 +34,28 @@ data class DetectedObject(
     val estimatedDistance: Float? = null
 )
 
+internal data class LabelClassification(val displayLabel: String, val minConfidence: Float)
+
+/**
+ * Map a model label to the overlay name and confidence floor.
+ * Matching ignores case so `person` from labelmap.txt hits the person profile.
+ */
+internal fun classifyDetectionLabel(rawLabel: String): LabelClassification {
+    return when (rawLabel.lowercase()) {
+        "person" -> LabelClassification("Person", 0.45f)
+        "car", "truck", "bus" -> LabelClassification("Vehicle", 0.50f)
+        "bicycle", "motorcycle" -> LabelClassification("Bicycle", 0.50f)
+        "dog", "cat", "horse", "cow", "sheep", "bear" -> LabelClassification("Animal", 0.45f)
+        else -> LabelClassification(rawLabel, 0.50f)
+    }
+}
+
+/** Known real-world size for distance estimation. Lookup ignores case. */
+internal fun knownObjectInfo(label: String): ObjectInfo? {
+    KNOWN_OBJECTS[label]?.let { return it }
+    return KNOWN_OBJECTS.entries.firstOrNull { it.key.equals(label, ignoreCase = true) }?.value
+}
+
 class ThermalObjectDetector(context: Context) {
     private var interpreter: org.tensorflow.lite.Interpreter? = null
     private val labels = mutableListOf<String>()
@@ -56,6 +78,7 @@ class ThermalObjectDetector(context: Context) {
     // Optimization: Removed intermediate enhancedBitmap/Canvas to save memory and draw calls
     private var scaledBitmap: Bitmap? = null
     private var scaledCanvas: Canvas? = null
+    private var lastLoggedClasses: String? = null
 
     private val inputRect = Rect(0, 0, inputSize, inputSize)
     private val enhancementColorMatrix = android.graphics.ColorMatrix().apply {
@@ -200,16 +223,9 @@ class ThermalObjectDetector(context: Context) {
                 val maxClassIndex = anchorMaxClassIndices[i]
                 if (maxClassIndex != -1) {
                     val rawLabel = labels[maxClassIndex]
+                    val classification = classifyDetectionLabel(rawLabel)
 
-                    val (displayLabel, minConf) = when (rawLabel) {
-                        "Person" -> "Person" to 0.45f
-                        "car", "truck", "bus" -> "Vehicle" to 0.50f
-                        "bicycle", "motorcycle" -> "Bicycle" to 0.50f
-                        "dog", "cat", "horse", "cow", "sheep", "bear" -> "Animal" to 0.45f
-                        else -> rawLabel to 0.50f
-                    }
-
-                    if (maxScore >= minConf) {
+                    if (maxScore >= classification.minConfidence) {
                         val cx = outputChannels[0][i] / inputSize.toFloat()
                         val cy = outputChannels[1][i] / inputSize.toFloat()
                         val w = outputChannels[2][i] / inputSize.toFloat()
@@ -224,7 +240,9 @@ class ThermalObjectDetector(context: Context) {
 
                         if (rect.width() > 50 && rect.height() > 50) {
                             val distance = estimateDistance(rawLabel, rect)
-                            allDetections.add(DetectedObject(displayLabel, maxScore, rect, distance))
+                            allDetections.add(
+                                DetectedObject(classification.displayLabel, maxScore, rect, distance)
+                            )
                         }
                     }
                 }
@@ -233,9 +251,16 @@ class ThermalObjectDetector(context: Context) {
             val finalDetections = applyNMS(allDetections)
             val topDetections = finalDetections.asSequence().sortedByDescending { it.confidence }.take(5).toList()
 
-            val elapsed = System.currentTimeMillis() - startTime
-            if (topDetections.isNotEmpty()) {
-                AppLogger.log("${topDetections.size} objects (${elapsed}ms) - Top: ${topDetections[0].label}", AppLogger.LogType.INFO)
+            val classKey = topDetections.map { it.label }.distinct().sorted().joinToString(",")
+            if (classKey != lastLoggedClasses) {
+                lastLoggedClasses = classKey
+                if (topDetections.isNotEmpty()) {
+                    val elapsed = System.currentTimeMillis() - startTime
+                    AppLogger.log(
+                        "${topDetections.size} objects (${elapsed}ms) - Top: ${topDetections[0].label}",
+                        AppLogger.LogType.INFO
+                    )
+                }
             }
 
             // Do not recycle bitmaps here, they are reused
@@ -295,7 +320,7 @@ class ThermalObjectDetector(context: Context) {
     }
 
     private fun estimateDistance(label: String, bbox: RectF): Float? {
-        val objInfo = KNOWN_OBJECTS[label] ?: return null
+        val objInfo = knownObjectInfo(label) ?: return null
         val objectHeightPx = bbox.height()
         if (objectHeightPx < 10) return null
         val distanceMeters = (objInfo.heightMeters * focalLengthPixels) / objectHeightPx
