@@ -1,6 +1,7 @@
 package com.noxvision.app.detection
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 import java.util.Random
 
@@ -44,5 +45,18 @@ class ThermalObjectDetectorTest {
         assertEquals(expectedR, floatValues[0], 0.0001f)
         assertEquals(expectedG, floatValues[1], 0.0001f)
         assertEquals(expectedB, floatValues[2], 0.0001f)
+    }
+
+    @Test
+    fun personLabelMatchesRegardlessOfCase() {
+        val lower = classifyDetectionLabel("person")
+        val upper = classifyDetectionLabel("Person")
+
+        assertEquals("Person", lower.displayLabel)
+        assertEquals(upper.displayLabel, lower.displayLabel)
+        assertEquals(0.45f, lower.minConfidence, 0.0001f)
+        assertEquals(knownObjectInfo("Person"), knownObjectInfo("person"))
+        assertNotNull(knownObjectInfo("person"))
+        assertEquals(1.7f, knownObjectInfo("person")!!.heightMeters, 0.0001f)
     }
 }

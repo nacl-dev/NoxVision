@@ -13,8 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Custom color palette support
 
 ### Changed
+- Palette, hotspot, brightness, contrast, zoom, audio, and image enhancement now go through `CameraApiClient`. Saved image controls are applied once after the camera is identified.
 - Documentation updated for Google Play rollout and closed-alpha testing links.
 - Contribution guide updated to Play-first release/testing workflow.
+
+### Fixed
+- Object detection treats `person` and `Person` as the same class, so distance estimation works with the lowercase label map.
+- Detection results are logged only when the set of detected classes changes.
 
 ## [1.3.0] - 2026-02-20
 

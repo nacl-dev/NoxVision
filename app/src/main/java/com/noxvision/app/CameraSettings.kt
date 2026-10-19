@@ -58,6 +58,13 @@ object CameraSettings {
     private const val KEY_FIRST_RUN = "first_run"
     private const val KEY_LAST_VERSION_CODE = "last_version_code"
     
+    // Stream image controls
+    private const val KEY_PALETTE = "stream_palette"
+    private const val KEY_HOTSPOT_ENABLED = "hotspot_enabled"
+    private const val KEY_BRIGHTNESS = "brightness"
+    private const val KEY_CONTRAST = "contrast"
+    private const val KEY_IMAGE_ENHANCEMENT = "image_enhancement"
+
     // Thermal measurement settings
     private const val KEY_EMISSIVITY = "emissivity"
     private const val KEY_DISTANCE = "distance"
@@ -83,6 +90,9 @@ object CameraSettings {
     private const val DEFAULT_DISTANCE = 1.0f
     private const val DEFAULT_HUMIDITY = 50.0f
     private const val DEFAULT_REFLECT_TEMP = 23.0f
+    private const val DEFAULT_PALETTE = GuideControlFrames.DEFAULT_PALETTE
+    private const val DEFAULT_BRIGHTNESS = 3
+    private const val DEFAULT_CONTRAST = 3
     
     // Default Wi-Fi/Port values
     private const val DEFAULT_WIFI_SSID = "TE Mini-089F"
@@ -209,6 +219,60 @@ object CameraSettings {
      */
     fun getDefaultIp(): String = DEFAULT_IP
     
+    // ==================== Stream image controls ====================
+
+    fun getPalette(context: Context): String {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val saved = prefs.getString(KEY_PALETTE, DEFAULT_PALETTE) ?: DEFAULT_PALETTE
+        return if (GuideControlFrames.paletteId(saved) != null) saved else DEFAULT_PALETTE
+    }
+
+    fun setPalette(context: Context, paletteName: String) {
+        if (GuideControlFrames.paletteId(paletteName) == null) return
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit { putString(KEY_PALETTE, paletteName) }
+    }
+
+    fun isHotspotEnabled(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(KEY_HOTSPOT_ENABLED, false)
+    }
+
+    fun setHotspotEnabled(context: Context, enabled: Boolean) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit { putBoolean(KEY_HOTSPOT_ENABLED, enabled) }
+    }
+
+    fun getBrightness(context: Context): Int {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getInt(KEY_BRIGHTNESS, DEFAULT_BRIGHTNESS).coerceIn(1, 5)
+    }
+
+    fun setBrightness(context: Context, level: Int) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit { putInt(KEY_BRIGHTNESS, level.coerceIn(1, 5)) }
+    }
+
+    fun getContrast(context: Context): Int {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getInt(KEY_CONTRAST, DEFAULT_CONTRAST).coerceIn(1, 5)
+    }
+
+    fun setContrast(context: Context, level: Int) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit { putInt(KEY_CONTRAST, level.coerceIn(1, 5)) }
+    }
+
+    fun isImageEnhancementEnabled(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(KEY_IMAGE_ENHANCEMENT, false)
+    }
+
+    fun setImageEnhancementEnabled(context: Context, enabled: Boolean) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit { putBoolean(KEY_IMAGE_ENHANCEMENT, enabled) }
+    }
+
     // ==================== Thermal Measurement Settings ====================
     
     /**
